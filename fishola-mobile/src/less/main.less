@@ -50,6 +50,13 @@ button {
   cursor: pointer;
 }
 
+// Listes déroulantes natives (#288) : le menu d'options garde un fond clair sur
+// certains navigateurs alors que le texte hérité devient blanc en mode sombre.
+select option {
+  background-color: @surface;
+  color: @gunmetal;
+}
+
 .icon-arrow.icon-back {
   transform: rotate(180deg);
 }

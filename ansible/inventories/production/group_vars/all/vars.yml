@@ -47,10 +47,19 @@ postgres_db: fishola
 postgres_image: postgis/postgis:18-3.6
 
 # --- Mail (vrai SMTP ; mot de passe dans vault.yml : vault_smtp_password) ----
-smtp_host: A_DEFINIR
+# smtp_host: A_DEFINIR
+# smtp_port: 587
+# smtp_start_tls: REQUIRED
+# smtp_ssl: false
+# smtp_username: A_DEFINIR
+# smtp_from: A_DEFINIR
+# feedback_mail_to: contact@carnet-peche.fr
+smtp_host: pro3.mail.ovh.net
 smtp_port: 587
 smtp_start_tls: REQUIRED
-smtp_ssl: false
-smtp_username: A_DEFINIR
-smtp_from: A_DEFINIR
-feedback_mail_to: contact@carnet-peche.fr
+smtp_ssl: true
+smtp_username: arthur@symbiome.eu
+smtp_from: arthur@symbiome.eu
+# Destinataire des retours pêcheurs : valeur actuelle de l'application,
+# capturée par Maildev en recette.
+feedback_mail_to: arthur@symbiome.eu

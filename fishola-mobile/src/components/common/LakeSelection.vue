@@ -556,7 +556,8 @@ export default class LakeSelection extends Vue {
     display: flex;
     align-items: center;
     justify-content: space-around;
-    background: #eee;
+    background: @solitude;
+    color: @gunmetal;
     border-radius: 0 4px 4px 0;
     border: 1px solid @pale-sky;
     width: 130px;
