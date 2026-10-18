@@ -609,7 +609,7 @@ export default class GaleryFull extends Vue {
       line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
       color: @accent-text;
-      background-color: #dadada;
+      background-color: @solitude;
 
       border: 0px;
       border: 1px solid @accent-text;

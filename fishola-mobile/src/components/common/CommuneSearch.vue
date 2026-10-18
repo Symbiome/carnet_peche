@@ -277,7 +277,7 @@ export default class CommuneSearch extends Vue {
     justify-content: center;
     font-size: 16px;
     color: @pale-sky;
-    background: #f0f0f0;
+    background: @solitude;
     border-radius: 50%;
     cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
