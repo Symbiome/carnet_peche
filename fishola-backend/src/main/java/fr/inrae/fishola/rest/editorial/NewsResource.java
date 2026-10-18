@@ -30,6 +30,7 @@ import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
 import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.audit.Audited;
+import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.DELETE;
@@ -66,18 +67,37 @@ public class NewsResource extends AbstractCarnetResource {
     @Inject
     protected StaffPerimeterDao staffPerimeterDao;
 
+    /**
+     * Actualités publiées pour le pêcheur connecté : nationales, plus celles du
+     * département de son code postal et de ses milieux favoris (#233). Sans
+     * session pêcheur, nationales seules.
+     */
     @GET
     @Path("/news")
     public List<News> getPublishedNews(@Context HttpServletRequest request) {
-        // Return all news for which publication date is active
-        return dao.getNews(true, Optional.empty());
+        return dao.getPublishedNewsForDepartments(currentAnglerDepartments());
     }
 
+    /**
+     * Actualités publiées sur un milieu : nationales, plus celles ciblant l'un
+     * des départements du milieu (#233).
+     */
     @GET
     @Path("/news/waterEntity/{waterEntityId}")
     public List<News> getPublishedNews(@PathParam("waterEntityId") UUID waterEntityId, @Context HttpServletRequest request) {
-        // Return all news for which publication date is active
-        return dao.getPublishedNewsForWaterEntity(waterEntityId);
+        return dao.getPublishedNewsForDepartments(dao.getWaterEntityDepartments(waterEntityId));
+    }
+
+    private Set<String> currentAnglerDepartments() {
+        if (userToken == null) {
+            return Set.of();
+        }
+        try {
+            UUID userId = getUserIdOrRenew().userId();
+            return usersDao.findById(userId).map(dao::getAnglerDepartments).orElse(Set.of());
+        } catch (NotAuthenticatedException e) {
+            return Set.of();
+        }
     }
 
     @GET
@@ -104,7 +124,8 @@ public class NewsResource extends AbstractCarnetResource {
     @Path("/news-all/{newsId}")
     @Audited(value = "news.delete", entityType = "news", entityIdParam = "newsId")
     public Response deleteNews(@PathParam("newsId") UUID newsId) {
-        checkIsAdmin();
+        FisholaAdmin currentAdmin = checkIsAdmin();
+        checkNewsInPerimeter(findExistingNews(newsId), currentAdmin);
         dao.deleteById(newsId);
         return Response.noContent().build();
     }
@@ -114,13 +135,12 @@ public class NewsResource extends AbstractCarnetResource {
     @Audited(value = "news.update", entityType = "news", entityIdParam = "newsId")
     public Response updateNews(@PathParam("newsId") UUID newsId, NewsBean news) {
         FisholaAdmin currentAdmin = checkIsAdmin();
-        if (isNewsOutsidePerimeter(news, currentAdmin)) {
-            throw new ForbiddenException("L'administrateur " + currentAdmin.getEmail() + " n'a pas accès aux lacs " + news.waterEntityIds);
-        }
         Preconditions.checkArgument(newsId != null, "Identifiant de news obligatoire");
         Preconditions.checkArgument(newsId.equals(news.id), "L'identifiant ne correspond pas");
+        News existing = findExistingNews(newsId);
+        checkNewsInPerimeter(existing, currentAdmin);
         try {
-            dao.update(this.newsBeanToNews(news), news.waterEntityIds);
+            dao.update(this.newsBeanToNews(news, existing.getIsNational()));
             return Response.noContent().build();
         } catch (Exception e) {
             Map<String, String> entity = new LinkedHashMap<>();
@@ -135,11 +155,13 @@ public class NewsResource extends AbstractCarnetResource {
     @Audited(value = "news.create", entityType = "news")
     public Response createNews(NewsBean news) {
         FisholaAdmin currentAdmin = checkIsAdmin();
-        if (isNewsOutsidePerimeter(news, currentAdmin)) {
-            throw new ForbiddenException("L'administrateur " + currentAdmin.getEmail() + " n'a pas accès aux lacs " + news.waterEntityIds);
+        boolean isNational = currentAdmin.getIsNationalAdmin();
+        Set<String> departmentCodes = isNational ? Set.of() : getAllowedAdminDepartments();
+        if (departmentCodes.contains(NO_DEPARTMENT_PERIMETER)) {
+            throw new ForbiddenException("L'administrateur " + currentAdmin.getEmail() + " n'a aucun département de périmètre");
         }
         try {
-            News inserted = dao.insert(this.newsBeanToNews(news), news.waterEntityIds);
+            News inserted = dao.insert(this.newsBeanToNews(news, isNational), departmentCodes);
             // Update all news pictures uploaded with temp id
             dao.updateTempNewsPictureIds(inserted.getId());
             return Response.noContent().build();
@@ -150,17 +172,28 @@ public class NewsResource extends AbstractCarnetResource {
         }
     }
 
-    // Un admin régional ne peut toucher qu'une actu régionale rattachée à des
-    // entités hydro de ses départements de périmètre (#159). Un national passe
-    // toujours ; une actu nationale est réservée au national.
-    private boolean isNewsOutsidePerimeter(NewsBean news, FisholaAdmin currentAdmin) {
+    private News findExistingNews(UUID newsId) {
+        News news = dao.findById(newsId);
+        if (news == null) {
+            throw new ResourceNotFoundException("News introuvable : " + newsId);
+        }
+        return news;
+    }
+
+    /**
+     * Un admin régional ne modifie qu'une actu régionale dont tous les
+     * départements relèvent de son périmètre (#159, #233). Un national passe
+     * toujours ; une actu nationale est réservée au national.
+     */
+    protected void checkNewsInPerimeter(News news, FisholaAdmin currentAdmin) {
         if (currentAdmin.getIsNationalAdmin()) {
-            return false;
+            return;
         }
-        if (news.isNational) {
-            return true;
+        Set<String> newsDepartments = dao.getDepartmentCodes(news.getId());
+        if (news.getIsNational() || !getAllowedAdminDepartments().containsAll(newsDepartments)) {
+            throw new ForbiddenException("L'administrateur " + currentAdmin.getEmail()
+                    + " n'a pas accès aux départements " + newsDepartments);
         }
-        return !staffPerimeterDao.allInPerimeter(news.waterEntityIds, getAllowedAdminDepartments());
     }
 
     @POST
@@ -199,10 +232,10 @@ public class NewsResource extends AbstractCarnetResource {
     }
 
     private NewsBean newsToNewsBean(News n) {
-        Set<UUID> waterEntityIds = this.dao.getWaterEntityIds(n.getId());
-        return new NewsBean(n.getId(), n.getName(), n.getContent(), n.getDatePublicationDebut(), n.getDatePublicationFin(), n.getDateNotificationSent(), n.getMiniatureId(), n.getIsNational(), waterEntityIds);
+        Set<String> departmentCodes = this.dao.getDepartmentCodes(n.getId());
+        return new NewsBean(n.getId(), n.getName(), n.getContent(), n.getDatePublicationDebut(), n.getDatePublicationFin(), n.getDateNotificationSent(), n.getMiniatureId(), n.getIsNational(), departmentCodes);
     }
-    private News newsBeanToNews(NewsBean news) {
-        return new News(news.id, news.name, news.content, news.datePublicationDebut, news.datePublicationFin, news.dateNotificationSent, news.miniatureId, news.isNational);
+    private News newsBeanToNews(NewsBean news, boolean isNational) {
+        return new News(news.id, news.name, news.content, news.datePublicationDebut, news.datePublicationFin, news.dateNotificationSent, news.miniatureId, isNational);
     }
 }

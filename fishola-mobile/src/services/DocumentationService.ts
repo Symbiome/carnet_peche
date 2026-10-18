@@ -50,8 +50,15 @@ export default class DocumentationService extends AbstractCarnetService {
     return this.backendGetWithCache("/v1/documentations");
   }
 
-  static getNews(lakeId: string): Promise<NewsBean[]> {
-    return this.backendGetWithCache("/v1/news/lake/" + lakeId);
+  /**
+   * Published news of a water entity, or of the logged angler when no water
+   * entity is given (national, postal code and favorites departments, #233).
+   */
+  static getNews(waterEntityId?: string): Promise<NewsBean[]> {
+    if (waterEntityId) {
+      return this.backendGetWithCache("/v1/news/waterEntity/" + waterEntityId);
+    }
+    return this.backendGetWithCache("/v1/news");
   }
 
   static getSingleNews(newsId: string): Promise<NewsBean> {
