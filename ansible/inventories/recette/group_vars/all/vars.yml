@@ -56,12 +56,21 @@ postgres_db: fishola
 postgres_image: postgis/postgis:18-3.6
 
 # --- Mail (recette : capturé par le Maildev embarqué, aucun vrai SMTP) -------
-smtp_host: maildev
-smtp_port: 1025
+# smtp_host: maildev
+# smtp_port: 1025
+# smtp_start_tls: DISABLED
+# smtp_ssl: false
+# smtp_username: ""
+# smtp_from: ""
+# # Destinataire des retours pêcheurs : valeur actuelle de l'application,
+# # capturée par Maildev en recette.
+# feedback_mail_to: contact@carnet-peche.fr
+smtp_host: pro2.mail.ovh.net
+smtp_port: 587
 smtp_start_tls: DISABLED
-smtp_ssl: false
-smtp_username: ""
-smtp_from: ""
+smtp_ssl: true
+smtp_username: arthur@symbiome.eu
+smtp_from: arthur@symbiome.eu
 # Destinataire des retours pêcheurs : valeur actuelle de l'application,
 # capturée par Maildev en recette.
-feedback_mail_to: contact@carnet-peche.fr
+feedback_mail_to: arthur@symbiome.eu
