@@ -355,7 +355,7 @@ export default class FeedbackModal extends Vue {
         align-items: center;
         justify-content: center;
         .pane-content {
-          background-color: #f7f7f7;
+          background-color: @white-smoke;
           width: auto;
           height: auto;
           max-width: 70vw;
