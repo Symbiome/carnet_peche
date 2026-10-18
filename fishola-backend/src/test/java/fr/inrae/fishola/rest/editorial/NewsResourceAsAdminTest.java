@@ -24,7 +24,6 @@ package fr.inrae.fishola.rest.editorial;
 import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.NewsCarnetDao;
 import fr.inrae.fishola.database.ReferentialDao;
-import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.AbstractCarnetTest;
@@ -36,11 +35,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -68,7 +71,8 @@ class NewsResourceAsAdminTest extends AbstractCarnetTest {
         unpublishedNews.setName(this.token);
         unpublishedNews.setDatePublicationDebut(now.plusDays(10));
         unpublishedNews.setDatePublicationFin(now.plusDays(20));
-        this.newsDao.insert(unpublishedNews, referentialDao.listWaterEntities().stream().map(WaterEntity::getId).collect(Collectors.toSet()));
+        unpublishedNews.setIsNational(true);
+        this.newsDao.insert(unpublishedNews, Set.of());
 
         // Insert a published news
         News publishedNews = new News();
@@ -76,7 +80,8 @@ class NewsResourceAsAdminTest extends AbstractCarnetTest {
         publishedNews.setName("published-" + token);
         publishedNews.setDatePublicationDebut(now.minusDays(1));
         publishedNews.setDatePublicationFin(now.plusDays(10));
-        this.newsDao.insert(publishedNews, referentialDao.listWaterEntities().stream().map(WaterEntity::getId).collect(Collectors.toSet()));
+        publishedNews.setIsNational(true);
+        this.newsDao.insert(publishedNews, Set.of());
     }
 
     @Test
@@ -104,10 +109,8 @@ class NewsResourceAsAdminTest extends AbstractCarnetTest {
         NewsBean news = new NewsBean(newsFromDB.getId(), newsFromDB.getName(), newsFromDB.getContent(), newsFromDB.getDatePublicationDebut(), newsFromDB.getDatePublicationFin(), newsFromDB.getDateNotificationSent(), newsFromDB.getMiniatureId(), newsFromDB.getIsNational(), Sets.newLinkedHashSet());
         news.name = modifiedName;
         LocalDateTime now = LocalDateTime.now();
-        news.isNational = true;
         news.datePublicationDebut = now.minusDays(1);
         news.datePublicationFin = now.plusDays(20);
-        news.waterEntityIds = referentialDao.listWaterEntities().stream().map(WaterEntity::getId).collect(Collectors.toSet());
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,8 +132,7 @@ class NewsResourceAsAdminTest extends AbstractCarnetTest {
     void testNewsPost() {
         int newsCountBefore = this.newsDao.getNews(false, Optional.empty()).size();
         LocalDateTime now = LocalDateTime.now();
-        Set<UUID>  waterEntityIds = referentialDao.listWaterEntities().stream().map(WaterEntity::getId).collect(Collectors.toSet());
-        NewsBean news = new NewsBean(UUID.randomUUID(),"published-newnews", "content", now.minusDays(1), now.plusDays(20), now, UUID.randomUUID(), false, waterEntityIds);
+        NewsBean news = new NewsBean(UUID.randomUUID(),"published-newnews", "content", now.minusDays(1), now.plusDays(20), now, UUID.randomUUID(), false, Set.of());
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -164,6 +166,53 @@ class NewsResourceAsAdminTest extends AbstractCarnetTest {
 
         Assertions.assertEquals(newsCountAfter, newsCountBefore - 1);
 
+    }
+
+    @Test
+    @Transactional
+    void testPictureUploadedBeforeCreationIsAttachedToNews() throws IOException {
+        BufferedImage image = new BufferedImage(4, 4, BufferedImage.TYPE_INT_ARGB);
+        ByteArrayOutputStream png = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", png);
+        String dataUrl = "data:image/png;base64," + Base64.getEncoder().encodeToString(png.toByteArray());
+        String pictureId = given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("\"" + dataUrl + "\"")
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .post("/api/v1/news-picture/temp-id")
+                .then()
+                .statusCode(200)
+                .extract().path("id");
+
+        LocalDateTime now = LocalDateTime.now();
+        NewsBean news = new NewsBean(null, "with-picture-" + token, "<img src=\"" + pictureId + "\">", now.minusDays(1), now.plusDays(20), null, null, false, null);
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(news)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .post("/api/v1/news-all")
+                .then()
+                .statusCode(204);
+
+        News created = newsDao.getNews(false, Optional.empty()).stream()
+                .filter(n -> n.getName().equals("with-picture-" + token)).findFirst().orElseThrow();
+        given().when().get("/api/v1/news-picture/" + pictureId).then().statusCode(200);
+        Assertions.assertTrue(created.getIsNational());
+    }
+
+    @Test
+    void testUnreadablePictureIsRejected() {
+        String dataUrl = "data:image/webp;base64," + Base64.getEncoder().encodeToString("not an image".getBytes());
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("\"" + dataUrl + "\"")
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .post("/api/v1/news-picture/temp-id")
+                .then()
+                .statusCode(400);
     }
 
 }

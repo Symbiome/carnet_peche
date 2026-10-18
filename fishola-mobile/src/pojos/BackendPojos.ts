@@ -174,7 +174,7 @@ export interface NewsBean {
     dateNotificationSent: Date;
     miniatureId: string;
     isNational: boolean;
-    waterEntityIds: string[];
+    departmentCodes: string[];
 }
 
 export interface UserSettings {
