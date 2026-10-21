@@ -183,7 +183,7 @@ export default class EditTripView extends Vue {
 
   tripSaved() {
     if (this.actionRequested == "UpdateTrip") {
-      RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/trips");
       EventBus.emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
       RouterUtils.pushRouteNoDuplicate(this.$router, {
@@ -227,7 +227,7 @@ export default class EditTripView extends Vue {
   }
 
   tripDeleted() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips");
   }
 
   backToGaleryOrTrips() {
@@ -240,7 +240,7 @@ export default class EditTripView extends Vue {
         },
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/trips");
     }
   }
 }

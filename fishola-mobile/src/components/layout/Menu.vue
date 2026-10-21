@@ -257,12 +257,9 @@ export default class Menu extends Vue {
     RouterUtils.startNewTrip(this.$router);
   }
 
-  goDashboardPersonal() {
+  goActivitySummary() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(
-      this.$router,
-      "/dashboard-personal/dashboard"
-    );
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/activity-summary");
   }
 
   goDashboardGlobal() {
@@ -333,19 +330,19 @@ export default class Menu extends Vue {
         name: "map",
         label: "Carte",
         iconName: "map",
-        clickHandler: () => this.goPath("/my-trips/map"),
+        clickHandler: () => this.goPath("/map"),
         onlyConnected: true,
         onlyUnlogged: false,
-        path: "/my-trips/map",
+        path: "/map",
       },
       {
         name: "trips",
         label: "Mes prises",
         iconName: "fish",
-        clickHandler: () => this.goPath("/my-trips/list"),
+        clickHandler: () => this.goPath("/trips"),
         onlyConnected: true,
         onlyUnlogged: false,
-        path: "/my-trips/list",
+        path: "/trips",
       },
       {
         name: "offline-home",
@@ -356,10 +353,10 @@ export default class Menu extends Vue {
         onlyUnlogged: true,
       },
       {
-        name: "dashboard-personal",
-        label: "Mes données",
+        name: "activity-summary",
+        label: "Résumé de mon activité",
         iconName: "dashboard",
-        clickHandler: this.goDashboardPersonal,
+        clickHandler: this.goActivitySummary,
         onlyConnected: true,
         onlyUnlogged: false,
       },

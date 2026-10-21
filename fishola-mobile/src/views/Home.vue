@@ -197,7 +197,7 @@ export default class HomeView extends Vue {
   }
 
   goActivitySummary() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/activity-summary");
   }
 }
 </script>
