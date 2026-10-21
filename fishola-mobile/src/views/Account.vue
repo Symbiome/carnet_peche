@@ -51,6 +51,7 @@
 <script lang="ts">
 import DocumentationService from "@/services/DocumentationService";
 import LogoutService from "@/services/LogoutService";
+import OnboardingService from "@/services/OnboardingService";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import BottomNav from "@/components/layout/BottomNav.vue";
@@ -108,6 +109,7 @@ export default class AccountView extends Vue {
         items: [
           { label: "Contact", icon: "img/carnet/account-contact.svg", action: this.openFeedback },
           { label: "A propos", icon: "img/carnet/account-about.svg", action: () => this.go("/documentation/doc") },
+          { label: "Revoir la présentation", fontIcon: "icon-info", action: this.replayOnboarding },
           { label: "Déconnexion", fontIcon: "icon-logout", action: this.logout },
         ],
       },
@@ -120,6 +122,12 @@ export default class AccountView extends Vue {
 
   openCgu() {
     window.open(DocumentationService.getCGUUrl(), "_blank");
+  }
+
+  /** Réaffiche l'onboarding (#194) en revenant sur l'accueil. */
+  replayOnboarding() {
+    OnboardingService.replay();
+    this.go("/home");
   }
 
   openFeedback() {

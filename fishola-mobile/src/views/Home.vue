@@ -72,6 +72,11 @@
       <button class="home-more" v-on:click="goBadges">Voir la collection&nbsp;›</button>
     </div>
     <BottomNav />
+    <OnboardingSlides
+      v-if="showOnboarding"
+      v-on:skip="onboardingSkipped"
+      v-on:finished="onboardingSlidesFinished"
+    />
   </div>
 </template>
 
@@ -91,6 +96,9 @@ import Title from "@/components/layout/Title.vue";
 import BadgeTile from "@/components/home/BadgeTile.vue";
 import HomeSummary from "@/components/home/HomeSummary.vue";
 import LastTripCard from "@/components/home/LastTripCard.vue";
+import OnboardingSlides from "@/components/onboarding/OnboardingSlides.vue";
+import OnboardingService from "@/services/OnboardingService";
+import { startOnboardingTour } from "@/services/OnboardingTour";
 
 import { Component, Vue } from "vue-facing-decorator";
 
@@ -101,7 +109,7 @@ const SUMMARY_TRIPS_PAGE_SIZE = 500;
 
 /** Accueil du pêcheur : dernière sortie, résumé de l'activité, badges. */
 @Component({
-  components: { Avatar, BottomNav, Title, BadgeTile, HomeSummary, LastTripCard },
+  components: { Avatar, BottomNav, Title, BadgeTile, HomeSummary, LastTripCard, OnboardingSlides },
 })
 export default class HomeView extends Vue {
   firstName: string = "";
@@ -114,8 +122,11 @@ export default class HomeView extends Vue {
   lastTripPhotoUrl: string = "";
   badges: BadgeBean[] = [];
   defaultBadgeEmoji: string = DEFAULT_BADGE_EMOJI;
+  showOnboarding: boolean = false;
 
   mounted() {
+    // Onboarding au premier passage sur l'accueil, donc après la connexion (#194).
+    this.showOnboarding = !OnboardingService.isDone();
     ProfileService.getProfile().then(this.profileLoaded, () => undefined);
     TripsService.listTrips(true, "", 0, SUMMARY_TRIPS_PAGE_SIZE).then(
       this.tripsListed,
@@ -184,6 +195,17 @@ export default class HomeView extends Vue {
       .sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime());
     const locked = this.badges.filter((b) => !b.unlocked);
     return [...unlocked, ...locked].slice(0, DISPLAYED_BADGES_COUNT);
+  }
+
+  onboardingSkipped() {
+    OnboardingService.markDone();
+    this.showOnboarding = false;
+  }
+
+  /** Fin des écrans d'introduction : la visite guidée de l'accueil prend le relais. */
+  onboardingSlidesFinished() {
+    this.showOnboarding = false;
+    this.$nextTick(() => startOnboardingTour(() => OnboardingService.markDone()));
   }
 
   startNewTrip() {
