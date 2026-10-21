@@ -202,7 +202,6 @@ export default class ProfileService extends AbstractCarnetService {
   }
 
   static logout(): Promise<void> {
-    localStorage.latestPassword = "";
     this.deleteFromOfflineStorage("/v1/security/profile");
     return new Promise<void>((resolve, reject) => {
       this.backendPost("/v1/security/logout").then(() => {

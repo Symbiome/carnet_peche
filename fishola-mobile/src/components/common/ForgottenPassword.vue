@@ -36,8 +36,8 @@
         placeholder="Nouveau mot de passe" v-model="newPasswordConfirmation" v-bind:error="passwordConfirmationError"
         v-on:keyupEnter="sendPasswordReinitialisationRequest" />
       <div class="sendpassword">
-        <button class="cancel" v-on:click="cancel">Annuler</button>
-        <button v-on:click="sendPasswordReinitialisationRequest">Réinitialiser</button>
+        <button type="button" class="cancel" v-on:click="cancel">Annuler</button>
+        <button type="button" v-on:click="sendPasswordReinitialisationRequest">Réinitialiser</button>
       </div>
     </div>
   </div>
