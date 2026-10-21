@@ -259,7 +259,8 @@ export default class TripsService extends AbstractCarnetService {
   static listTrips(
     sortDown: boolean,
     searchTerm: string,
-    rawPageIndex?: number
+    rawPageIndex?: number,
+    pageSize: number = 10
   ): Promise<TripsAndCount> {
     const pageIndex = rawPageIndex || 0;
 
@@ -284,7 +285,7 @@ export default class TripsService extends AbstractCarnetService {
 
       const page = {
         pageNumber: pageIndex,
-        pageSize: 10,
+        pageSize: pageSize,
         desc: sortDown,
         term: searchTerm,
       };

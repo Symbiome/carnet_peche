@@ -1356,7 +1356,7 @@ export default class EditCatchView extends Vue {
     }
 
     .empty {
-      color: @carrot-orange;
+      color: @warning-text;
       font-style: italic;
     }
 

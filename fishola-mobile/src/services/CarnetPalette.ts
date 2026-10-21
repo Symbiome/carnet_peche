@@ -21,36 +21,41 @@
 
 /**
  * Palette « Carnet de pêche » pour le code qui ne lit pas le CSS (Chart.js,
- * MapLibre). Couleurs reprises des maquettes Figma et de leurs pictogrammes ;
- * mêmes valeurs que les variables `@carnet-*` de less/_colors.less.
+ * MapLibre). Couleurs reprises des maquettes Figma (page « Master content ») et
+ * de leurs pictogrammes ; mêmes valeurs que les variables `@carnet-*` de
+ * less/_colors.less.
  */
 export const CARNET_COLORS = {
   blue: "#0000E0",
   navy: "#142634",
   sand: "#F9F4F2",
-  sky: "#0FAFFF",
-  deepBlue: "#0067BF",
+  sky: "#008BF8",
+  deepBlue: "#004780",
   orange: "#FE8401",
   magenta: "#D7257D",
-  green: "#62BE55",
-  darkGreen: "#1E794A",
+  green: "#0CCE6B",
+  darkGreen: "#067A3E",
   purple: "#7A41DC",
-  yellow: "#FFCD0F",
+  yellow: "#FFBF00",
   red: "#CA2134",
   pink: "#F97DBD",
   lavender: "#A3A3FF",
   grey: "#5B6B78",
 };
 
-/** Couleurs catégorielles des graphiques, dans l'ordre d'attribution. */
+/**
+ * Couleurs catégorielles des graphiques, dans l'ordre d'attribution : d'abord
+ * les quatre teintes de la charte, le bleu en dernier car il se perd sur le
+ * fond du mode sombre.
+ */
 export const CARNET_CHART_PALETTE: string[] = [
+  CARNET_COLORS.sky,
+  CARNET_COLORS.yellow,
+  CARNET_COLORS.green,
   CARNET_COLORS.blue,
   CARNET_COLORS.orange,
-  CARNET_COLORS.sky,
   CARNET_COLORS.magenta,
-  CARNET_COLORS.green,
   CARNET_COLORS.purple,
-  CARNET_COLORS.yellow,
   CARNET_COLORS.deepBlue,
   CARNET_COLORS.pink,
   CARNET_COLORS.darkGreen,

@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="carnet-logo" role="img" aria-label="Carnet de pêche">
-    <img class="logo-mark" src="img/carnet/logo-wordmark-mark.svg" alt="" />
+    <img class="logo-mark" :class="{ 'on-dark': onDark }" src="img/carnet/logo-wordmark-mark.svg" alt="" />
     <img v-if="onDark" class="logo-text" src="img/carnet/logo-wordmark-text-dark.svg" alt="" />
     <template v-else>
       <img class="logo-text logo-text-light" src="img/carnet/logo-wordmark-text.svg" alt="" />
@@ -58,6 +58,11 @@ export default class CarnetLogo extends Vue {
     left: 0;
     width: 26.59%;
     height: auto;
+
+    // Sur photo bleue, le pictogramme bleu disparaît : passé en blanc.
+    &.on-dark {
+      filter: brightness(0) invert(1);
+    }
   }
 
   .logo-text {

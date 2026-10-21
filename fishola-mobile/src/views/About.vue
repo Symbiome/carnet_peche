@@ -1018,4 +1018,10 @@ footer {
 .send-button {
   margin-left: 0px;
 }
+
+// Bouton du gabarit « November » : orange d'origine, blanc illisible dessus.
+.Get_sec .Leftside .button.send-button {
+  background: @carnet-blue;
+  color: @white;
+}
 </style>

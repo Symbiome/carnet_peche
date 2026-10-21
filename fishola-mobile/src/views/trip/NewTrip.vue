@@ -153,6 +153,11 @@ export default class NewTripView extends Vue {
             height: 60px;
             color: @accent-text;
           }
+
+          // Illustrations dessinées en bleu nuit : inversées en mode sombre.
+          :root[data-theme="dark"] & img {
+            filter: invert(1);
+          }
         }
 
         .right {

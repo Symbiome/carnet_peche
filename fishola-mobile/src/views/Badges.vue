@@ -170,7 +170,7 @@ export default class BadgesView extends Vue {
 
   h2 {
     font-size: @fontsize-header-title-small;
-    color: @cyprus;
+    color: @heading;
     margin-bottom: @vertical-margin-x-small;
   }
 }
@@ -188,7 +188,7 @@ export default class BadgesView extends Vue {
   text-align: center;
   padding: @vertical-margin-small;
   border-radius: 12px;
-  background: @white-smoke;
+  background: @surface;
   cursor: pointer;
 
   .badge-icon {
@@ -214,20 +214,25 @@ export default class BadgesView extends Vue {
     margin-top: @vertical-margin-x-small;
   }
 
+  // Badge verrouillé : emoji grisé, textes en couleur secondaire plutôt
+  // qu'en transparence, pour rester lisibles.
   &.locked {
-    .badge-icon,
-    .badge-name {
+    .badge-icon {
       filter: grayscale(100%);
       opacity: 0.4;
     }
 
-    .badge-description {
-      opacity: 0.6;
+    .badge-name {
+      color: @pale-sky;
     }
   }
 
   &.unlocked {
-    background: @zircon;
+    background: @blue-box;
+
+    .badge-description {
+      color: @gunmetal;
+    }
   }
 }
 </style>

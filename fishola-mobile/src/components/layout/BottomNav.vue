@@ -166,7 +166,7 @@ export default class BottomNav extends Vue {
     border: 4px solid @white-smoke;
     border-radius: 31.5px;
 
-    background-color: @carnet-blue;
+    background-color: @carnet-sky;
     color: @white;
     font-family: @font-family;
     font-size: 41.745px;
@@ -189,5 +189,11 @@ export default class BottomNav extends Vue {
       animation: none;
     }
   }
+}
+
+// Maquette du mode sombre : bouton « + » bleu, le bleu ciel ressortant trop
+// sur le fond bleu nuit.
+:root[data-theme="dark"] .bottom-nav .nav-action:not(.delete-mode) {
+  background-color: @carnet-blue;
 }
 </style>

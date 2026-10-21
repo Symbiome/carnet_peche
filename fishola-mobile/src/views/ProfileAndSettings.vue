@@ -37,7 +37,7 @@
                         </div>
                     </div>
                     <div class="profile-header keyboardSensitive" v-if="visualizationMode == 'profile' && profile">
-                        <Avatar v-bind:initials="profile.initials" class="profile-avatar" />
+                        <Avatar v-bind:initials="profile.initials" v-bind:onColor="true" class="profile-avatar" />
                         <div class="profile-header-name">
                             {{ fullName }}
                         </div>

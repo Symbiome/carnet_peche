@@ -195,7 +195,7 @@ export default class HistogramChart extends Vue {
       text-align: center;
 
       &.is-active-month {
-        color: @orange-odd !important;
+        color: @warning-text !important;
       }
       &.maillee {
         color: @accent-text;
@@ -305,7 +305,7 @@ export default class HistogramChart extends Vue {
 
       &.is-active-month {
         font-weight: bolder;
-        color: @orange-odd;
+        color: @warning-text;
       }
     }
  

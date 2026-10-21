@@ -25,7 +25,7 @@
         class="verify-account-title keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly"
       >
         <div class="welcome keyboardSensitive">Bienvenue sur</div>
-        <CarnetLogo class="carnet-logo-centered keyboardSensitive" />
+        <CarnetLogo v-bind:onDark="true" class="carnet-logo-centered keyboardSensitive" />
       </div>
       <div class="pending" v-if="pending">
         <p>Validation de votre compte en cours, veuillez patientier...</p>

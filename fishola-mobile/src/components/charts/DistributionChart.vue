@@ -154,7 +154,7 @@ export default class DistributionChart extends Vue {
     font-weight: bold;
     font-style: italic;
     span {
-      color: @lime-green;
+      color: @green-text;
     }
   }
 }
