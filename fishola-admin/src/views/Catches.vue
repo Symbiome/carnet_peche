@@ -163,6 +163,18 @@ const columns: any[] = [
     sortable: true
   },
   {
+    field: "especeRecherchee",
+    label: "Espèce recherchée",
+    searchable: true,
+    sortable: true
+  },
+  {
+    field: "techniqueDePecheParSortie",
+    label: "Technique de pêche",
+    searchable: true,
+    sortable: true
+  },
+  {
     field: "especeCapturee",
     label: "Espèce Capturée",
     searchable: true,

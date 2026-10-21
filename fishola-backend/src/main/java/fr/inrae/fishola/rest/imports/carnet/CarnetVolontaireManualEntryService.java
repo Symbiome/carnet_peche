@@ -151,7 +151,8 @@ public class CarnetVolontaireManualEntryService {
                 .toList();
 
         UUID tripId = importDao.saveManualEntry("carnet_volontaire", bean.day, bean.startTime, bean.endDay, bean.endTime,
-                waterEntityId, name, StringUtils.trimToNull(bean.sessionCode), bean.techniqueId, rows, position);
+                waterEntityId, name, StringUtils.trimToNull(bean.sessionCode), bean.techniqueId,
+                bean.noExpectedSpecies ? null : bean.expectedSpeciesId, rows, position);
         return new ManualResultBean(tripId, rows.size(), List.of());
     }
 
