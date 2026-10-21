@@ -152,7 +152,7 @@ export default class CatchPreviewList extends Vue {
         font-size: @pastille-size;
         line-height: calc(@pastille-size);
         color: @white;
-        background: @pale-sky;
+        background: @carnet-blue;
       }
     }
   }

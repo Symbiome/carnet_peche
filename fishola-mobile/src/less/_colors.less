@@ -1,19 +1,34 @@
-// Charte « Carnet de pêche » (maquettes Figma, oct. 2026), complétée par les
-// couleurs des pictogrammes ; mêmes valeurs que services/CarnetPalette.ts.
+// Charte « Carnet de pêche » (maquettes Figma, page « Master content »,
+// oct. 2026) : quatre teintes déclinées en contenu (vif), texte (foncé) et
+// boîte (20 %), plus les couleurs des pictogrammes ; mêmes valeurs que
+// services/CarnetPalette.ts. Les déclinaisons texte et boîte changent avec le
+// thème : propriétés CSS redéfinies dans main.less.
 @carnet-blue: #0000E0;
 @carnet-blue-soft: rgba(0, 0, 224, 0.1);
 @carnet-navy: #142634;
+@carnet-ink: #00004C;
 @carnet-sand: #F9F4F2;
-@carnet-sky: #0FAFFF;
-@carnet-deep-blue: #0067BF;
+@carnet-sky: #008BF8;
+@carnet-deep-blue: #004780;
 @carnet-orange: #FE8401;
 @carnet-orange-light: #FF921F;
-@carnet-green: #62BE55;
-@carnet-dark-green: #1E794A;
+@carnet-green: #0CCE6B;
+@carnet-dark-green: #067A3E;
 @carnet-red: #CA2134;
-@carnet-yellow: #FFCD0F;
+@carnet-yellow: #FFBF00;
+@carnet-dark-yellow: #806000;
 @carnet-purple: #7A41DC;
 @carnet-magenta: #D7257D;
+
+@heading: var(--carnet-heading);
+@blue-text: var(--carnet-blue-text);
+@blue-box: var(--carnet-blue-box);
+@sky-text: var(--carnet-sky-text);
+@sky-box: var(--carnet-sky-box);
+@green-text: var(--carnet-green-text);
+@green-box: var(--carnet-green-box);
+@yellow-text: var(--carnet-yellow-text);
+@yellow-box: var(--carnet-yellow-box);
 
 // Anciens noms de couleurs, conservés comme alias pour propager la charte.
 @terra-cotta: @carnet-blue;
@@ -51,6 +66,7 @@
 // Messages et états
 @error: @carnet-red;
 @warning: @carnet-orange;
+@warning-text: var(--carnet-warning-text);
 @success: @carnet-dark-green;
 @info: @carnet-deep-blue;
 @warning-soft: fade(@carnet-orange, 12%);

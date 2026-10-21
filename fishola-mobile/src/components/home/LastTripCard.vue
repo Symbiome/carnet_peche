@@ -169,7 +169,7 @@ export default class LastTripCard extends Vue {
     min-width: 63px;
     padding: 10px;
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     background-color: @white;
     color: @carnet-navy;
     font-size: 18px;

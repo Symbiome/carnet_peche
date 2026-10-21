@@ -190,7 +190,7 @@ export default class AccountView extends Vue {
 
   h2 {
     margin: 0 0 10px 2px;
-    color: @gunmetal;
+    color: @heading;
     font-size: 18px;
     font-weight: 700;
     line-height: 1.2;

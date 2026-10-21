@@ -29,7 +29,7 @@
           <div class="welcome keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">
             Bienvenue sur
           </div>
-          <CarnetLogo class="carnet-logo-centered keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly" />
+          <CarnetLogo v-bind:onDark="true" class="carnet-logo-centered keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly" />
         </div>
         <div class="login-form">
           <FormInput name="email" type="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="email"
