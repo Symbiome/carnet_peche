@@ -95,4 +95,20 @@ describe("TripDates", () => {
     expect(TripDates.fromBackendDate([2026, 9, 14])).toBe("2026-09-14");
     expect(TripDates.fromBackendDate(undefined)).toBeUndefined();
   });
+
+  // #278 : sortie a posteriori pré-remplie avec la date et l'heure de l'appareil.
+  it("pré-remplit une sortie a posteriori : aujourd'hui, fin maintenant, début vide", () => {
+    const defaults = TripDates.afterwardsDefaults(moment("2026-10-21 16:42:37", "YYYY-MM-DD HH:mm:ss"));
+    expect(TripDates.toIsoDate(defaults.date!)).toBe("2026-10-21");
+    expect(defaults.endDate).toBe("2026-10-21");
+    expect(defaults.finishedAt).toBe("16:42");
+    expect(defaults).not.toHaveProperty("startedAt");
+  });
+
+  it("garde la date locale du jour entre minuit et 2 h, jamais la veille UTC", () => {
+    const defaults = TripDates.afterwardsDefaults(moment("2026-07-15 00:30", "YYYY-MM-DD HH:mm"));
+    expect(TripDates.toIsoDate(defaults.date!)).toBe("2026-07-15");
+    expect(defaults.endDate).toBe("2026-07-15");
+    expect(defaults.finishedAt).toBe("00:30");
+  });
 });

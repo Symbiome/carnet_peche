@@ -54,24 +54,28 @@ const nextPlannifiedDate: Ref<number[]> = ref([]);
 
 refreshNextPlannifiedDate();
 
+/**
+ * Nouvelle communication : période de publication du jour (date locale de
+ * l'appareil, #278), que l'admin prolonge ; heures fixées à la sauvegarde.
+ */
 function createDocumentation() {
-  const tomorow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
+  const today = LocalDateTime.now();
   return {
     name: "Titre de votre communication",
     content: "<h1>Partie 1</h1><p>Le corps de votre <b>communication</b>",
     datePublicationDebut: [
-      tomorow.year(),
-      tomorow.monthValue(),
-      tomorow.dayOfMonth(),
+      today.year(),
+      today.monthValue(),
+      today.dayOfMonth(),
       7,
       30
     ],
     datePublicationFin: [
-      tomorow.year(),
-      tomorow.monthValue(),
-      tomorow.dayOfMonth(),
-      7,
-      30
+      today.year(),
+      today.monthValue(),
+      today.dayOfMonth(),
+      21,
+      0
     ],
     isPublished: false
   };

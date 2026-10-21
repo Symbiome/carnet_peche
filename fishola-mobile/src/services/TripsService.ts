@@ -86,6 +86,8 @@ export default class TripsService extends AbstractCarnetService {
       newTrip.name = "Sortie du " + now.toLocaleDateString("fr-FR", options);
       newTrip.date = now;
       newTrip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
+    } else {
+      Object.assign(newTrip, TripDates.afterwardsDefaults());
     }
 
     return new Promise<string>((resolve, reject) => {
