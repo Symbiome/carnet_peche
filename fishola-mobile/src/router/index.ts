@@ -29,9 +29,10 @@ import OfflineHome from "@/views/OfflineHome.vue";
 
 import Login from "@/views/Login.vue";
 import Register from "@/views/Register.vue";
-import TripsListAndMapView from "@/views/TripsListAndMap.vue";
+import TripsMapView from "@/views/TripsMap.vue";
+import TripsListView from "@/views/TripsList.vue";
 import SocialAndNewsView from "@/views/SocialAndNews.vue";
-import DashboardPersonalView from "@/views/DashboardPersonal.vue";
+import ActivitySummaryView from "@/views/ActivitySummary.vue";
 import DashboardGlobalView from "@/views/DashboardGlobal.vue";
 
 import FishingLicences from "@/views/FishingLicences.vue";
@@ -130,10 +131,21 @@ const routes: RouteRecordRaw[] = [
     component: AccountView,
   },
   {
+    // Onglet « Carte » : la carte des sorties seule (#301).
+    path: "/map",
+    name: "trips-map",
+    component: TripsMapView,
+  },
+  {
+    // Onglet « Mes prises » : la liste des sorties (#301).
+    path: "/trips",
+    name: "trips-list",
+    component: TripsListView,
+  },
+  {
+    // Ancienne page « Mes Sorties » à onglets Liste / Carte (#301).
     path: "/my-trips/:visualizationMode",
-    name: "my-trips",
-    props: true,
-    component: TripsListAndMapView,
+    redirect: (to) => (to.params.visualizationMode === "map" ? "/map" : "/trips"),
   },
   {
     path: "/trips/new",
@@ -183,15 +195,15 @@ const routes: RouteRecordRaw[] = [
     props: paramsAndQueryProps,
   },
   {
-    // Onglet « Évolution » retiré de « Mes données » (calculé par plan d'eau).
-    path: "/dashboard-personal/evolution",
-    redirect: "/dashboard-personal/dashboard",
+    // « Résumé de mon activité » : « Mes données » + statistiques du réseau (#301).
+    path: "/activity-summary",
+    name: "activity-summary",
+    component: ActivitySummaryView,
   },
   {
+    // Ancienne page « Mes données », intégrée au résumé (#301).
     path: "/dashboard-personal/:visualizationMode",
-    name: "dashboard-personal",
-    props: true,
-    component: DashboardPersonalView,
+    redirect: "/activity-summary",
   },
   {
     // Onglet « Évolution » retiré de « Statistiques » (calculé par plan d'eau, #277).

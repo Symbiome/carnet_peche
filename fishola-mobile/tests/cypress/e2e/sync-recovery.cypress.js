@@ -80,7 +80,7 @@ describe("Reprise de la synchronisation après échec réseau", () => {
     // 1re passe : le réseau est coupé, le push échoue.
     cy.intercept("POST", "**/v1/trips", { forceNetworkError: true }).as("pushKO");
 
-    cy.visit("/#/my-trips/list");
+    cy.visit("/#/trips");
     cy.wait("@profile");
     seedDirtyTrip("t-sync-recovery", "Sortie à resynchroniser");
 
@@ -109,7 +109,7 @@ describe("Reprise de la synchronisation après échec réseau", () => {
     cy.clock();
     cy.intercept("POST", "**/v1/trips", { statusCode: 201, body: { id: "t-poll" } }).as("pushPoll");
 
-    cy.visit("/#/my-trips/list");
+    cy.visit("/#/trips");
     seedDirtyTrip("t-poll", "Sortie poussee par le polling");
 
     // Une seule tranche de 30 s doit suffire a declencher une passe de synchro.

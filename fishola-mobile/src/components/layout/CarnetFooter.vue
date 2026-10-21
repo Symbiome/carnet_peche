@@ -204,7 +204,7 @@ export default class CarnetFooter extends Vue {
   }
 
   goDashboard() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/activity-summary");
   }
 
   goCredits() {
@@ -240,7 +240,7 @@ export default class CarnetFooter extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips");
   }
 
   doDelete() {

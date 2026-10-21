@@ -90,7 +90,7 @@ export default class OfflineBanner extends Vue {
   }
 
   openTrips() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips");
   }
 }
 </script>
