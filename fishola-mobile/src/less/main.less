@@ -427,3 +427,69 @@ body {
     }
   }
 }
+
+/* ========== Visite guidée intro.js (#194) ========== */
+// La bulle est ajoutée au <body>, hors de #app : couleurs explicites, tirées
+// des propriétés du thème, pour rester lisible en clair comme en sombre.
+.introjs-tooltip.carnet-tour {
+  --introjs-arrow-color: var(--carnet-surface);
+  border-radius: 13px;
+  background-color: @surface;
+  color: @gunmetal;
+  font-family: @font-family;
+
+  .introjs-tooltip-title {
+    color: @heading;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .introjs-tooltiptext {
+    color: @gunmetal;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .introjs-skipbutton {
+    width: auto;
+    padding: 0 6px;
+    color: @accent-text;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .introjs-bullets ul li a {
+    background-color: @pale-sky;
+    opacity: 0.45;
+
+    &.active {
+      background-color: @accent-text;
+      opacity: 1;
+    }
+  }
+
+  .introjs-button {
+    border: 2px solid @accent-text;
+    border-radius: 18px;
+    background: transparent;
+    color: @accent-text;
+    font-family: @font-family;
+    font-weight: 600;
+    text-shadow: none;
+
+    &:focus,
+    &:hover {
+      box-shadow: none;
+    }
+  }
+
+  .introjs-nextbutton {
+    border-color: @carnet-blue;
+    background-color: @carnet-blue;
+    color: @white;
+  }
+
+  .introjs-disabled {
+    opacity: 0.4;
+  }
+}
