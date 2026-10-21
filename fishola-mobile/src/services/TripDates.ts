@@ -60,6 +60,20 @@ export default class TripDates {
     return Helpers.formatToDate(date);
   }
 
+  /**
+   * Valeurs initiales d'une sortie a posteriori (#278) : début et fin aujourd'hui,
+   * fin à l'heure actuelle (HH:mm, heure locale). L'heure de début reste vide : la
+   * mettre aussi à maintenant donnerait une durée nulle, refusée à la validation.
+   */
+  static afterwardsDefaults(now: moment.Moment = moment()): Pick<TripPeriodFields, "date" | "endDate" | "finishedAt"> {
+    const today = now.format("YYYY-MM-DD");
+    return {
+      date: TripDates.parseIsoDate(today),
+      endDate: today,
+      finishedAt: now.format("HH:mm"),
+    };
+  }
+
   /** Date locale à minuit depuis AAAA-MM-JJ. */
   static parseIsoDate(isoDate: string): Date {
     const [year, month, day] = isoDate.split("-").map(Number);

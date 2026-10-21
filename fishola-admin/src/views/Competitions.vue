@@ -73,6 +73,7 @@
 import BackendService from "@/services/BackendService";
 import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
 import router from "@/router";
+import { localDateIso } from "@/utils/utils";
 
 import { BButton, BDatepicker, BField, BInput, BMessage, useToast } from "buefy";
 import { onMounted, reactive, ref } from "vue";
@@ -97,7 +98,7 @@ const creating = ref(false);
 
 const form = reactive<{ name: string; date: Date | null; waterEntityId: string | null; federationName: string }>({
   name: "",
-  date: null,
+  date: new Date(),
   waterEntityId: null,
   federationName: "",
 });
@@ -148,13 +149,14 @@ async function createCompetition() {
   try {
     await BackendService.backendPost("/v1/admin/competitions", {
       name: form.name,
-      date: (form.date as Date).toISOString().substring(0, 10),
+      // Date locale : toISOString() passait en UTC, donc à la veille en France (#278).
+      date: localDateIso(form.date as Date),
       waterEntityId: form.waterEntityId,
       federationName: form.federationName,
     });
     Toast.open({ message: "Concours créé", type: "is-success" });
     form.name = "";
-    form.date = null;
+    form.date = new Date();
     form.waterEntityId = null;
     form.federationName = "";
     await loadCompetitions();

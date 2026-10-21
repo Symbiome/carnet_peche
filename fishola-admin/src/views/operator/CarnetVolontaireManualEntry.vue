@@ -178,7 +178,7 @@ import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
 import {
   EMPTY_REFERENTIAL, EntryReferential, SPECIES_URI, TECHNIQUES_URI, loadEntryReferential
 } from "@/utils/entryReferentials";
-import { maskTimeInput, isValidTimeString, isEndAfterStart, localDateIso } from "@/utils/utils";
+import { maskTimeInput, isValidTimeString, isEndAfterStart, localDateIso, localTimeHHmm } from "@/utils/utils";
 import { ref, computed, watch } from "vue";
 
 const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
@@ -191,13 +191,18 @@ const TROUT_ORIGINS = ["naturelle", "déversement", "inconnue"];
 const techniques = ref<EntryReferential>(EMPTY_REFERENTIAL);
 const species = ref<EntryReferential>(EMPTY_REFERENTIAL);
 
+/**
+ * Formulaire vierge, recalculé à chaque réinitialisation (#278) : dates du jour et
+ * heure de fin actuelle, heure de début vide (sinon durée nulle, refusée).
+ */
 function newTrip() {
+  const today = localDateIso();
   return {
     sessionCode: "",
-    day: "",
+    day: today,
     startTime: "",
-    endDay: "",
-    endTime: "",
+    endDay: today,
+    endTime: localTimeHHmm(),
     waterEntityId: null,
     position: null as MapPosition | null,
     fishingMode: FISHING_MODES[0],
