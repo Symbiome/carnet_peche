@@ -53,7 +53,7 @@ public class CarnetVolontaireTripBean {
     public String baitOrLure; // TODO(#145) : validé, non persisté
 
     /** Espèce recherchée ; ignoré si {@code noExpectedSpecies}. */
-    public UUID expectedSpeciesId; // TODO(#145) : validé, non persisté
+    public UUID expectedSpeciesId;
     public boolean noExpectedSpecies; // modalité « Aucune »
     public String observations; // TODO(#145) : validé, non persisté
 

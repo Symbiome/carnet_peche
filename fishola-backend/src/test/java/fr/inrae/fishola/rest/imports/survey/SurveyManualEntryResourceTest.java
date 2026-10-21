@@ -157,6 +157,7 @@ class SurveyManualEntryResourceTest {
                 anglerIds.add(anglerId);
             }
             ctx.execute("DELETE FROM catch WHERE trip_id = ?", tripId);
+            ctx.execute("DELETE FROM trip_techniques WHERE trip_id = ?", tripId);
             ctx.execute("DELETE FROM trip WHERE id = ?", tripId);
         }
         for (UUID anglerId : anglerIds) {

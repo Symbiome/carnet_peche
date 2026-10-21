@@ -65,6 +65,7 @@ import static fr.inrae.fishola.entities.Tables.SURVEY_SESSION;
 import static fr.inrae.fishola.entities.Tables.SURVEYED_ANGLER;
 import static fr.inrae.fishola.entities.Tables.TECHNIQUE;
 import static fr.inrae.fishola.entities.Tables.TRIP;
+import static fr.inrae.fishola.entities.Tables.TRIP_TECHNIQUES;
 import static fr.inrae.fishola.entities.Tables.WATER_ENTITY;
 
 /**
@@ -97,6 +98,12 @@ public class ImportDao extends AbstractCarnetDao {
         /** Seul le code de la session d'origine (#235) est renseigné. */
         public static TripExtras sessionCodeOnly(String sessionCode) {
             return new TripExtras(null, null, null, null, null, null, null, null, null, null, sessionCode);
+        }
+
+        /** Espèce recherchée (#300) et code de la session d'origine (#235). */
+        public static TripExtras expectedSpeciesAndSessionCode(UUID expectedSpeciesId, String sessionCode) {
+            return new TripExtras(expectedSpeciesId, null, null, null, null, null, null, null, null, null,
+                    sessionCode);
         }
     }
 
@@ -239,6 +246,7 @@ public class ImportDao extends AbstractCarnetDao {
 
                 UUID tripId = insertTrip(ctx, s.collectionMethod, s.day, s.start, null, s.end, s.waterEntityId, name, now,
                         TripExtras.sessionCodeOnly(sref));
+                insertTripTechnique(ctx, tripId, s.techniqueId);
 
                 for (ParsedRow p : rows) {
                     if (!p.hasCapture) {
@@ -295,7 +303,8 @@ public class ImportDao extends AbstractCarnetDao {
                 String name = "Carnet volontaire " + sref + " " + s.day.format(DAY_FMT);
 
                 UUID tripId = insertTrip(ctx, "carnet_volontaire", s.day, s.start, s.endDay, s.end, s.waterEntityId, name, now,
-                        TripExtras.sessionCodeOnly(sref));
+                        TripExtras.expectedSpeciesAndSessionCode(s.expectedSpeciesId, sref));
+                insertTripTechnique(ctx, tripId, s.techniqueId);
 
                 for (CarnetVolontaireParsedRow p : rows) {
                     if (!p.hasCapture) {
@@ -402,6 +411,7 @@ public class ImportDao extends AbstractCarnetDao {
                         null, first.sortieCode + "/" + first.anglerCode, sessionId, anglerId, sortie.sessionCode);
                 UUID tripId = insertTrip(ctx, "enquete", session.day, sortie.startTime, sortie.endDay, sortie.endTime,
                         session.waterEntityId, name, now, extras);
+                insertTripTechnique(ctx, tripId, first.techniqueId);
 
                 for (SurveyParsedCapture row : rows) {
                     if (!row.hasCapture) {
@@ -431,6 +441,7 @@ public class ImportDao extends AbstractCarnetDao {
                         s.dayPeriod, s.anglerCode, null, anglerId, sessionCode);
                 UUID tripId = insertTrip(ctx, "enquete_souvenir", s.day, nominal[0], null, nominal[1],
                         s.waterEntityId, name, now, extras);
+                insertTripTechnique(ctx, tripId, s.techniqueId);
 
                 for (SurveyParsedCatch c : s.catches) {
                     String sizeClass = (c.lotMinSize != null && c.lotMaxSize != null)
@@ -482,19 +493,24 @@ public class ImportDao extends AbstractCarnetDao {
                                 LocalTime end, UUID waterEntityId, String name, String sessionCode,
                                 UUID tripTechniqueId, List<ManualCatch> catches) {
         return saveManualEntry(collectionMethod, day, start, endDay, end, waterEntityId, name, sessionCode,
-                tripTechniqueId, catches, null);
+                tripTechniqueId, null, catches, null);
     }
 
-    /** Idem, avec la position saisie sur la carte ({@code position} nul : aucune position). */
+    /**
+     * Idem, avec l'espèce recherchée ({@code expectedSpeciesId} nul : aucune) et la position
+     * saisie sur la carte ({@code position} nul : aucune position).
+     */
     @Transactional
     public UUID saveManualEntry(String collectionMethod, LocalDate day, LocalTime start, LocalDate endDay,
                                 LocalTime end, UUID waterEntityId, String name, String sessionCode,
-                                UUID tripTechniqueId, List<ManualCatch> catches, ManualPosition position) {
+                                UUID tripTechniqueId, UUID expectedSpeciesId, List<ManualCatch> catches,
+                                ManualPosition position) {
         // Atomicité JTA (cf. remarque sur persist()).
         DSLContext ctx = newContext();
         LocalDateTime now = LocalDateTime.now();
         UUID tripId = insertTrip(ctx, collectionMethod, day, start, endDay, end, waterEntityId, name, now,
-                TripExtras.sessionCodeOnly(sessionCode));
+                TripExtras.expectedSpeciesAndSessionCode(expectedSpeciesId, sessionCode));
+        insertTripTechnique(ctx, tripId, tripTechniqueId);
         applyPosition(ctx, tripId, position);
         for (ManualCatch c : catches) {
             UUID technique = c.techniqueId() != null ? c.techniqueId() : tripTechniqueId;
@@ -580,6 +596,7 @@ public class ImportDao extends AbstractCarnetDao {
                     session.code());
             UUID tripId = insertTrip(ctx, "enquete", sortie.day(), sortie.startTime(), sortie.endDay(),
                     sortie.endTime(), sortie.waterEntityId(), name, now, extras);
+            insertTripTechnique(ctx, tripId, angler.techniqueId());
             applyPosition(ctx, tripId, sortie.position());
             tripIds.add(tripId);
 
@@ -605,6 +622,7 @@ public class ImportDao extends AbstractCarnetDao {
                 null, anglerId, sessionCode);
         UUID tripId = insertTrip(ctx, "enquete_souvenir", souvenir.day(), nominal[0], null, nominal[1],
                 souvenir.waterEntityId(), name, now, extras);
+        insertTripTechnique(ctx, tripId, souvenir.techniqueId());
         applyPosition(ctx, tripId, souvenir.position());
         for (SurveyManualCatch c : souvenir.catches()) {
             insertSurveyManualCatch(ctx, tripId, c, souvenir.techniqueId(), souvenir.baitOrLure(), now);
@@ -669,6 +687,20 @@ public class ImportDao extends AbstractCarnetDao {
                 .returning(TRIP.ID)
                 .fetchOne()
                 .getId();
+    }
+
+    /**
+     * Technique principale de la sortie, enregistrée dans {@code trip_techniques} comme pour
+     * l'app pêcheur (#300) : sans elle, une sortie bredouille perdrait sa technique, que seules
+     * les captures portaient.
+     */
+    private void insertTripTechnique(DSLContext ctx, UUID tripId, UUID techniqueId) {
+        if (techniqueId == null) {
+            return;
+        }
+        ctx.insertInto(TRIP_TECHNIQUES, TRIP_TECHNIQUES.TRIP_ID, TRIP_TECHNIQUES.TECHNIQUE_ID)
+                .values(tripId, techniqueId)
+                .execute();
     }
 
     /**

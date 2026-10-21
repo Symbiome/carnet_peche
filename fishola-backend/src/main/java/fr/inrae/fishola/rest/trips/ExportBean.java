@@ -27,7 +27,10 @@ import java.util.UUID;
 public class ExportBean {
     public String nomDeLaPlateforme;
     public String dateDeLaSortie;
+    public String dateDeFinDeLaSortie;
     public String typeDePeche;
+    public String especeRecherchee;
+    public String techniqueDePecheParSortie;
     public String especeCapturee;
     public Integer longueurTotaleDuPoisson;
     public Integer longueurTotaleDuPoissonCalculee;
@@ -38,6 +41,8 @@ public class ExportBean {
     public String aValider;
     public Integer tailleMinDuLot;
     public Integer tailleMaxDuLot;
+    public String origineDonnee;
+    public String codeSession;
 
     public UUID catchId;
 }
