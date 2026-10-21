@@ -279,7 +279,7 @@ export default class TripSpeciesView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips");
   }
 
   summaryNotYetSaved(tripAsAny: any) {

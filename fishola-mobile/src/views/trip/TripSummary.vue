@@ -133,7 +133,7 @@ export default class TripSummaryView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips");
   }
 
   onUpdatedTrip(trip: any) {
@@ -201,7 +201,7 @@ export default class TripSummaryView extends Vue {
   tripSaved() {
     this.isWaitingForPositionBeforeGoingToNextPage = false;
     if (this.actionRequested == "SendTrip") {
-      RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/trips");
       EventBus.emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
       RouterUtils.pushRouteNoDuplicate(this.$router, {
@@ -226,7 +226,7 @@ export default class TripSummaryView extends Vue {
         },
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/trips");
     }
   }
 }

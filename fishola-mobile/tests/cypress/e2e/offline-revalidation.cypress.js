@@ -74,7 +74,7 @@ describe("Mode offline & re-validation (#10)", () => {
 
   it("AC1 — une sortie locale porte le badge « Non synchronisée »", () => {
     seedDirtyTrip("t-offline-1", "Sortie hors ligne");
-    cy.visit("/#/my-trips/list");
+    cy.visit("/#/trips");
     cy.contains(".item-description", "Sortie hors ligne")
       .find(".pending-badge")
       .should("be.visible");
@@ -85,7 +85,7 @@ describe("Mode offline & re-validation (#10)", () => {
     // l'attribution (PENDING → CONFIRMED/OVERRIDDEN) et la sortie devient serveur.
     seedDirtyTrip("t-offline-2", "À synchroniser");
     cy.intercept("POST", "**/v1/trips").as("push");
-    cy.visit("/#/my-trips/list");
+    cy.visit("/#/trips");
     // Émule le retour de connectivité (déclenche la sync immédiate, App.vue).
     cy.window().then((win) => win.dispatchEvent(new Event("online")));
     cy.wait("@push");

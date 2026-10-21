@@ -83,6 +83,11 @@ export default class LakeAndYearSelection extends Vue {
   @Prop() years: number[];
   @Prop() showYears: boolean;
   @Prop({ default: true }) showLake: boolean;
+  /**
+   * Paramètre d'URL qui porte l'année : deux sélecteurs sur une même page
+   * (« Résumé de mon activité », #301) doivent en utiliser chacun un.
+   */
+  @Prop({ default: "currentYear" }) yearQueryKey: string;
 
   selectedYear = 0;
   selectedLakeId = "";
@@ -100,7 +105,7 @@ export default class LakeAndYearSelection extends Vue {
   mounted() {
     const query = this.$route.query;
     if (this.years && this.years.length > 0) {
-      const yearFromURL = parseInt(query.currentYear as string);
+      const yearFromURL = parseInt(query[this.yearQueryKey] as string);
       if (yearFromURL && this.years.indexOf(yearFromURL) > -1) {
         this.selectedYear = yearFromURL;
       } else {
@@ -220,7 +225,7 @@ export default class LakeAndYearSelection extends Vue {
     if (query.lakeId && query.lakeId !== this.selectedLakeId) {
       this.resolveAndApplySelection(query.lakeId as string, false);
     }
-    const yearFromURL = parseInt(query.currentYear as string);
+    const yearFromURL = parseInt(query[this.yearQueryKey] as string);
     if (yearFromURL && yearFromURL !== this.selectedYear && this.years && this.years.indexOf(yearFromURL) > -1) {
       this.selectedYear = yearFromURL;
     }
@@ -285,11 +290,11 @@ export default class LakeAndYearSelection extends Vue {
 
   @Watch("selectedYear")
   yearChanged() {
-    if (""+ this.selectedYear !== this.$route.query.currentYear) {
+    if (""+ this.selectedYear !== this.$route.query[this.yearQueryKey]) {
       this.$router.replace({
         query: {
           ...this.$route.query,
-          currentYear: ""+this.selectedYear,
+          [this.yearQueryKey]: ""+this.selectedYear,
         }
       });
     }
