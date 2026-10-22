@@ -97,8 +97,4 @@ export default class CarnetLogo extends Vue {
     display: none;
   }
 }
-
-.carnet-logo-centered {
-  margin: 0 auto;
-}
 </style>

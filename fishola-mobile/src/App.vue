@@ -306,6 +306,15 @@ html {
   background-position: center;
 }
 
+// Le pictogramme bleu disparaît sur la photo bleue : logo posé sur une tuile blanche.
+.carnet-logo-tile {
+  width: fit-content;
+  margin: 0 auto;
+  padding: @margin-small @margin-medium;
+  border-radius: 16px;
+  background-color: @white;
+}
+
 .shifted-background {
   background-color: @white-smoke;
 }

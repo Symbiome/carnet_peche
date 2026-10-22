@@ -1,6 +1,6 @@
 # Déploiement — serveurs de recette et de production
 
-Déploie l'ensemble de la stack Fishola / capture_peche (Postgres+PostGIS,
+Déploie l'ensemble de la stack Carnet-Pêche (Postgres+PostGIS,
 backend Quarkus, front pêcheur, front admin, Maildev en recette) via
 Ansible. Le back-office Django n'est pas déployé ici.
 
