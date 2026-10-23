@@ -30,7 +30,8 @@
         v-bind:initials="initials"
         v-on:goProfile="goProfile"
       />
-      <MenuAnchor v-if="menu && !initials" />
+      <!-- Connecté aussi (#307) : « Communauté » et « Le projet » ne sont plus dans « Compte ». -->
+      <MenuAnchor v-if="menu" />
     </div>
   </div>
 </template>

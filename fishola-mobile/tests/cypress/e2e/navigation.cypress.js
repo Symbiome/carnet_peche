@@ -22,9 +22,11 @@
 /* eslint-disable no-undef */
 /**
  * Navigation de l'app pêcheur (#301) : « Carte » n'affiche que la carte,
- * « Mes prises » la liste des sorties, et « Résumé de mon activité » réunit le
- * tableau de bord personnel et les statistiques du réseau. Les anciennes routes
- * redirigent vers les nouvelles.
+ * « Mes prises » la liste des sorties, et « Résumé de mon activité » le tableau
+ * de bord personnel. Les anciennes routes redirigent vers les nouvelles.
+ *
+ * « Compte » simplifié (#307) : plus de « Communauté » ni de « Le projet »,
+ * repris dans le menu ; les statistiques du réseau se masquent dans « Statistiques ».
  *
  * Gardé derrière `Cypress.env('liveBackend')`, comme les autres parcours qui
  * demandent un backend seedé (cf. offline-revalidation.cypress.js).
@@ -36,6 +38,8 @@ describe("Navigation (#301)", () => {
     }
     cy.viewport(390, 844);
     cy.loginAngler();
+    // Présentation du premier lancement (#194) : elle recouvre l'accueil.
+    cy.on("window:before:load", (win) => win.localStorage.setItem("carnet-onboarding-done", "true"));
   });
 
   it("« Carte » affiche la carte seule, sans onglet Liste", () => {
@@ -59,30 +63,68 @@ describe("Navigation (#301)", () => {
     cy.contains(".bottom-nav .nav-item", "Mes prises").should("have.attr", "aria-current", "page");
   });
 
-  it("« Résumé de mon activité » réunit Mes données et les statistiques du réseau", () => {
+  it("« Résumé de mon activité » affiche Mes données, sans les statistiques du réseau", () => {
     cy.visit("/#/account");
     cy.contains(".account-row", "Résumé de mon activité").click();
     cy.location("hash").should("match", /^#\/activity-summary/);
     cy.contains("h1", "Mes données").should("be.visible");
-    cy.contains("h1", "Statistiques du réseau").should("exist");
-    // Même export que « Mes données » : pas de second lien dans la section réseau.
-    cy.get(".network-section #export-button").should("not.exist");
+    cy.contains("h1", "Statistiques").should("not.exist");
   });
 
-  it("l'année des statistiques du réseau ne pilote pas celle de « Mes données »", () => {
-    // Sans donnée réseau sur l'année en cours, la section réseau se replie sur
-    // l'année précédente : elle l'écrit sous sa propre clé, pas sous currentYear.
-    cy.visit("/#/activity-summary");
-    cy.location("hash", { timeout: 10000 }).should("contain", "networkYear=");
-    cy.location("hash").should("not.contain", "currentYear=");
-  });
-
-  it("« Statistiques du réseau » reste une page à part", () => {
+  it("« Compte » n'affiche que Mon espace et Aide (#307)", () => {
     cy.visit("/#/account");
-    cy.contains(".account-row", "Statistiques du réseau").click();
-    cy.location("hash").should("match", /^#\/dashboard-global\/dashboard/);
+    cy.get(".account-section h2").then(($titles) => {
+      expect([...$titles].map((t) => t.textContent.trim())).to.deep.eq(["Mon espace", "Aide"]);
+    });
+    cy.get(".account-row .row-label").then(($labels) => {
+      expect([...$labels].map((l) => l.textContent.trim())).to.deep.eq([
+        "Mon profil",
+        "Résumé de mon activité",
+        "Mes badges",
+        "Données et confidentialité",
+        "Mode hors ligne",
+        "Paramètres",
+        "Contact",
+        "A propos",
+        "Revoir la présentation",
+        "Déconnexion",
+      ]);
+    });
+  });
+
+  it("le bandeau de gauche donne accès à Communauté, Statistiques et au projet (#307)", () => {
+    cy.viewport(1280, 800);
+    cy.visit("/#/home");
+    ["Communauté", "Statistiques", "Pourquoi carnet de pêche ?", "Qui porte le projet ?"].forEach((label) => {
+      cy.contains(".menu .item", label).should("be.visible");
+    });
+    cy.contains(".menu .item", "Qui porte le projet ?").click();
+    cy.location("hash").should("eq", "#/credits");
+    cy.contains(".menu .item", "Pourquoi carnet de pêche ?").click();
+    cy.location("hash").should("eq", "#/about");
+  });
+
+  it("sur mobile, le menu s'ouvre depuis l'accueil et mène à Communauté et au projet (#307)", () => {
+    cy.visit("/#/home");
+    cy.get(".home-header .icon-menu").click();
+    cy.contains(".menu .item", "Communauté").should("be.visible");
+    cy.contains(".menu .item", "Qui porte le projet ?").should("be.visible").click();
+    cy.location("hash").should("eq", "#/credits");
+    cy.get(".header .icon-menu").click();
+    cy.contains(".menu .item", "Pourquoi carnet de pêche ?").should("be.visible").click();
+    cy.location("hash").should("eq", "#/about");
+  });
+
+  it("« Statistiques » masque les statistiques du réseau et retient le choix (#307)", () => {
+    cy.visit("/#/dashboard-global/dashboard");
     cy.contains("h1", "Statistiques").should("be.visible");
-    cy.contains("h1", "Mes données").should("not.exist");
+    cy.get(".network-hidden").should("not.exist");
+    cy.get(".network-toggle img").click();
+    cy.get(".network-hidden").should("be.visible");
+    cy.reload();
+    cy.get(".network-hidden").should("be.visible");
+    cy.get(".network-toggle img").click();
+    cy.get(".network-hidden").should("not.exist");
   });
 
   it("redirige les anciennes routes", () => {
