@@ -218,7 +218,7 @@ export default class BadgeSouvenir {
   }
 
   private altitudeHeadline(trip: SouvenirTripBean): string {
-    const name = this.waterEntityName(trip) || "Lac d'altitude";
+    const name = this.waterEntityName(trip) || "Milieu d'altitude";
     return trip.waterEntityAltitude ? `${name} — ${Math.round(trip.waterEntityAltitude)} m d'altitude` : name;
   }
 

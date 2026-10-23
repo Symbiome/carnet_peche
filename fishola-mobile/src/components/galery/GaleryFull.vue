@@ -50,7 +50,7 @@
                 </span>
                 <select
                   class="lake-gallery-select"
-                  placeholder="lake"
+                  placeholder="zone"
                   v-model="selectedLakeId"
                 >
                   <option

@@ -24,7 +24,7 @@
       <h1> Mes cartes de pêches </h1>
       <FishingLicencesView />
 
-      <h1>Mes lacs favoris</h1>
+      <h1>Mes zones favorites</h1>
       <LakeSelection
         :selectedLakes="favoriteLakes"
         :favoriteLakes="favoriteLakes"
