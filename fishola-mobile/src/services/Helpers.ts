@@ -333,6 +333,28 @@ export default class Helpers {
     return result;
   }
 
+  /**
+   * Date renvoyée par le backend, en Date JS. Jackson sérialise LocalDate en
+   * [année, mois, jour] et LocalDateTime en [année, mois, jour, heure, minute(,
+   * seconde, nanosecondes)], mois 1-12 ; toute autre valeur passe par moment.
+   */
+  static backendDateToDate(someBackendDate: any): Date {
+    if (Array.isArray(someBackendDate)) {
+      return someBackendDate.length == 3
+        ? this.parseLocalDate(someBackendDate)
+        : this.parseLocalDateTime(someBackendDate);
+    }
+    return moment(someBackendDate).toDate();
+  }
+
+  /** Date renvoyée par le backend au format JJ/MM/AAAA (#306), vide si absente. */
+  static formatBackendDate(someBackendDate: any): string {
+    if (!someBackendDate) {
+      return "";
+    }
+    return moment(this.backendDateToDate(someBackendDate)).format("DD/MM/YYYY");
+  }
+
   static parseLocalDate(someLocalDateTime: number[]): Date {
     const result: Date = new Date(
       someLocalDateTime[0],
