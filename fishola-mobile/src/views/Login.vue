@@ -40,7 +40,7 @@
           <FormInput name="email" type="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="email"
             v-bind:error="emailError" autocomplete="username" />
           <FormInput name="password" type="password" label="Mot de passe" placeholder="Renseignez votre mot de passe"
-            v-model="password" v-bind:error="passwordError" autocomplete="current-password" has-white-background />
+            v-model="password" v-bind:error="passwordError" autocomplete="current-password" />
           <ForgottenPassword v-bind:alreadTypedEmail="email"
             v-bind:tohideSelector="'.login-form .form-input,.login-buttons'" class="hide-on-mobile" />
         </div>
@@ -368,6 +368,23 @@ export default class LoginView extends Vue {
 
       .form-input label {
         color: @text-strong;
+      }
+
+      // Champs du formulaire standard sur ordinateur (#304) : sur le fond gris
+      // semi-transparent, le pointeur et le curseur de saisie ne se voyaient pas.
+      .form-input input {
+        background-color: @surface;
+        border: 1px solid @pale-sky;
+        color: @gunmetal;
+        caret-color: @accent-text;
+
+        &:focus {
+          color: @gunmetal;
+        }
+
+        &::placeholder {
+          color: @pale-sky;
+        }
       }
     }
 
