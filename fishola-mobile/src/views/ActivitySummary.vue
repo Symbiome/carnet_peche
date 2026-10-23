@@ -25,8 +25,6 @@
       <div class="pane pane-only">
         <div id="scrollable" class="pane-content large rounded">
           <PersonalDashboardSection />
-          <GlobalDashboardSection class="network-section" title="Statistiques du réseau"
-            yearQueryKey="networkYear" v-bind:showExport="false" />
         </div>
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
@@ -39,15 +37,13 @@
 import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
-import GlobalDashboardSection from "@/components/charts/GlobalDashboardSection.vue";
 import PersonalDashboardSection from "@/components/charts/PersonalDashboardSection.vue";
 import TripsService from "@/services/TripsService";
 import { Component, Vue } from "vue-facing-decorator";
 
 /**
  * « Résumé de mon activité » (#301) : tableau de bord personnel (« Mes données »,
- * filtre par année et export) puis statistiques du réseau, chacun avec sa propre
- * année dans l'URL.
+ * filtre par année et export). Les statistiques du réseau sont dans « Statistiques » (#307).
  */
 @Component({
   components: {
@@ -55,7 +51,6 @@ import { Component, Vue } from "vue-facing-decorator";
     RunningOverlay,
     BottomNav,
     PersonalDashboardSection,
-    GlobalDashboardSection,
   },
 })
 export default class ActivitySummaryView extends Vue {
@@ -82,9 +77,4 @@ export default class ActivitySummaryView extends Vue {
 
 <style lang="less">
 @import "../less/_dashboard-page";
-
-.dashboard-page .network-section {
-  display: block;
-  margin-top: @vertical-margin-large;
-}
 </style>
