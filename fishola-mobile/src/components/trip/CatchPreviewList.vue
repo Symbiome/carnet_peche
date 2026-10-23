@@ -27,6 +27,7 @@
         v-on:click="newCatch"
       >
         <i class="pastille icon-plus" />
+        <span class="new-catch-label">Ajouter une capture</span>
       </div>
     </div>
     <div
@@ -154,6 +155,22 @@ export default class CatchPreviewList extends Vue {
         color: @white;
         background: @carnet-blue;
       }
+
+      // Libellé sous la pastille (#303) : fond de la page pour rester lisible
+      // sur l'illustration, en thème clair comme sombre.
+      .new-catch-label {
+        max-width: calc(100% - 2 * @margin-x-small);
+        margin-top: @vertical-margin-xx-small;
+        padding: @line-height-padding-small @line-height-padding-xx-large;
+        border-radius: 8px;
+        background: @white-smoke;
+        color: @accent-text;
+        font-size: @fontsize-small-paragraph;
+        font-weight: 600;
+        line-height: 1.3;
+        text-align: center;
+        overflow-wrap: anywhere;
+      }
     }
   }
 
@@ -170,6 +187,10 @@ export default class CatchPreviewList extends Vue {
           height: 35px;
           font-size: 15px;
           line-height: calc(15px);
+        }
+
+        .new-catch-label {
+          font-size: @fontsize-info-desktop;
         }
       }
     }
