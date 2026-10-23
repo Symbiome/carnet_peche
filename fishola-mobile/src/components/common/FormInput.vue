@@ -31,10 +31,13 @@
         v-bind:placeholder="effectivePlaceholder" v-bind:value="modelValue" v-bind:min="min"
         v-bind:autocomplete="autocomplete"
         v-on:input="onInput($event.target.value)" v-on:blur="onBlur"
-        v-bind:class="displayError ? 'field-error' : ''" @keyup.enter="$emit('keyupEnter')" />
-      <div v-bind:class="displayError ? 'field-error' : ''">
+        v-bind:class="displayError ? 'field-error' : (warning ? 'field-warning' : '')" @keyup.enter="$emit('keyupEnter')" />
+      <div v-bind:class="displayError ? 'field-error' : (warning ? 'field-warning' : '')">
         <span v-if="displayError">
           {{ displayError }}
+        </span>
+        <span v-else-if="warning">
+          {{ warning }}
         </span>
       </div>
     </div>
@@ -77,6 +80,8 @@ export default class FormInput extends Vue {
   @Prop() placeholder?: string;
   @Prop() modelValue!: string;
   @Prop() error?: string;
+  /** Avertissement non bloquant (#308), affiché sous le champ s'il n'y a pas d'erreur. */
+  @Prop() warning?: string;
   @Prop() readonly!: boolean;
   @Prop() min?: string;
   /** Valeur `autocomplete` du champ (ex. `username`, `current-password`) pour les gestionnaires de mots de passe. */
@@ -178,6 +183,10 @@ export default class FormInput extends Vue {
     border: 1px solid @cardinal !important;
   }
 
+  input.field-warning {
+    border: 1px solid @warning !important;
+  }
+
   div {
     height: calc(@fontsize-form-error + @line-height-padding-medium);
   }
@@ -185,6 +194,12 @@ export default class FormInput extends Vue {
   div.field-error {
     background-color: transparent;
     color: @cardinal;
+    font-size: @fontsize-form-error;
+    line-height: calc(@fontsize-form-error + @line-height-padding-medium);
+  }
+
+  div.field-warning {
+    color: @warning-text;
     font-size: @fontsize-form-error;
     line-height: calc(@fontsize-form-error + @line-height-padding-medium);
   }
