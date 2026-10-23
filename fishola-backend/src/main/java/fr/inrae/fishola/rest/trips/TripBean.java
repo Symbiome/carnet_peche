@@ -43,6 +43,8 @@ public class TripBean {
     public UUID waterEntityId;
     public Set<UUID> speciesIds;
     public String otherSpecies;
+    // « Toutes espèces » (#305) : aucune espèce ciblée ; absent (false) pour les applis antérieures.
+    public boolean allSpecies;
     public LocalDate date;
     public String startedAt;
     // Sortie de plusieurs jours (#237) : absente pour les applis antérieures, la fin est
@@ -88,6 +90,7 @@ public class TripBean {
                 ", waterEntityId=" + waterEntityId +
                 ", speciesIds=" + speciesIds +
                 ", otherSpecies='" + otherSpecies + '\'' +
+                ", allSpecies=" + allSpecies +
                 ", date=" + date +
                 ", startedAt=" + startedAt +
                 ", endDate=" + endDate +

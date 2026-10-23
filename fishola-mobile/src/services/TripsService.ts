@@ -216,6 +216,7 @@ export default class TripsService extends AbstractCarnetService {
       weatherId: input.weatherId,
       date: realDate,
       speciesIds: input.speciesIds || [],
+      allSpecies: !!input.allSpecies,
       techniqueIds: input.techniqueIds || [],
       catchs: catchs,
       startedAt: input.startedAt,

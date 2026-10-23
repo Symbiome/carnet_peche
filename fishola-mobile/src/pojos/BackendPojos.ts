@@ -42,6 +42,7 @@ export interface TripBean {
     waterEntityId: string;
     speciesIds: string[];
     otherSpecies: string;
+    allSpecies: boolean;
     date: Date;
     startedAt: string;
     endDate?: Date;
