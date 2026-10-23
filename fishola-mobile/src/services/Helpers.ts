@@ -421,6 +421,20 @@ export default class Helpers {
   }
 
   /**
+   * Cohérence du poids (g) avec la taille (cm) d'une prise : entre
+   * 0,01 × taille^2,7 et 0,01 × taille^3,2 à partir de 25 cm, au plus 300 g
+   * en dessous. Simple avertissement depuis #308, l'enregistrement reste possible.
+   */
+  static isWeightConsistentWithSize(sizeCm: number, weightG: number): boolean {
+    if (sizeCm >= 25) {
+      const minWeight = 0.01 * Math.pow(sizeCm, 2.7);
+      const maxWeight = 0.01 * Math.pow(sizeCm, 3.2);
+      return weightG >= minWeight && weightG <= maxWeight;
+    }
+    return weightG <= 300;
+  }
+
+  /**
    * Taille d'une prise au-delà de la taille maximale définie par
    * l'administrateur pour (milieu, espèce) (#229) : demande confirmation au
    * lieu de bloquer l'enregistrement. Sans taille maximale définie (borne
