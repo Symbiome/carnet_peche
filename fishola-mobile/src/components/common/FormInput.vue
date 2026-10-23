@@ -29,6 +29,7 @@
       <input v-bind:name="name" v-bind:id="'field-' + name" v-bind:type="inputType"
         v-bind:inputmode="type == 'time' ? 'numeric' : null" v-bind:maxlength="type == 'time' ? 5 : null"
         v-bind:placeholder="effectivePlaceholder" v-bind:value="modelValue" v-bind:min="min"
+        v-bind:autocomplete="autocomplete"
         v-on:input="onInput($event.target.value)" v-on:blur="onBlur"
         v-bind:class="displayError ? 'field-error' : ''" @keyup.enter="$emit('keyupEnter')" />
       <i v-if="type == 'password'" @click="togglePasswordVisibility()" class="show-password-icon"
@@ -85,6 +86,8 @@ export default class FormInput extends Vue {
   @Prop() readonly!: boolean;
   @Prop() min?: string;
   @Prop({ default: true }) hasWhiteBackground: boolean;
+  /** Valeur `autocomplete` du champ (ex. `username`, `current-password`) pour les gestionnaires de mots de passe. */
+  @Prop() autocomplete?: string;
   dynamicType: string;
 
   readonlyValues: string[] = [];
