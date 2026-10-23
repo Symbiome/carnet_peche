@@ -31,16 +31,13 @@
         v-bind:placeholder="effectivePlaceholder" v-bind:value="modelValue" v-bind:min="min"
         v-bind:autocomplete="autocomplete"
         v-on:input="onInput($event.target.value)" v-on:blur="onBlur"
-        v-bind:class="displayError ? 'field-error' : ''" @keyup.enter="$emit('keyupEnter')" />
-      <i v-if="type == 'password'" @click="togglePasswordVisibility()" class="show-password-icon"
-        alt="Afficher le mot de passe" :class="{
-      'white-background': hasWhiteBackground,
-      'icon-eye': dynamicType == 'password',
-      'icon-eye-slash': dynamicType != 'password'
-    }" />
-      <div v-bind:class="displayError ? 'field-error' : ''">
+        v-bind:class="displayError ? 'field-error' : (warning ? 'field-warning' : '')" @keyup.enter="$emit('keyupEnter')" />
+      <div v-bind:class="displayError ? 'field-error' : (warning ? 'field-warning' : '')">
         <span v-if="displayError">
           {{ displayError }}
+        </span>
+        <span v-else-if="warning">
+          {{ warning }}
         </span>
       </div>
     </div>
@@ -83,12 +80,12 @@ export default class FormInput extends Vue {
   @Prop() placeholder?: string;
   @Prop() modelValue!: string;
   @Prop() error?: string;
+  /** Avertissement non bloquant (#308), affiché sous le champ s'il n'y a pas d'erreur. */
+  @Prop() warning?: string;
   @Prop() readonly!: boolean;
   @Prop() min?: string;
-  @Prop({ default: true }) hasWhiteBackground: boolean;
   /** Valeur `autocomplete` du champ (ex. `username`, `current-password`) pour les gestionnaires de mots de passe. */
   @Prop() autocomplete?: string;
-  dynamicType: string;
 
   readonlyValues: string[] = [];
   timeError: string = '';
@@ -97,7 +94,6 @@ export default class FormInput extends Vue {
     if (this.modelValue) {
       this.readonlyValues.push(this.modelValue);
     }
-    this.dynamicType = this.type;
   }
 
   // Les <input type="time"> natifs affichent AM/PM selon la locale de
@@ -105,7 +101,7 @@ export default class FormInput extends Vue {
   // on saisit donc les heures via un champ texte masqué HH:mm, garanti
   // 24h quel que soit l'appareil.
   get inputType(): string {
-    return this.type == 'time' ? 'text' : this.dynamicType;
+    return this.type == 'time' ? 'text' : this.type;
   }
 
   get effectivePlaceholder(): string | undefined {
@@ -136,15 +132,6 @@ export default class FormInput extends Vue {
       return;
     }
     this.timeError = Helpers.isValidTimeString(this.modelValue) ? '' : TIME_FORMAT_ERROR;
-  }
-
-  togglePasswordVisibility() {
-    if (this.dynamicType == 'password') {
-      this.dynamicType = 'text';
-    } else {
-      this.dynamicType = 'password';
-    }
-    this.$forceUpdate();
   }
 }
 </script>
@@ -196,6 +183,10 @@ export default class FormInput extends Vue {
     border: 1px solid @cardinal !important;
   }
 
+  input.field-warning {
+    border: 1px solid @warning !important;
+  }
+
   div {
     height: calc(@fontsize-form-error + @line-height-padding-medium);
   }
@@ -203,6 +194,12 @@ export default class FormInput extends Vue {
   div.field-error {
     background-color: transparent;
     color: @cardinal;
+    font-size: @fontsize-form-error;
+    line-height: calc(@fontsize-form-error + @line-height-padding-medium);
+  }
+
+  div.field-warning {
+    color: @warning-text;
     font-size: @fontsize-form-error;
     line-height: calc(@fontsize-form-error + @line-height-padding-medium);
   }
@@ -223,33 +220,4 @@ export default class FormInput extends Vue {
   }
 }
 
-.show-password-icon {
-  display: inline-block;
-  position: absolute;
-  font-size: 20px;
-  cursor: pointer;
-  color: white;
-  z-index: 2;
-  right: 38px;
-  margin-top: 30px;
-
-  &.white-background {
-    color: @accent-text;
-  }
-
-  @media screen and (min-width: @desktop-min-width) {
-    visibility: hidden;
-    right: @margin-small * 8;
-    margin-top: @vertical-margin-xx-small * 6;
-  }
-
-  &:hover {
-    font-weight: bolder;
-    color: @accent-text;
-
-    &.white-background {
-      color: white;
-    }
-  }
-}
 </style>
