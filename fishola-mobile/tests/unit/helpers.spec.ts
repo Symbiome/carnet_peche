@@ -81,6 +81,20 @@ describe("Helpers — dates", () => {
     expect(Helpers.formatToHour(Helpers.parseLocalDateTime([2026, 1, 5, 7, 30, 42]))).toBe("07h30");
   });
 
+  it("formate une date du backend en JJ/MM/AAAA sans décalage de mois (#306)", () => {
+    expect(Helpers.formatBackendDate([2026, 10, 14, 9, 30])).toBe("14/10/2026");
+    expect(Helpers.formatBackendDate([2026, 10, 14, 23, 59, 59, 123000000])).toBe("14/10/2026");
+    expect(Helpers.formatBackendDate([2026, 1, 31])).toBe("31/01/2026");
+    expect(Helpers.formatBackendDate("2026-10-14T09:30:00")).toBe("14/10/2026");
+    expect(Helpers.formatBackendDate(undefined)).toBe("");
+  });
+
+  it("ordonne des dates du backend reçues en tableaux", () => {
+    const older = Helpers.backendDateToDate([2026, 9, 30, 18, 0]);
+    const newer = Helpers.backendDateToDate([2026, 10, 1, 8, 0, 5]);
+    expect(newer.getTime()).toBeGreaterThan(older.getTime());
+  });
+
   it("compose une date et une heure saisies séparément", () => {
     const result = Helpers.parseDateTime(new Date(2026, 0, 5), "07:30");
     expect(Helpers.formatToDate(result)).toBe("2026-01-05");
