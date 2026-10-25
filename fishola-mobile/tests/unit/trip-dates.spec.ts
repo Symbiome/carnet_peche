@@ -79,6 +79,22 @@ describe("TripDates", () => {
       .toBe("Vous devez renseigner la date de fin");
   });
 
+  it("refuse une heure de début ou de fin impossible (#309)", () => {
+    const today = moment("2026-09-20");
+    expect(TripDates.validatePeriod({ ...carpSession, startedAt: "25:00" }, [], today).startedAtError)
+      .toBe("Heure invalide (format 24h HH:mm, ex. 13:45)");
+    expect(TripDates.validatePeriod({ ...carpSession, finishedAt: "09:75" }, [], today).finishedAtError)
+      .toBe("Heure invalide (format 24h HH:mm, ex. 13:45)");
+  });
+
+  it("accepte les heures HH:mm et HH:mm:ss, pas une heure incomplète ou impossible (#309)", () => {
+    expect(TripDates.isValidTime("09:18")).toBe(true);
+    expect(TripDates.isValidTime("09:18:34")).toBe(true);
+    expect(TripDates.isValidTime("13:0")).toBe(false);
+    expect(TripDates.isValidTime("25:00")).toBe(false);
+    expect(TripDates.isValidTime("09:75")).toBe(false);
+  });
+
   it("signale les captures que de nouvelles dates de sortie laissent dehors", () => {
     const shortened = { ...carpSession, endDate: "2026-09-13", finishedAt: "02:00" };
     expect(TripDates.validatePeriod(shortened, [{ caughtOn: "2026-09-13", caughtAt: "03:00" }],

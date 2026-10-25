@@ -960,6 +960,10 @@ export default class EditCatchView extends Vue {
       delete this.aCatch.caughtOn;
       return null;
     }
+    if (!TripDates.isValidTime(this.caughtAt)) {
+      this.caughtAtError = Helpers.TIME_FORMAT_ERROR;
+      return "invalid";
+    }
     this.aCatch.caughtAt = this.caughtAt;
     if (this.multiDayTrip && this.caughtOn) {
       this.aCatch.caughtOn = this.caughtOn;

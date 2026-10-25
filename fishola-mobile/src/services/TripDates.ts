@@ -91,6 +91,11 @@ export default class TripDates {
     return value.substring(0, 10);
   }
 
+  /** Heure HH:mm, ou HH:mm:ss quand elle est prise sur l'appareil (sortie en direct). */
+  static isValidTime(time: string): boolean {
+    return moment(time, ["HH:mm", "HH:mm:ss"], true).isValid();
+  }
+
   /** Instant local d'un jour AAAA-MM-JJ à une heure HH:mm ou HH:mm:ss. */
   static atTime(isoDate: string, time: string): moment.Moment {
     return moment(`${isoDate}T${time}`);
@@ -220,6 +225,8 @@ export default class TripDates {
     }
     if (!trip.startedAt) {
       errors.startedAtError = "Vous devez renseigner l'heure de début";
+    } else if (!TripDates.isValidTime(trip.startedAt)) {
+      errors.startedAtError = Helpers.TIME_FORMAT_ERROR;
     }
     if (!trip.endDate) {
       errors.endDateError = "Vous devez renseigner la date de fin";
@@ -228,6 +235,8 @@ export default class TripDates {
     }
     if (!trip.finishedAt) {
       errors.finishedAtError = "Vous devez renseigner l'heure de fin";
+    } else if (!TripDates.isValidTime(trip.finishedAt)) {
+      errors.finishedAtError = Helpers.TIME_FORMAT_ERROR;
     }
     const hasError = Object.values(errors).some((error) => !!error);
     if (hasError) {
