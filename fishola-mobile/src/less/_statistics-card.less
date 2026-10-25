@@ -1,0 +1,47 @@
+// Cartes de la page « Mes statistiques » (maquette Figma « Statistiques »,
+// nœud 185:608) : à importer en (reference) dans le style de chaque carte.
+
+.statistics-card() {
+  padding: 18px 17px 24px 17px;
+  border-radius: 13px;
+  line-height: 1.2;
+  letter-spacing: @letter-spacing;
+}
+
+.statistics-card-title() {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.statistics-total() {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 11px;
+}
+
+.statistics-count(@size) {
+  font-size: @size;
+  font-weight: 700;
+}
+
+.statistics-caption() {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.statistics-hint() {
+  margin: 15px 2px 0 2px;
+  color: @pale-sky;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.statistics-axis() {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+}

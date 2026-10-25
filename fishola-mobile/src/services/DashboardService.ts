@@ -24,6 +24,7 @@ import {
   Dashboard,
   SpeciesWithAlias,
   GlobalDashboard,
+  PersonalStatistics,
 } from "@/pojos/BackendPojos";
 import AbstractCarnetService from "@/services/AbstractCarnetService";
 import ReferentialService from "./ReferentialService";
@@ -126,6 +127,12 @@ export default class DashboardService extends AbstractCarnetService {
       year: year,
       waterEntity: lake,
     });
+    return this.timeout(5000, promise);
+  }
+
+  /** Statistiques de la page « Mes statistiques », bornes AAAA-MM-JJ incluses. */
+  static loadPersonalStatisticsOrTimeout(from: string, to: string): Promise<PersonalStatistics> {
+    const promise = this.backendGetWithArgs("/v1/dashboard/statistics", { from, to });
     return this.timeout(5000, promise);
   }
 
