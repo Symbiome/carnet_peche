@@ -230,6 +230,35 @@ class MultiDayTripTest extends AbstractCarnetTest {
     }
 
     @Test
+    void catchsAtTheBeginAndEndMinutesOfALiveTripAreAccepted() {
+        TripBean trip = carpTrip(YESTERDAY, "17:30:12",
+                catchAt("begin-minute", YESTERDAY, "09:18"),
+                catchAt("end-minute", YESTERDAY, "17:30"));
+        trip.date = YESTERDAY;
+        trip.startedAt = "09:18:34";
+        trip.mode = TripMode.Live;
+
+        Map<String, String> replacements = post(trip).statusCode(201).extract().as(REPLACEMENTS);
+        UUID tripId = UUID.fromString(replacements.get(trip.id));
+
+        Map<String, LocalDateTime> catchTimestamps = catchTimestampsByOriginalId(tripId, Map.of(
+                "begin-minute", UUID.fromString(replacements.get("begin-minute")),
+                "end-minute", UUID.fromString(replacements.get("end-minute"))));
+        Assertions.assertEquals(LocalDateTime.of(YESTERDAY, LocalTime.of(9, 18)), catchTimestamps.get("begin-minute"));
+        Assertions.assertEquals(LocalDateTime.of(YESTERDAY, LocalTime.of(17, 30)), catchTimestamps.get("end-minute"));
+    }
+
+    @Test
+    void catchOneMinuteBeforeALiveTripIsRefused() {
+        TripBean trip = carpTrip(YESTERDAY, "17:30:12", catchAt("minute-before", YESTERDAY, "09:17"));
+        trip.date = YESTERDAY;
+        trip.startedAt = "09:18:34";
+        trip.mode = TripMode.Live;
+
+        post(trip).statusCode(400).body("error", equalTo(TripTimestamps.CATCH_OUT_OF_TRIP));
+    }
+
+    @Test
     void endBeforeBeginIsRefused() {
         post(carpTrip(THREE_DAYS_AGO, "17:00")).statusCode(400)
                 .body("error", equalTo(TripTimestamps.END_NOT_AFTER_BEGIN));

@@ -165,14 +165,18 @@ export default class TripDates {
    * Instant de la capture dans la sortie : jour de capture s'il est connu, sinon premier
    * jour de la sortie où l'heure tombe dans la sortie (comme le backend). Une sortie en
    * cours, sans fin, s'étend jusqu'à {@code now}. Vide si la capture est hors de la sortie.
+   *
+   * L'heure de capture est saisie à la minute, le début et la fin peuvent avoir des
+   * secondes (sortie en direct) : la comparaison se fait à la minute (#310), une capture
+   * à la minute de début ou de fin est dans la sortie.
    */
   static catchMoment(trip: TripPeriodFields, aCatch: CatchTimeFields,
                      now: moment.Moment = moment()): moment.Moment | undefined {
-    const begin = TripDates.begin(trip);
+    const begin = TripDates.begin(trip)?.startOf("minute");
     if (!begin || !aCatch.caughtAt) {
       return undefined;
     }
-    const end = TripDates.end(trip) || now;
+    const end = (TripDates.end(trip) || now).clone().endOf("minute");
     const isWithin = (instant: moment.Moment) => !instant.isBefore(begin) && !instant.isAfter(end);
     if (aCatch.caughtOn) {
       const candidate = TripDates.atTime(aCatch.caughtOn, aCatch.caughtAt);
