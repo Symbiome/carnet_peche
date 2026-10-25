@@ -24,6 +24,7 @@ package fr.inrae.fishola.rest.trips;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 /**
@@ -60,15 +61,20 @@ public final class TripTimestamps {
     }
 
     /**
-     * Indique si un instant tombe dans la sortie, bornes incluses.
+     * Indique si un instant tombe dans la sortie, à la minute près (#310) : l'heure de capture
+     * est saisie à la minute, alors que le début et la fin d'une sortie en direct ont des
+     * secondes. Une capture à la minute de début ou de fin est donc dans la sortie.
      *
      * @param instant instant à tester
      * @param begin début de la sortie
      * @param end fin de la sortie
-     * @return {@code true} si {@code begin <= instant <= end}
+     * @return {@code true} si l'instant tombe entre le début de la minute de {@code begin}
+     *         et la fin de la minute de {@code end}
      */
     public static boolean isWithin(LocalDateTime instant, LocalDateTime begin, LocalDateTime end) {
-        return !instant.isBefore(begin) && !instant.isAfter(end);
+        LocalDateTime firstMinute = begin.truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime afterLastMinute = end.truncatedTo(ChronoUnit.MINUTES).plusMinutes(1);
+        return !instant.isBefore(firstMinute) && instant.isBefore(afterLastMinute);
     }
 
     /**

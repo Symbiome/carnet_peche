@@ -67,6 +67,51 @@ describe("TripDates", () => {
     expect(TripDates.isCatchWithinTrip(running, { caughtOn: "2026-09-13", caughtAt: "09:00" }, now)).toBe(false);
   });
 
+  // #310 : le début et la fin ont des secondes (sortie en direct), l'heure de capture non.
+  describe("compare les captures à la minute", () => {
+    const liveTrip = {
+      date: new Date(2026, 8, 12),
+      startedAt: "09:18:34",
+      endDate: "2026-09-12",
+      finishedAt: "17:30:12",
+    };
+
+    it("accepte une capture à la minute de début ou de fin de la sortie", () => {
+      expect(TripDates.isCatchWithinTrip(liveTrip, { caughtAt: "09:18" })).toBe(true);
+      expect(TripDates.isCatchWithinTrip(liveTrip, { caughtAt: "17:30" })).toBe(true);
+      expect(TripDates.isCatchWithinTrip(liveTrip, { caughtOn: "2026-09-12", caughtAt: "09:18" })).toBe(true);
+    });
+
+    it("refuse une capture la minute d'avant le début ou d'après la fin", () => {
+      expect(TripDates.isCatchWithinTrip(liveTrip, { caughtAt: "09:17" })).toBe(false);
+      expect(TripDates.isCatchWithinTrip(liveTrip, { caughtAt: "17:31" })).toBe(false);
+    });
+
+    it("accepte une capture saisie pendant la première minute d'une sortie en direct", () => {
+      const running = { date: new Date(2026, 8, 12), startedAt: "09:18:34" };
+      const now = moment("2026-09-12T09:18:50");
+      expect(TripDates.isCatchWithinTrip(running, { caughtAt: "09:18" }, now)).toBe(true);
+      expect(TripDates.isCatchWithinTrip(running, { caughtAt: "09:19" }, now)).toBe(false);
+      expect(now.format("HH:mm:ss")).toBe("09:18:50");
+    });
+
+    it("applique la même règle aux bornes d'une sortie de plusieurs jours", () => {
+      const night = { date: new Date(2026, 8, 12), startedAt: "22:10:45", endDate: "2026-09-13",
+        finishedAt: "06:05:30" };
+      expect(TripDates.catchMoment(night, { caughtAt: "22:10" })!.format("YYYY-MM-DD HH:mm")).toBe("2026-09-12 22:10");
+      expect(TripDates.catchMoment(night, { caughtAt: "06:05" })!.format("YYYY-MM-DD HH:mm")).toBe("2026-09-13 06:05");
+      expect(TripDates.isCatchWithinTrip(night, { caughtOn: "2026-09-13", caughtAt: "06:06" })).toBe(false);
+      expect(TripDates.isCatchWithinTrip(night, { caughtOn: "2026-09-12", caughtAt: "22:09" })).toBe(false);
+    });
+
+    it("ne compte pas comme hors sortie les captures aux minutes de début et de fin", () => {
+      const catchs = [{ caughtAt: "09:18" }, { caughtAt: "17:30" }, { caughtAt: "17:31" }];
+      expect(TripDates.countCatchsOutsideTrip(liveTrip, catchs)).toBe(1);
+      expect(TripDates.validatePeriod({ ...liveTrip, finishedAt: "17:30" }, catchs.slice(0, 2),
+        moment("2026-09-20")).finishedAtError).toBe("");
+    });
+  });
+
   it("valide les dates saisies", () => {
     const today = moment("2026-09-20");
     expect(TripDates.validatePeriod(carpSession, [], today)).toEqual(
