@@ -29,33 +29,34 @@
             <BackButton class="hide-on-mobile" />
             Espèce recherchée
           </h1>
-          <div v-for="s in sortedSpecies()" v-bind:key="s.id" class="species-item"
-            v-bind:class="trip.speciesIds.indexOf(s.id) == -1 ? '' : 'selected'">
-            <div class="item-selection">
-              <input type="checkbox" v-bind:id="'checkbox-' + s.id" v-bind:value="s.id" v-model="trip.speciesIds"
-                class="pelorous-checkbox" />
-              <label v-bind:for="'checkbox-' + s.id"></label>
+          <div class="trip-species-form">
+            <button type="button" class="all-species-button" v-bind:class="{ selected: trip.allSpecies }"
+              v-bind:aria-pressed="trip.allSpecies ? 'true' : 'false'" v-on:click="toggleAllSpecies">
+              <i class="icon-check" v-if="trip.allSpecies" />
+              Toutes espèces
+            </button>
+            <SpeciesSearchSelect name="species" label="Ajouter une espèce" v-bind:options="speciesOptions()"
+              v-model="speciesChoice" v-bind:clearSearchOnChoice="true" />
+            <ul class="selected-species" v-if="trip.speciesIds.length > 0">
+              <li v-for="s in selectedSpecies()" v-bind:key="s.id">
+                <span>
+                  {{ displayName(s) }}
+                  <span v-if="s.scientificName" class="scientific-name">{{ s.scientificName }}</span>
+                </span>
+                <button type="button" class="remove-species" v-bind:aria-label="'Retirer ' + displayName(s)"
+                  v-on:click="removeSpecies(s.id)">×</button>
+              </li>
+            </ul>
+            <div class="other-species" v-if="hasOtherSpecies">
+              <FormInput name="other" label="Autre espèce" placeholder="Renseignez l'espèce"
+                v-model="trip.otherSpecies" />
+              <button type="button" class="remove-species" aria-label="Retirer l'espèce autre"
+                v-on:click="removeOtherSpecies">×</button>
             </div>
-            <div class="item-description" v-on:click="toggle(s)">
-              {{ s.alias ? s.alias : s.name }}
-              <span v-if="s.alias" class="real-name">({{ s.name }})</span>
-              <span v-if="s.scientificName" class="real-name scientific-name">{{ s.scientificName }}</span>
+            <div class="info" v-if="hasOtherSpecies">
+              Séparez les espèces par une virgule (&nbsp;,&nbsp;) pour en
+              renseigner plusieurs
             </div>
-          </div>
-          <div class="species-item">
-            <div class="item-selection">
-              <input type="checkbox" id="checkbox-other" class="pelorous-checkbox" v-model="hasOtherSpecies" />
-              <label for="checkbox-other"></label>
-            </div>
-            <div class="item-description">
-              <label for="checkbox-other">Autre</label>
-              <input type="text" name="other" placeholder="Renseignez l'espèce" v-model="trip.otherSpecies"
-                v-bind:disabled="!hasOtherSpecies" />
-            </div>
-          </div>
-          <div class="info">
-            Séparez les espèces par une virgule (&nbsp;,&nbsp;) pour en
-            renseigner plusieurs
           </div>
 
           <div class="buttons-bar hide-on-mobile">
@@ -86,19 +87,25 @@ import TripsService from "@/services/TripsService";
 import ReferentialService from "@/services/ReferentialService";
 
 import BackButton from "@/components/common/BackButton.vue";
+import FormInput from "@/components/common/FormInput.vue";
+import SpeciesSearchSelect from "@/components/common/SpeciesSearchSelect.vue";
 import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
-import { Component, Prop, Vue } from "vue-facing-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import orderBy from "lodash/orderBy";
 import EventBus from "@/services/EventBus";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
+const OTHER_SPECIES_ID = "__other__";
+
 @Component({
   components: {
     BackButton,
+    FormInput,
+    SpeciesSearchSelect,
     CarnetHeader,
     SomeTripHeader,
     CarnetFooter,
@@ -114,9 +121,11 @@ export default class TripSpeciesView extends Vue {
     mode: "Live",
     startedAt: "",
     otherSpecies: "",
+    allSpecies: false,
   };
 
   hasOtherSpecies: boolean = false;
+  speciesChoice: string = "";
 
   species: SpeciesWithAlias[] = [];
   allSpecies: SpeciesWithAlias[] = [];
@@ -147,6 +156,7 @@ export default class TripSpeciesView extends Vue {
   tripLoaded(someTrip: TripSpecies) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
+    this.trip.allSpecies = !!someTrip.allSpecies;
     this.species = [];
     this.allSpecies.forEach((s) => {
       const selected = this.trip.speciesIds.indexOf(s.id) != -1;
@@ -160,13 +170,68 @@ export default class TripSpeciesView extends Vue {
     }
   }
 
-  toggle(s: SpeciesWithAlias) {
-    const speciesId = s.id;
-    const index = this.trip.speciesIds.indexOf(speciesId);
-    if (index == -1) {
+  /** Nom affiché d'une espèce : alias éventuel, puis nom usuel. */
+  displayName(s: SpeciesWithAlias): string {
+    return s.alias ? `${s.alias} (${s.name})` : s.name;
+  }
+
+  /** Options de la liste (#305) : espèces non encore choisies, puis « Autre ». */
+  speciesOptions(): SpeciesWithAlias[] {
+    const options: SpeciesWithAlias[] = this.sortedSpecies()
+      .filter((s) => this.trip.speciesIds.indexOf(s.id) == -1)
+      .map((s) => ({ ...s, name: this.displayName(s) }));
+    if (!this.hasOtherSpecies) {
+      options.push({
+        id: OTHER_SPECIES_ID,
+        name: "Autre ...",
+        builtIn: false,
+        mandatorySize: false,
+        mandatoryReport: false,
+        archived: false,
+        authorizedSample: false,
+        present: true,
+        minSize: 0,
+        maxSize: 1000,
+      });
+    }
+    return options;
+  }
+
+  /** Espèces choisies, dans l'ordre de la liste. */
+  selectedSpecies(): SpeciesWithAlias[] {
+    return this.sortedSpecies().filter((s) => this.trip.speciesIds.indexOf(s.id) != -1);
+  }
+
+  /** Une espèce choisie dans la liste s'ajoute aux espèces recherchées et désactive « Toutes espèces ». */
+  @Watch("speciesChoice")
+  speciesChosen(speciesId: string) {
+    if (!speciesId) {
+      return;
+    }
+    if (speciesId == OTHER_SPECIES_ID) {
+      this.hasOtherSpecies = true;
+    } else if (this.trip.speciesIds.indexOf(speciesId) == -1) {
       this.trip.speciesIds.push(speciesId);
-    } else {
-      this.trip.speciesIds.splice(index, 1);
+    }
+    this.trip.allSpecies = false;
+    this.$nextTick(() => (this.speciesChoice = ""));
+  }
+
+  removeSpecies(speciesId: string) {
+    this.trip.speciesIds = this.trip.speciesIds.filter((id) => id != speciesId);
+  }
+
+  removeOtherSpecies() {
+    this.hasOtherSpecies = false;
+    this.trip.otherSpecies = "";
+  }
+
+  /** « Toutes espèces » (#305) : aucune espèce ciblée, les espèces choisies sont retirées. */
+  toggleAllSpecies() {
+    this.trip.allSpecies = !this.trip.allSpecies;
+    if (this.trip.allSpecies) {
+      this.trip.speciesIds = [];
+      this.removeOtherSpecies();
     }
   }
 
@@ -243,11 +308,11 @@ export default class TripSpeciesView extends Vue {
     } else {
       this.trip.otherSpecies = "";
     }
-    if (this.trip.speciesIds.length == 0 && !this.hasOtherSpecies) {
+    if (this.trip.speciesIds.length == 0 && !this.hasOtherSpecies && !this.trip.allSpecies) {
       hasError = true;
       EventBus.emit(
         "toaster-error",
-        "Vous devez sélectionner au moins une espèce"
+        "Vous devez sélectionner au moins une espèce ou « Toutes espèces »"
       );
     }
 
@@ -322,98 +387,77 @@ export default class TripSpeciesView extends Vue {
     padding-right: 0px;
   }
 
-  .species-item {
-    height: 56px;
-
+  .trip-species-form {
     padding-left: @margin-x-large;
+    padding-right: @margin-x-large;
+    text-align: left;
+  }
+
+  .all-species-button {
+    margin-top: @vertical-margin-x-small;
+    margin-bottom: @vertical-margin-x-small;
+    height: 38px;
+    padding-left: @margin-medium;
+    padding-right: @margin-medium;
+    border-radius: 50px;
+    border: 1px solid @accent-text;
+    background-color: transparent;
+    color: @accent-text;
+    font-size: @fontsize-small-paragraph;
+    font-weight: 600;
+
+    &.selected {
+      border-color: @carnet-blue;
+      background-color: @carnet-blue;
+      color: @white;
+    }
+  }
+
+  .selected-species {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
 
     display: flex;
-    flex-direction: row;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: @margin-x-small;
 
-    border-top: 1px solid @gainsboro;
-
-    &.selected,
-    &:hover {
-      background-color: @solitude;
-    }
-
-    &:first-child {
-      border-top: 0px;
-    }
-
-    .item-selection {
-      width: 16px;
-      height: 16px;
-
-      input {
-        margin: 0px;
-      }
-    }
-
-    .item-description {
-      margin-left: @margin-medium;
-      height: 100%;
-      width: 100%;
-
-      font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large );
-
-      text-align: left;
-
+    li {
       display: flex;
-      flex-direction: row;
       align-items: center;
+      gap: @margin-x-small;
 
-      cursor: pointer;
-
-      input {
-        padding-left: @margin-small;
-        padding-right: @margin-small;
-        margin-top: @vertical-margin-xx-small;
-        margin-left: @margin-medium;
-        height: 38px;
-        border-radius: 4px;
-
-        background: transparent;
-        border: 1px solid @pale-sky;
-        color: @gunmetal;
-
-        &::placeholder {
-          font-style: italic;
-          font-weight: normal;
-          font-size: @fontsize-form-input;
-          color: @pale-sky;
-        }
-      }
-
-      .real-name {
-        font-style: italic;
-        color: @pale-sky;
-        margin-left: @margin-x-small;
-      }
+      padding-left: @margin-small;
+      border-radius: 50px;
+      background-color: @blue-box;
+      color: @blue-text;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
 
       .scientific-name {
-        display: block;
-        margin-left: 0;
+        font-style: italic;
+        color: @pale-sky;
       }
     }
+  }
 
-    @media (max-height: 600px) {
-      height: 46px;
-      padding-left: @margin-large;
-    }
+  .remove-species {
+    min-width: 32px;
+    height: 32px;
+    border: 0px;
+    border-radius: 50px;
+    background-color: transparent;
+    color: @blue-text;
+    font-size: @fontsize-paragraph;
+  }
 
-    @media (max-width: 360px) {
-      padding-left: @margin-medium;
+  .other-species {
+    display: flex;
+    align-items: center;
+    gap: @margin-x-small;
 
-      .item-description {
-        margin-left: @margin-small;
-
-        input {
-          width: 200px;
-        }
-      }
+    > div {
+      flex: 1;
     }
   }
 
@@ -427,14 +471,9 @@ export default class TripSpeciesView extends Vue {
   }
 
   @media screen and (min-width: @desktop-min-width) {
-    .species-item {
-      height: 65px;
+    .trip-species-form {
       padding-left: @margin-large-desktop;
-
-      .item-description {
-        font-size: @fontsize-paragraph;
-        line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);
-      }
+      padding-right: @margin-large-desktop;
     }
 
     .info {

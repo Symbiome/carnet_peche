@@ -92,9 +92,7 @@
               <div :class="{
                 'two-columns-row-on-desktop': aCatch.speciesId == '__other__',
               }">
-                <FormInput name="speciesSearch" label="Rechercher une espèce" type="text"
-                  placeholder="Nom usuel ou nom scientifique" v-model="speciesSearch" v-if="modifiable" />
-                <FormSelect name="species" label="Espèce" v-bind:options="filteredSpeciesOptions()"
+                <SpeciesSearchSelect name="species" label="Espèce" v-bind:options="allSpeciesWithAliases"
                   v-model="aCatch.speciesId" v-bind:error="speciesIdError" v-bind:readonly="!modifiable" />
                 <FormInput name="otherSpecies" label="Si autre" type="text" placeholder="Renseigner l’espèce"
                   v-model="aCatch.otherSpecies" v-bind:error="otherSpeciesError" v-bind:readonly="!modifiable"
@@ -257,6 +255,7 @@ import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import PictureSourceChoice from "@/components/trip/PictureSourceChoice.vue";
 import BackButton from "@/components/common/BackButton.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
+import SpeciesSearchSelect from "@/components/common/SpeciesSearchSelect.vue";
 import FormToggle from "@/components/common/FormToggle.vue";
 import FormInput from "@/components/common/FormInput.vue";
 import FormYesNo from "@/components/common/FormYesNo.vue";
@@ -283,6 +282,7 @@ import MapLibrePositionMap from "@/components/common/MapLibrePositionMap.vue";
     FormYesNo,
     FormTextarea,
     FormSelect,
+    SpeciesSearchSelect,
     FormToggle,
     PicturePreview,
     MapLibrePositionMap,
@@ -351,7 +351,6 @@ export default class EditCatchView extends Vue {
 
   allSpeciesWithAliases: SpeciesWithAlias[] = [];
   allTechniques: Technique[] = [];
-  speciesSearch: string = "";
   // Certitude d'identification (#87) : le pêcheur signale une identification incertaine,
   // revue ensuite par un opérateur dans la file "Prises à valider".
   certaintyOptions = [
@@ -551,6 +550,7 @@ export default class EditCatchView extends Vue {
     const result: SpeciesWithAlias = {
       id: s.id,
       name: s.alias ? `${s.alias} (${s.name})` : s.name,
+      scientificName: s.scientificName,
       builtIn: s.builtIn,
       mandatorySize: s.mandatorySize,
       mandatoryReport: s.mandatoryReport,
@@ -1117,19 +1117,6 @@ export default class EditCatchView extends Vue {
         params: { id: this.tripId },
       });
     }
-  }
-
-  // #92 : recherche d'espèce sur le nom usuel/alias ET le nom scientifique,
-  // correspondances exactes puis en début de nom en tête (#197).
-  filteredSpeciesOptions(): SpeciesWithAlias[] {
-    if (!this.speciesSearch.trim()) {
-      return this.allSpeciesWithAliases;
-    }
-    return Helpers.rankBySearch(this.allSpeciesWithAliases, this.speciesSearch, (s) => [
-      s.name,
-      s.alias,
-      s.scientificName,
-    ]);
   }
 
   checkExistingSpecie(existingSpecies: SpeciesWithAlias[]): void {

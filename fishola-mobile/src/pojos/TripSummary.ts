@@ -34,6 +34,7 @@ export default interface TripSummary {
     modifiableUntil?: Date;
     speciesIds: string[];
     otherSpecies: string;
+    allSpecies?: boolean;
     weatherId?: string;
     techniqueIds: string[];
     beginLatitude?: number;

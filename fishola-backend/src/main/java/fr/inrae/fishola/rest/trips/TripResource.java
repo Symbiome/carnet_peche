@@ -177,6 +177,18 @@ public class TripResource extends AbstractCarnetResource {
         return result;
     }
 
+    /**
+     * Espèces recherchées à enregistrer : celles choisies, plus les « Autre » créées au
+     * besoin ; aucune pour « Toutes espèces » (#305), qui exclut les espèces choisies.
+     */
+    protected Set<UUID> expectedSpeciesIds(TripBean trip) {
+        if (trip.allSpecies) {
+            return Set.of();
+        }
+        Set<UUID> otherSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.otherSpecies);
+        return Sets.union(trip.speciesIds, otherSpeciesIds);
+    }
+
     protected Optional<LocalDateTime> getModifiableUntil(Trip trip, LocalDateTime now) {
         LocalDateTime modifiableUntil = trip.getCreatedOn().plusHours(config.tripModifiableHours());
         boolean canBeModified = modifiableUntil.isAfter(now);
@@ -215,6 +227,7 @@ public class TripResource extends AbstractCarnetResource {
         entity.setType(trip.type);
         entity.setMode(trip.mode);
         entity.setOwnerId(userId);
+        entity.setAllSpecies(trip.allSpecies);
 
         // Pour rester rétro-compatible, on considère que tous les appels qui n'envoient pas le champ sont des applications <= 1.0.4
         entity.setSource(Optional.ofNullable(trip.source).orElse(DeviceType.application));
@@ -250,8 +263,7 @@ public class TripResource extends AbstractCarnetResource {
             log.debugf("Sortie en cours de création : %s -> %s", trip.id, tripId);
         }
 
-        Set<UUID> otherSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.otherSpecies);
-        Set<UUID> speciesIds = Sets.union(trip.speciesIds, otherSpeciesIds);
+        Set<UUID> speciesIds = expectedSpeciesIds(trip);
 
         int created = tripsDao.setSpecies(tripId, speciesIds);
         if (log.isDebugEnabled()) {
@@ -339,6 +351,7 @@ public class TripResource extends AbstractCarnetResource {
         existingTrip.setType(trip.type);
         existingTrip.setMode(trip.mode);
         existingTrip.setOwnerId(userId);
+        existingTrip.setAllSpecies(trip.allSpecies);
         existingTrip.setWeatherId(trip.weatherId.orElse(null));
 
         // On ne met pas à jour les coordonnées de début/fin de sortie car ce n'est pas modifiable dans l'application
@@ -367,8 +380,7 @@ public class TripResource extends AbstractCarnetResource {
             log.debugf("Sortie mise à jour : %s", tripId);
         }
 
-        Set<UUID> otherSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.otherSpecies);
-        Set<UUID> speciesIds = Sets.union(trip.speciesIds, otherSpeciesIds);
+        Set<UUID> speciesIds = expectedSpeciesIds(trip);
 
         tripsDao.setSpecies(tripId, speciesIds);
 
@@ -919,6 +931,7 @@ public class TripResource extends AbstractCarnetResource {
         result.weatherId = Optional.ofNullable(entity.getWeatherId());
 
         result.speciesIds = tripsDao.getTripSpecies(tripId);
+        result.allSpecies = Boolean.TRUE.equals(entity.getAllSpecies());
         result.techniqueIds = tripsDao.getTripTechniques(tripId);
 
         result.modifiableUntil = getModifiableUntil(entity);
