@@ -30,7 +30,7 @@
         v-bind:inputmode="type == 'time' ? 'numeric' : null" v-bind:maxlength="type == 'time' ? 5 : null"
         v-bind:placeholder="effectivePlaceholder" v-bind:value="modelValue" v-bind:min="min"
         v-bind:autocomplete="autocomplete"
-        v-on:input="onInput($event.target.value)" v-on:blur="onBlur"
+        v-on:input="onInput($event.target)" v-on:blur="onBlur"
         v-bind:class="displayError ? 'field-error' : (warning ? 'field-warning' : '')" @keyup.enter="$emit('keyupEnter')" />
       <div v-bind:class="displayError ? 'field-error' : (warning ? 'field-warning' : '')">
         <span v-if="displayError">
@@ -64,8 +64,6 @@ import { Component, Prop, Vue } from "vue-facing-decorator";
 
 import FormMultiValues from '@/components/common/FormMultiValues.vue'
 import Helpers from '@/services/Helpers';
-
-const TIME_FORMAT_ERROR = 'Heure invalide (format 24h HH:mm, ex. 13:45)';
 
 @Component({
   emits: ["keyupEnter", "update:modelValue"],
@@ -112,17 +110,22 @@ export default class FormInput extends Vue {
     return this.error || this.timeError;
   }
 
-  onInput(rawValue: string) {
+  onInput(input: HTMLInputElement) {
     if (this.type != 'time') {
-      this.$emit('update:modelValue', rawValue);
+      this.$emit('update:modelValue', input.value);
       return;
     }
 
-    const masked = Helpers.maskTimeInput(rawValue);
+    const masked = Helpers.maskTimeInput(input.value);
     if (!masked || Helpers.isValidTimeString(masked)) {
       this.timeError = '';
     } else if (masked.length == 5) {
-      this.timeError = TIME_FORMAT_ERROR;
+      this.timeError = Helpers.TIME_FORMAT_ERROR;
+    }
+    // Le modèle peut ne pas changer (caractère ignoré par le masque) : le champ
+    // n'est alors pas redessiné, on y remet la valeur masquée.
+    if (input.value != masked) {
+      input.value = masked;
     }
     this.$emit('update:modelValue', masked);
   }
@@ -131,7 +134,11 @@ export default class FormInput extends Vue {
     if (this.type != 'time' || !this.modelValue) {
       return;
     }
-    this.timeError = Helpers.isValidTimeString(this.modelValue) ? '' : TIME_FORMAT_ERROR;
+    const normalized = Helpers.normalizeTimeInput(this.modelValue);
+    this.timeError = Helpers.isValidTimeString(normalized) ? '' : Helpers.TIME_FORMAT_ERROR;
+    if (normalized != this.modelValue) {
+      this.$emit('update:modelValue', normalized);
+    }
   }
 }
 </script>
