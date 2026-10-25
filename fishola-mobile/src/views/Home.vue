@@ -90,6 +90,7 @@ import UserProfile from "@/pojos/UserProfile";
 import Constants from "@/services/Constants";
 import DashboardService, { DashboardAndSpecies } from "@/services/DashboardService";
 import GamificationService from "@/services/GamificationService";
+import Helpers from "@/services/Helpers";
 import ProfileService from "@/services/ProfileService";
 import ReferentialService from "@/services/ReferentialService";
 import TripsService, { TripsAndCount } from "@/services/TripsService";
@@ -197,7 +198,7 @@ export default class HomeView extends Vue {
   get displayedBadges(): BadgeBean[] {
     const unlocked = this.badges
       .filter((b) => b.unlocked)
-      .sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime());
+      .sort((a, b) => Helpers.backendDateToDate(b.unlockedAt).getTime() - Helpers.backendDateToDate(a.unlockedAt).getTime());
     const locked = this.badges.filter((b) => !b.unlocked);
     return [...unlocked, ...locked].slice(0, DISPLAYED_BADGES_COUNT);
   }
