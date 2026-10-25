@@ -92,8 +92,9 @@
               <div :class="{
                 'two-columns-row-on-desktop': aCatch.speciesId == '__other__',
               }">
-                <SpeciesSearchSelect name="species" label="Espèce" v-bind:options="allSpeciesWithAliases"
-                  v-model="aCatch.speciesId" v-bind:error="speciesIdError" v-bind:readonly="!modifiable" />
+                <SpeciesCombobox name="species" label="Espèce" v-bind:options="allSpeciesWithAliases"
+                  pinned-option-id="__other__" v-model="aCatch.speciesId" v-bind:error="speciesIdError"
+                  v-bind:readonly="!modifiable" />
                 <FormInput name="otherSpecies" label="Si autre" type="text" placeholder="Renseigner l’espèce"
                   v-model="aCatch.otherSpecies" v-bind:error="otherSpeciesError" v-bind:readonly="!modifiable"
                   v-if="aCatch.speciesId == '__other__'" />
@@ -256,7 +257,7 @@ import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import PictureSourceChoice from "@/components/trip/PictureSourceChoice.vue";
 import BackButton from "@/components/common/BackButton.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
-import SpeciesSearchSelect from "@/components/common/SpeciesSearchSelect.vue";
+import SpeciesCombobox from "@/components/common/SpeciesCombobox.vue";
 import FormToggle from "@/components/common/FormToggle.vue";
 import FormInput from "@/components/common/FormInput.vue";
 import FormYesNo from "@/components/common/FormYesNo.vue";
@@ -286,7 +287,7 @@ type FieldCheck = "missing" | "invalid" | null;
     FormYesNo,
     FormTextarea,
     FormSelect,
-    SpeciesSearchSelect,
+    SpeciesCombobox,
     FormToggle,
     PicturePreview,
     MapLibrePositionMap,
