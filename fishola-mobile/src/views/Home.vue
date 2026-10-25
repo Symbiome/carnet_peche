@@ -23,12 +23,16 @@
     <div class="home-content">
       <div class="home-header">
         <Title class="hide-on-desktop" />
-        <Avatar
-          v-if="initials"
-          class="home-avatar"
-          v-bind:initials="initials"
-          v-on:goProfile="goAccount"
-        />
+        <div class="home-header-buttons">
+          <Avatar
+            v-if="initials"
+            class="home-avatar"
+            v-bind:initials="initials"
+            v-on:goProfile="goAccount"
+          />
+          <!-- Menu sur mobile (#307) : « Communauté » et « Le projet » ne sont plus dans « Compte ». -->
+          <MenuAnchor class="hide-on-desktop" />
+        </div>
       </div>
       <h1 class="home-greeting">Bonjour {{ firstName }} !</h1>
 
@@ -91,6 +95,7 @@ import ReferentialService from "@/services/ReferentialService";
 import TripsService, { TripsAndCount } from "@/services/TripsService";
 import { RouterUtils } from "@/router/RouterUtils";
 import Avatar from "@/components/common/Avatar.vue";
+import MenuAnchor from "@/components/common/MenuAnchor.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 import Title from "@/components/layout/Title.vue";
 import BadgeTile from "@/components/home/BadgeTile.vue";
@@ -109,7 +114,7 @@ const SUMMARY_TRIPS_PAGE_SIZE = 500;
 
 /** Accueil du pêcheur : dernière sortie, résumé de l'activité, badges. */
 @Component({
-  components: { Avatar, BottomNav, Title, BadgeTile, HomeSummary, LastTripCard, OnboardingSlides },
+  components: { Avatar, MenuAnchor, BottomNav, Title, BadgeTile, HomeSummary, LastTripCard, OnboardingSlides },
 })
 export default class HomeView extends Vue {
   firstName: string = "";
@@ -259,6 +264,12 @@ export default class HomeView extends Vue {
   @media screen and (min-width: @desktop-min-width) {
     justify-content: flex-end;
     padding: 0;
+  }
+
+  .home-header-buttons {
+    display: flex;
+    align-items: center;
+    gap: @margin-small;
   }
 
   .home-avatar {

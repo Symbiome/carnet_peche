@@ -91,20 +91,6 @@ export default class AccountView extends Vue {
         ],
       },
       {
-        title: "Communauté",
-        items: [
-          { label: "Actualités et partages", fontIcon: "icon-fishing", action: () => this.go("/community") },
-          { label: "Statistiques du réseau", fontIcon: "icon-stats", action: () => this.go("/dashboard-global/dashboard") },
-        ],
-      },
-      {
-        title: "Le projet",
-        items: [
-          { label: "Pourquoi carnet de pêche ?", icon: "img/carnet/account-why.svg", action: () => this.go("/about") },
-          { label: "Qui porte le projet ?", icon: "img/carnet/account-who.svg", action: () => this.go("/credits") },
-        ],
-      },
-      {
         title: "Aide",
         items: [
           { label: "Contact", icon: "img/carnet/account-contact.svg", action: this.openFeedback },

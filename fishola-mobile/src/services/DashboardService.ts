@@ -43,6 +43,8 @@ export class GlobalDashboardAndSpecies {
   ) {}
 }
 
+const SHOW_NETWORK_STATS_KEY = "carnet-show-network-stats";
+
 export default class DashboardService extends AbstractCarnetService {
   constructor() {
     super();
@@ -145,5 +147,22 @@ export default class DashboardService extends AbstractCarnetService {
   ): Promise<GlobalDashboardAndSpecies> {
     const promise = this.loadGlobalDashboard(year, lake);
     return this.timeout(5000, promise);
+  }
+
+  /** « Statistiques » (#307) : statistiques du réseau affichées, sauf si le pêcheur les a masquées sur cet appareil. */
+  static isNetworkStatsShown(): boolean {
+    try {
+      return window.localStorage.getItem(SHOW_NETWORK_STATS_KEY) !== "false";
+    } catch (e) {
+      return true;
+    }
+  }
+
+  static setNetworkStatsShown(shown: boolean) {
+    try {
+      window.localStorage.setItem(SHOW_NETWORK_STATS_KEY, String(shown));
+    } catch (e) {
+      console.warn("Choix d'affichage des statistiques du réseau non mémorisé", e);
+    }
   }
 }

@@ -24,7 +24,13 @@
     <div class="page dashboard-page">
       <div class="pane pane-only">
         <div id="scrollable" class="pane-content large rounded">
-          <GlobalDashboardSection />
+          <FormToggle class="network-toggle" label="Afficher les statistiques du réseau"
+            v-bind:modelValue="showNetworkStats" v-on:update:modelValue="networkStatsToggled" />
+          <GlobalDashboardSection v-if="showNetworkStats" />
+          <section v-else class="dashboard-section network-hidden">
+            <h1 class="no-margin-pane">Statistiques</h1>
+            <p>Les statistiques de l'ensemble des pêcheurs sont masquées.</p>
+          </section>
         </div>
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
@@ -38,20 +44,32 @@ import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 import GlobalDashboardSection from "@/components/charts/GlobalDashboardSection.vue";
+import FormToggle from "@/components/common/FormToggle.vue";
+import DashboardService from "@/services/DashboardService";
 import TripsService from "@/services/TripsService";
 import { Component, Vue } from "vue-facing-decorator";
 
-/** « Statistiques » : statistiques du réseau, filtrées par année. */
+/**
+ * « Statistiques » : statistiques du réseau, filtrées par année. Le pêcheur peut
+ * les masquer, choix mémorisé sur l'appareil (#307).
+ */
 @Component({
   components: {
     CarnetHeader,
     RunningOverlay,
     BottomNav,
+    FormToggle,
     GlobalDashboardSection,
   },
 })
 export default class DashboardGlobalView extends Vue {
   hasRunningTrip: boolean = false;
+  showNetworkStats: boolean = DashboardService.isNetworkStatsShown();
+
+  networkStatsToggled(shown: boolean) {
+    this.showNetworkStats = shown;
+    DashboardService.setNetworkStatsShown(shown);
+  }
 
   mounted() {
     TripsService.hasRunningTrip().then(
@@ -74,4 +92,16 @@ export default class DashboardGlobalView extends Vue {
 
 <style lang="less">
 @import "../less/_dashboard-page";
+
+.dashboard-page {
+  .network-toggle {
+    padding: @vertical-margin-x-small @margin-large 0 @margin-large;
+  }
+
+  .network-hidden p {
+    padding-left: @margin-xx-large;
+    padding-right: @margin-xx-large;
+    color: @pale-sky;
+  }
+}
 </style>
