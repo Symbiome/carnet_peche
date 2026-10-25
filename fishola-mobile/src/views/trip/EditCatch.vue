@@ -137,7 +137,8 @@
                 </div>
                 <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)" name="weight"
                   label="Poids en g (optionnel)" type="number" :min="1" placeholder="Entrez un poids en grammes"
-                  v-model="aCatch.weight" v-bind:error="weightError" v-bind:readonly="!modifiable" />
+                  v-model="aCatch.weight" v-bind:error="weightError" v-bind:warning="weightWarning"
+                  v-bind:readonly="!modifiable" />
                 <FormYesNo name="keep" v-bind:label="tripMode == 'Live'
                   ? 'Conservez-vous ce poisson ?'
                   : 'Avez-vous conservé ce poisson ?'
@@ -273,6 +274,9 @@ import DocumentationService from "@/services/DocumentationService";
 import ScaleSampling from "@/services/ScaleSampling";
 
 import MapLibrePositionMap from "@/components/common/MapLibrePositionMap.vue";
+
+/** Résultat du contrôle d'un champ (#308) : obligatoire manquant, valeur incorrecte, ou valide. */
+type FieldCheck = "missing" | "invalid" | null;
 
 @Component({
   components: {
@@ -650,40 +654,34 @@ export default class EditCatchView extends Vue {
     );
   }
 
-  /** Contrôle de la taille exacte ; renvoie `true` en cas d'erreur. */
-  async validateSize(): Promise<boolean> {
-    let hasError = false;
+  /** Contrôle de la taille exacte. */
+  validateSize(): FieldCheck {
     const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
+    this.sizeError = "";
     if (mandatorySize && !this.aCatch.size) {
-      hasError = true;
       this.sizeError = "Taille obligatoire";
-    } else if (this.aCatch.size && this.aCatch.size <= 0) {
-      hasError = true;
-      this.sizeError = "La taille doit être strictement positive";
-    } else {
-      if (this.aCatch.size) {
-        if (this.aCatch.size != Math.floor(this.aCatch.size)) {
-          hasError = true;
-          this.sizeError = "La taille doit être un nombre entier";
-        } else {
-          // On force pour stocker uniquement la valeur tronquée
-          this.aCatch.size = Math.floor(this.aCatch.size);
-          this.sizeError = "";
-        }
-      } else {
-        this.sizeError = "";
-      }
+      return "missing";
     }
-    return hasError;
+    if (!this.aCatch.size) {
+      return null;
+    }
+    if (this.aCatch.size <= 0) {
+      this.sizeError = "La taille doit être strictement positive";
+      return "invalid";
+    }
+    if (this.aCatch.size != Math.floor(this.aCatch.size)) {
+      this.sizeError = "La taille doit être un nombre entier";
+      return "invalid";
+    }
+    // On force pour stocker uniquement la valeur tronquée
+    this.aCatch.size = Math.floor(this.aCatch.size);
+    return null;
   }
 
-  /**
-   * Classe de taille choisie parmi celles du maillage (#196) ; renvoie `true`
-   * en cas d'erreur.
-   */
-  validateMeshSizeClass(): boolean {
+  /** Classe de taille choisie parmi celles du maillage (#196). */
+  validateMeshSizeClass(): FieldCheck {
     this.lotSizeClassError = this.selectedLotSizeClass ? "" : "Classe de taille obligatoire";
-    return !!this.lotSizeClassError;
+    return this.lotSizeClassError ? "missing" : null;
   }
 
   get lotSizeClassOptions(): { id: string; name: string }[] {
@@ -873,165 +871,154 @@ export default class EditCatchView extends Vue {
     this.sampleIdReady = true;
   }
 
-  async validateClicked() {
-    let hasError: boolean = false;
-    // First make sure that the custom species enterred here is not an already available species
-    this.checkExistingSpecie(this.allSpeciesWithAliases);
-    if (this.aCatch.speciesId == "__other__") {
-      this.speciesIdError = "";
-
-      if (this.aCatch.otherSpecies) {
-        if (this.aCatch.otherSpecies.indexOf(",") == -1) {
-          this.otherSpeciesError = "";
-        } else {
-          hasError = true;
-          this.otherSpeciesError =
-            "Vous ne pouvez pas spécifier plusieurs espèces ici";
-        }
-      } else {
-        hasError = true;
-        this.otherSpeciesError = "Espèce obligatoire";
-      }
-    } else {
-      this.otherSpeciesError = "";
-
-      if (this.aCatch.speciesId) {
-        this.speciesIdError = "";
-      } else {
-        hasError = true;
-        this.speciesIdError = "Espèce obligatoire";
-      }
+  /** Espèce choisie dans la liste, ou saisie en texte libre pour « Autre ». */
+  validateSpecies(): FieldCheck {
+    this.speciesIdError = "";
+    this.otherSpeciesError = "";
+    if (this.aCatch.speciesId != "__other__") {
+      this.speciesIdError = this.aCatch.speciesId ? "" : "Espèce obligatoire";
+      return this.speciesIdError ? "missing" : null;
     }
+    if (!this.aCatch.otherSpecies) {
+      this.otherSpeciesError = "Espèce obligatoire";
+      return "missing";
+    }
+    if (this.aCatch.otherSpecies.indexOf(",") != -1) {
+      this.otherSpeciesError = "Vous ne pouvez pas spécifier plusieurs espèces ici";
+      return "invalid";
+    }
+    return null;
+  }
 
+  /** Taille exacte, ou classe de taille si l'espèce est soumise au maillage (#196). */
+  validateSizeOrSizeClass(): FieldCheck {
     if (this.useLotSizeClass) {
       this.aCatch.size = undefined;
       this.sizeError = "";
-      hasError = this.validateMeshSizeClass() || hasError;
-    } else {
-      this.aCatch.lotMinSize = undefined;
-      this.aCatch.lotMaxSize = undefined;
-      hasError = (await this.validateSize()) || hasError;
+      return this.validateMeshSizeClass();
     }
+    this.aCatch.lotMinSize = undefined;
+    this.aCatch.lotMaxSize = undefined;
+    return this.validateSize();
+  }
 
-    if (!this.aCatch.weight || this.aCatch.weight > 0) {
-      if (this.aCatch.weight) {
-        if (this.aCatch.weight != Math.floor(this.aCatch.weight)) {
-          hasError = true;
-          this.weightError = "Le poids doit être un nombre entier";
-        } else {
-          // On force pour stocker uniquement la valeur tronquée
-          this.aCatch.weight = Math.floor(this.aCatch.weight);
-          this.weightError = "";
-        }
-      } else {
-        this.weightError = "";
-      }
-    } else {
-      hasError = true;
+  /** Poids optionnel, entier strictement positif ; sa cohérence n'est qu'un avertissement (#308). */
+  validateWeight(): FieldCheck {
+    this.weightError = "";
+    if (!this.aCatch.weight) {
+      return null;
+    }
+    if (this.aCatch.weight <= 0) {
       this.weightError = "Le poids doit être strictement positif";
+      return "invalid";
     }
-
-    if (
-      this.aCatch.size &&
-      !this.sizeError &&
-      this.aCatch.weight &&
-      !this.weightError
-    ) {
-      if (this.aCatch.size >= 25) {
-        const minValue = 0.01 * Math.pow(this.aCatch.size, 2.7);
-        const maxValue = 0.01 * Math.pow(this.aCatch.size, 3.2);
-        if (this.aCatch.weight < minValue || this.aCatch.weight > maxValue) {
-          console.info(
-            `Le poids (${this.aCatch.weight}g) devrait se situer entre ${minValue}g et ${maxValue}g`
-          );
-          hasError = true;
-          this.weightError = "Le poids n'est pas cohérent avec la taille";
-        }
-      } else if (this.aCatch.weight > 300) {
-        console.info(
-          `Le poids (${this.aCatch.weight}g) ne devrait pas dépasser 300g`
-        );
-        hasError = true;
-        this.weightError = "Le poids n'est pas cohérent avec la taille";
-      }
+    if (this.aCatch.weight != Math.floor(this.aCatch.weight)) {
+      this.weightError = "Le poids doit être un nombre entier";
+      return "invalid";
     }
+    // On force pour stocker uniquement la valeur tronquée
+    this.aCatch.weight = Math.floor(this.aCatch.weight);
+    return null;
+  }
 
+  /** Poids incohérent avec la taille (#308) : averti sous le champ, sans bloquer l'enregistrement. */
+  get weightWarning(): string {
+    const size = Number(this.aCatch.size);
+    const weight = Number(this.aCatch.weight);
+    if (this.useLotSizeClass || !(size > 0) || !(weight > 0)) {
+      return "";
+    }
+    return Helpers.isWeightConsistentWithSize(size, weight) ? "" : "Le poids n'est pas cohérent";
+  }
+
+  validateQuantity(): FieldCheck {
     if (!this.aCatch.quantity || this.aCatch.quantity < 1) {
       this.aCatch.quantity = 1;
     }
     if (this.aCatch.quantity != Math.floor(this.aCatch.quantity)) {
-      hasError = true;
       this.quantityError = "Le nombre de prises doit être un nombre entier";
-    } else {
-      this.aCatch.quantity = Math.floor(this.aCatch.quantity);
-      this.quantityError = "";
+      return "invalid";
     }
+    this.aCatch.quantity = Math.floor(this.aCatch.quantity);
+    this.quantityError = "";
+    return null;
+  }
 
-    if (this.aCatch.keep === true || this.aCatch.keep === false) {
-      this.keepError = "";
-    } else {
-      hasError = true;
-      this.keepError = "Information obligatoire";
-    }
-
-    // if (this.aCatch.keep === false)  {
-    //   if (this.aCatch.releasedStateId) {
-    //     this.releasedStateIdError = '';
-    //   } else {
-    //     hasError = true;
-    //     this.releasedStateIdError = 'État du poisson relâché obligatoire';
-    //   }
-    // } else {
+  validateKeepAndTechnique(): FieldCheck[] {
+    const keepAnswered = this.aCatch.keep === true || this.aCatch.keep === false;
+    this.keepError = keepAnswered ? "" : "Information obligatoire";
     this.releasedStateIdError = "";
-    // }
+    this.techniqueIdError = this.aCatch.techniqueId ? "" : "Technique de pêche obligatoire";
+    return [this.keepError ? "missing" : null, this.techniqueIdError ? "missing" : null];
+  }
 
-    if (this.aCatch.techniqueId) {
-      this.techniqueIdError = "";
-    } else {
-      hasError = true;
-      this.techniqueIdError = "Technique de pêche obligatoire";
-    }
-
+  /** Heure (et jour, sortie de plusieurs jours #237) de la capture, dans la sortie. */
+  validateCaughtAt(): FieldCheck {
     this.caughtAtError = "";
-    if (this.caughtAt && this.caughtAt.length > 0) {
-      this.aCatch.caughtAt = this.caughtAt;
-      if (this.multiDayTrip && this.caughtOn) {
-        this.aCatch.caughtOn = this.caughtOn;
-      }
-      if (!TripDates.isCatchWithinTrip(this.tripPeriod, this.aCatch)) {
-        hasError = true;
-        this.caughtAtError = TripDates.catchOutOfTripMessage(this.tripPeriod);
-      }
-    } else {
+    if (!this.caughtAt || this.caughtAt.length == 0) {
       delete this.aCatch.caughtAt;
       delete this.aCatch.caughtOn;
+      return null;
     }
+    this.aCatch.caughtAt = this.caughtAt;
+    if (this.multiDayTrip && this.caughtOn) {
+      this.aCatch.caughtOn = this.caughtOn;
+    }
+    if (!TripDates.isCatchWithinTrip(this.tripPeriod, this.aCatch)) {
+      this.caughtAtError = TripDates.catchOutOfTripMessage(this.tripPeriod);
+      return "invalid";
+    }
+    return null;
+  }
 
-    if (hasError) {
-      EventBus.emit(
-        "toaster-error",
-        this.caughtAtError || "Vous devez renseigner les champs obligatoires"
-      );
-    } else {
-      const aCatchBean: CatchBean = this.castToBean(this.aCatch);
-      if (aCatchBean.speciesId == "__other__") {
-        aCatchBean.speciesId = "";
-      }
-      aCatchBean.hasPicture =
-        this.allNonMeasurePictures && this.allNonMeasurePictures.length > 0;
-      if (!this.withSample) {
-        aCatchBean.sampleId = "";
-      }
-      if (this.gpsLocation) {
-        aCatchBean.latitude = this.gpsLocation.lat;
-        aCatchBean.longitude = this.gpsLocation.lng;
-      }
-      if (!(await this.confirmSizeAboveMax())) {
-        this.focusSizeField();
-        return;
-      }
-      TripsService.saveCatch(this.tripId, aCatchBean, this.catchSaved);
+  /**
+   * Bandeau d'erreur selon la vraie cause (#308) : champ obligatoire manquant,
+   * sinon heure hors de la sortie, sinon valeur incorrecte ; vide si tout est valide.
+   */
+  validationErrorMessage(checks: FieldCheck[]): string {
+    if (checks.indexOf("missing") != -1) {
+      return "Vous devez renseigner les champs obligatoires";
     }
+    if (checks.indexOf("invalid") == -1) {
+      return "";
+    }
+    return this.caughtAtError || "Certaines valeurs saisies sont incorrectes, vérifiez les champs en rouge";
+  }
+
+  async validateClicked() {
+    // First make sure that the custom species enterred here is not an already available species
+    this.checkExistingSpecie(this.allSpeciesWithAliases);
+    const checks: FieldCheck[] = [
+      this.validateSpecies(),
+      this.validateSizeOrSizeClass(),
+      this.validateWeight(),
+      this.validateQuantity(),
+      ...this.validateKeepAndTechnique(),
+      this.validateCaughtAt(),
+    ];
+    const errorMessage = this.validationErrorMessage(checks);
+    if (errorMessage) {
+      EventBus.emit("toaster-error", errorMessage);
+      return;
+    }
+    const aCatchBean: CatchBean = this.castToBean(this.aCatch);
+    if (aCatchBean.speciesId == "__other__") {
+      aCatchBean.speciesId = "";
+    }
+    aCatchBean.hasPicture =
+      this.allNonMeasurePictures && this.allNonMeasurePictures.length > 0;
+    if (!this.withSample) {
+      aCatchBean.sampleId = "";
+    }
+    if (this.gpsLocation) {
+      aCatchBean.latitude = this.gpsLocation.lat;
+      aCatchBean.longitude = this.gpsLocation.lng;
+    }
+    if (!(await this.confirmSizeAboveMax())) {
+      this.focusSizeField();
+      return;
+    }
+    TripsService.saveCatch(this.tripId, aCatchBean, this.catchSaved);
   }
 
   /**

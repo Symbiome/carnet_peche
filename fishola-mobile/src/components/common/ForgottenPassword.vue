@@ -170,6 +170,11 @@ export default class ForgottenPassword extends Vue {
     margin-bottom: @margin-xx-large;
   }
 
+  // Lien sans href (#304) : le pointeur indique qu'il est cliquable.
+  a {
+    cursor: pointer;
+  }
+
   &.collapsed {
 
     // Hidden in collapsed mode

@@ -226,6 +226,19 @@ describe("Helpers — classes de taille", () => {
 
 // #229 : une taille au-delà de la taille max admin demande confirmation au
 // lieu de bloquer l'enregistrement.
+describe("Helpers — cohérence du poids avec la taille (#308)", () => {
+  it("encadre le poids à partir de 25 cm", () => {
+    expect(Helpers.isWeightConsistentWithSize(30, 200)).toBe(true);
+    expect(Helpers.isWeightConsistentWithSize(30, 5000)).toBe(false);
+    expect(Helpers.isWeightConsistentWithSize(30, 50)).toBe(false);
+  });
+
+  it("plafonne à 300 g en dessous de 25 cm", () => {
+    expect(Helpers.isWeightConsistentWithSize(20, 300)).toBe(true);
+    expect(Helpers.isWeightConsistentWithSize(20, 301)).toBe(false);
+  });
+});
+
 describe("Helpers — confirmation de taille au-delà du maximum", () => {
   function clickOnShow(clickedButtonTitle?: string): DialogParams[] {
     const shown: DialogParams[] = [];
