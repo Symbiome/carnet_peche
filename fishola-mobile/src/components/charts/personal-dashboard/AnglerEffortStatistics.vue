@@ -200,7 +200,7 @@ export default class AnglerEffortStatistics extends Vue {
     return {
       labels: Constants.MONTHS,
       datasets: [
-        { label: "Sessions", data: series.trips, backgroundColor: CARNET_COLORS.blue, yAxisID: "trips" },
+        { label: "Sessions", data: series.trips, backgroundColor: CARNET_COLORS.sky, yAxisID: "trips" },
         { label: "Heures", data: series.hours, backgroundColor: CARNET_COLORS.orange, yAxisID: "hours" },
       ],
     };

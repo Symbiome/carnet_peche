@@ -86,6 +86,8 @@ export default class TripsService extends AbstractCarnetService {
       newTrip.name = "Sortie du " + now.toLocaleDateString("fr-FR", options);
       newTrip.date = now;
       newTrip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
+    } else {
+      Object.assign(newTrip, TripDates.afterwardsDefaults());
     }
 
     return new Promise<string>((resolve, reject) => {
@@ -214,6 +216,7 @@ export default class TripsService extends AbstractCarnetService {
       weatherId: input.weatherId,
       date: realDate,
       speciesIds: input.speciesIds || [],
+      allSpecies: !!input.allSpecies,
       techniqueIds: input.techniqueIds || [],
       catchs: catchs,
       startedAt: input.startedAt,
@@ -259,7 +262,8 @@ export default class TripsService extends AbstractCarnetService {
   static listTrips(
     sortDown: boolean,
     searchTerm: string,
-    rawPageIndex?: number
+    rawPageIndex?: number,
+    pageSize: number = 10
   ): Promise<TripsAndCount> {
     const pageIndex = rawPageIndex || 0;
 
@@ -284,7 +288,7 @@ export default class TripsService extends AbstractCarnetService {
 
       const page = {
         pageNumber: pageIndex,
-        pageSize: 10,
+        pageSize: pageSize,
         desc: sortDown,
         term: searchTerm,
       };

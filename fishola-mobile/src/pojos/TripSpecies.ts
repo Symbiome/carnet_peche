@@ -28,6 +28,8 @@ export default interface TripSpecies {
     startedAt: string;
     speciesIds: string[];
     otherSpecies: string;
+    // « Toutes espèces » (#305) : le pêcheur ne cible pas d'espèce en particulier.
+    allSpecies?: boolean;
     beginLatitude?: number;
     beginLongitude?: number;
 

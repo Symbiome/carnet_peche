@@ -29,26 +29,32 @@
           <div class="welcome keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">
             Bienvenue sur
           </div>
-          <CarnetLogo class="carnet-logo-centered keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly" />
+          <div class="carnet-logo-tile force-light-theme keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">
+            <CarnetLogo />
+          </div>
         </div>
+        <!-- Vrai formulaire + autocomplete : le trousseau iOS / l'autofill Android
+             proposent d'enregistrer puis de restituer les identifiants (#123). -->
+        <form class="login-credentials" novalidate v-on:submit.prevent="signIn">
         <div class="login-form">
           <FormInput name="email" type="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="email"
-            v-bind:error="emailError" v-on:keyupEnter="signIn" />
+            v-bind:error="emailError" autocomplete="username" />
           <FormInput name="password" type="password" label="Mot de passe" placeholder="Renseignez votre mot de passe"
-            v-model="password" v-bind:error="passwordError" v-on:keyupEnter="signIn" has-white-background />
+            v-model="password" v-bind:error="passwordError" autocomplete="current-password" />
           <ForgottenPassword v-bind:alreadTypedEmail="email"
             v-bind:tohideSelector="'.login-form .form-input,.login-buttons'" class="hide-on-mobile" />
         </div>
         <div class="login-buttons keyboardSensitive">
           <div class="login-button signin keyboardSensitive">
-            <button v-on:click="signIn">Connexion</button>
+            <button type="submit">Connexion</button>
           </div>
           <div class="login-button signup keyboardSensitive" v-if="registrationEnabled">
-            <button v-on:click="signUp">Créer un compte</button>
+            <button type="button" v-on:click="signUp">Créer un compte</button>
           </div>
           <ForgottenPassword v-bind:alreadTypedEmail="email" v-bind:tohideSelector="'.login-form,.signin,.signup'"
             class="hide-on-desktop" />
         </div>
+        </form>
       </div>
     </div>
   </div>
@@ -92,9 +98,6 @@ export default class LoginView extends Vue {
     if (localStorage && localStorage.latestEmail) {
       this.email = localStorage.latestEmail;
     }
-    if (localStorage && localStorage.latestPassword) {
-      this.password = localStorage.latestPassword;
-    }
   }
 
   signIn() {
@@ -113,7 +116,6 @@ export default class LoginView extends Vue {
       case 200:
         if (localStorage) {
           localStorage.latestEmail = this.email;
-          localStorage.latestPassword = this.password
         }
 
         EventBus.emit("profile-updated");
@@ -149,12 +151,6 @@ export default class LoginView extends Vue {
     RouterUtils.pushRouteNoDuplicate(this.$router, "register");
   }
 
-  autoLogin() {
-    this.email = "thimel@codelutin.com";
-    this.password = "sispea";
-    this.signIn();
-  }
-
   goHome() {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/");
   }
@@ -163,6 +159,11 @@ export default class LoginView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
+// Le <form> ne doit pas changer la mise en page de ses deux blocs.
+.login-credentials {
+  display: contents;
+}
+
 @media screen and (min-width: @desktop-min-width) {
   div.login {
     &.full-background {
@@ -367,6 +368,23 @@ export default class LoginView extends Vue {
 
       .form-input label {
         color: @text-strong;
+      }
+
+      // Champs du formulaire standard sur ordinateur (#304) : sur le fond gris
+      // semi-transparent, le pointeur et le curseur de saisie ne se voyaient pas.
+      .form-input input {
+        background-color: @surface;
+        border: 1px solid @pale-sky;
+        color: @gunmetal;
+        caret-color: @accent-text;
+
+        &:focus {
+          color: @gunmetal;
+        }
+
+        &::placeholder {
+          color: @pale-sky;
+        }
       }
     }
 

@@ -106,6 +106,7 @@ class SurveyImportFlatCsvTest {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         String trips = "SELECT id FROM trip WHERE session_code LIKE 'FLAT-TEST%'";
         ctx.execute("DELETE FROM catch WHERE trip_id IN (" + trips + ")");
+        ctx.execute("DELETE FROM trip_techniques WHERE trip_id IN (" + trips + ")");
         ctx.execute("DELETE FROM trip WHERE session_code LIKE 'FLAT-TEST%'");
         ctx.execute("DELETE FROM import_row_error WHERE import_id IN (SELECT id FROM import_job WHERE file_name LIKE 'flat-test%')");
         ctx.execute("DELETE FROM import_job WHERE file_name LIKE 'flat-test%'");

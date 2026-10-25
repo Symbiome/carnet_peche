@@ -51,6 +51,7 @@
 <script lang="ts">
 import DocumentationService from "@/services/DocumentationService";
 import LogoutService from "@/services/LogoutService";
+import OnboardingService from "@/services/OnboardingService";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import BottomNav from "@/components/layout/BottomNav.vue";
@@ -82,7 +83,7 @@ export default class AccountView extends Vue {
         title: "Mon espace",
         items: [
           { label: "Mon profil", icon: "img/carnet/account-profile.svg", action: () => this.go("/profile/profile") },
-          { label: "Résumé de mon activité", icon: "img/carnet/account-activity.svg", action: () => this.go("/dashboard-global/dashboard") },
+          { label: "Résumé de mon activité", icon: "img/carnet/account-activity.svg", action: () => this.go("/activity-summary") },
           { label: "Mes badges", fontIcon: "icon-star", action: () => this.go("/badges") },
           { label: "Données et confidentialité", icon: "img/carnet/account-privacy.svg", action: this.openCgu },
           { label: "Mode hors ligne", icon: "img/carnet/account-offline.svg", action: () => this.go("/offline-areas") },
@@ -90,24 +91,11 @@ export default class AccountView extends Vue {
         ],
       },
       {
-        title: "Communauté",
-        items: [
-          { label: "Actualités et partages", fontIcon: "icon-fishing", action: () => this.go("/community") },
-          { label: "Statistiques du réseau", fontIcon: "icon-stats", action: () => this.go("/dashboard-global/dashboard") },
-        ],
-      },
-      {
-        title: "Le projet",
-        items: [
-          { label: "Pourquoi carnet de pêche ?", icon: "img/carnet/account-why.svg", action: () => this.go("/about") },
-          { label: "Qui porte le projet ?", icon: "img/carnet/account-who.svg", action: () => this.go("/credits") },
-        ],
-      },
-      {
         title: "Aide",
         items: [
           { label: "Contact", icon: "img/carnet/account-contact.svg", action: this.openFeedback },
           { label: "A propos", icon: "img/carnet/account-about.svg", action: () => this.go("/documentation/doc") },
+          { label: "Revoir la présentation", fontIcon: "icon-info", action: this.replayOnboarding },
           { label: "Déconnexion", fontIcon: "icon-logout", action: this.logout },
         ],
       },
@@ -120,6 +108,12 @@ export default class AccountView extends Vue {
 
   openCgu() {
     window.open(DocumentationService.getCGUUrl(), "_blank");
+  }
+
+  /** Réaffiche l'onboarding (#194) en revenant sur l'accueil. */
+  replayOnboarding() {
+    OnboardingService.replay();
+    this.go("/home");
   }
 
   openFeedback() {
@@ -190,7 +184,7 @@ export default class AccountView extends Vue {
 
   h2 {
     margin: 0 0 10px 2px;
-    color: @gunmetal;
+    color: @heading;
     font-size: 18px;
     font-weight: 700;
     line-height: 1.2;

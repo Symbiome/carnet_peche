@@ -57,7 +57,7 @@
                 </div>
                 <div class="badge-description" v-else>{{ badge.description }}</div>
                 <div class="badge-unlocked-at" v-if="badge.unlocked && badge.competitionDate">
-                  Le {{ formatCompetitionDate(badge.competitionDate) }}
+                  Le {{ formatDate(badge.competitionDate) }}
                 </div>
                 <div class="badge-unlocked-at" v-else-if="badge.unlocked">
                   Débloqué le {{ formatDate(badge.unlockedAt) }}
@@ -80,7 +80,7 @@ import BottomNav from "@/components/layout/BottomNav.vue";
 
 import GamificationService from "@/services/GamificationService";
 import { BadgeBean } from "@/pojos/BackendPojos";
-import moment from "moment";
+import Helpers from "@/services/Helpers";
 
 import { Component, Vue } from "vue-facing-decorator";
 import EventBus from "@/services/EventBus";
@@ -133,19 +133,10 @@ export default class BadgesView extends Vue {
     return badge.id + (badge.competitionId ? "-" + badge.competitionId : "");
   }
 
-  formatDate(d: Date): string {
-    return moment(d).format("DD/MM/YYYY");
-  }
-
-  // competitionDate est un LocalDate (#90) : sérialisé par Jackson comme [année, mois,
-  // jour] (mois 1-12), alors que le constructeur array de moment attend un mois 0-11 --
-  // passer le tableau brut décalerait l'affichage d'un mois.
-  formatCompetitionDate(d: any): string {
-    if (Array.isArray(d)) {
-      const [year, month, day] = d;
-      return moment([year, month - 1, day]).format("DD/MM/YYYY");
-    }
-    return moment(d).format("DD/MM/YYYY");
+  // unlockedAt (LocalDateTime, #306) et competitionDate (LocalDate, #90) arrivent en
+  // tableaux Jackson, mois 1-12.
+  formatDate(d: any): string {
+    return Helpers.formatBackendDate(d);
   }
 
   badgeClicked(badge: BadgeBean) {
@@ -170,7 +161,7 @@ export default class BadgesView extends Vue {
 
   h2 {
     font-size: @fontsize-header-title-small;
-    color: @cyprus;
+    color: @heading;
     margin-bottom: @vertical-margin-x-small;
   }
 }
@@ -188,7 +179,7 @@ export default class BadgesView extends Vue {
   text-align: center;
   padding: @vertical-margin-small;
   border-radius: 12px;
-  background: @white-smoke;
+  background: @surface;
   cursor: pointer;
 
   .badge-icon {
@@ -214,20 +205,25 @@ export default class BadgesView extends Vue {
     margin-top: @vertical-margin-x-small;
   }
 
+  // Badge verrouillé : emoji grisé, textes en couleur secondaire plutôt
+  // qu'en transparence, pour rester lisibles.
   &.locked {
-    .badge-icon,
-    .badge-name {
+    .badge-icon {
       filter: grayscale(100%);
       opacity: 0.4;
     }
 
-    .badge-description {
-      opacity: 0.6;
+    .badge-name {
+      color: @pale-sky;
     }
   }
 
   &.unlocked {
-    background: @zircon;
+    background: @blue-box;
+
+    .badge-description {
+      color: @gunmetal;
+    }
   }
 }
 </style>

@@ -333,6 +333,28 @@ export default class Helpers {
     return result;
   }
 
+  /**
+   * Date renvoyée par le backend, en Date JS. Jackson sérialise LocalDate en
+   * [année, mois, jour] et LocalDateTime en [année, mois, jour, heure, minute(,
+   * seconde, nanosecondes)], mois 1-12 ; toute autre valeur passe par moment.
+   */
+  static backendDateToDate(someBackendDate: any): Date {
+    if (Array.isArray(someBackendDate)) {
+      return someBackendDate.length == 3
+        ? this.parseLocalDate(someBackendDate)
+        : this.parseLocalDateTime(someBackendDate);
+    }
+    return moment(someBackendDate).toDate();
+  }
+
+  /** Date renvoyée par le backend au format JJ/MM/AAAA (#306), vide si absente. */
+  static formatBackendDate(someBackendDate: any): string {
+    if (!someBackendDate) {
+      return "";
+    }
+    return moment(this.backendDateToDate(someBackendDate)).format("DD/MM/YYYY");
+  }
+
   static parseLocalDate(someLocalDateTime: number[]): Date {
     const result: Date = new Date(
       someLocalDateTime[0],
@@ -418,6 +440,20 @@ export default class Helpers {
       };
       DialogService.show(params);
     });
+  }
+
+  /**
+   * Cohérence du poids (g) avec la taille (cm) d'une prise : entre
+   * 0,01 × taille^2,7 et 0,01 × taille^3,2 à partir de 25 cm, au plus 300 g
+   * en dessous. Simple avertissement depuis #308, l'enregistrement reste possible.
+   */
+  static isWeightConsistentWithSize(sizeCm: number, weightG: number): boolean {
+    if (sizeCm >= 25) {
+      const minWeight = 0.01 * Math.pow(sizeCm, 2.7);
+      const maxWeight = 0.01 * Math.pow(sizeCm, 3.2);
+      return weightG >= minWeight && weightG <= maxWeight;
+    }
+    return weightG <= 300;
   }
 
   /**

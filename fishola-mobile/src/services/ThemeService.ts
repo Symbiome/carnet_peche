@@ -29,7 +29,7 @@ const DARK_QUERY = "(prefers-color-scheme: dark)";
 // Couleurs des textes et quadrillages Chart.js, qui ne lisent pas le CSS.
 const CHART_COLORS: Record<Theme, { text: string; grid: string }> = {
   light: { text: "#5B6B78", grid: "rgba(20, 38, 52, 0.1)" },
-  dark: { text: "#A7B4BF", grid: "rgba(255, 255, 255, 0.12)" },
+  dark: { text: "#B4B4D9", grid: "rgba(255, 255, 255, 0.12)" },
 };
 
 /**

@@ -81,6 +81,20 @@ describe("Helpers — dates", () => {
     expect(Helpers.formatToHour(Helpers.parseLocalDateTime([2026, 1, 5, 7, 30, 42]))).toBe("07h30");
   });
 
+  it("formate une date du backend en JJ/MM/AAAA sans décalage de mois (#306)", () => {
+    expect(Helpers.formatBackendDate([2026, 10, 14, 9, 30])).toBe("14/10/2026");
+    expect(Helpers.formatBackendDate([2026, 10, 14, 23, 59, 59, 123000000])).toBe("14/10/2026");
+    expect(Helpers.formatBackendDate([2026, 1, 31])).toBe("31/01/2026");
+    expect(Helpers.formatBackendDate("2026-10-14T09:30:00")).toBe("14/10/2026");
+    expect(Helpers.formatBackendDate(undefined)).toBe("");
+  });
+
+  it("ordonne des dates du backend reçues en tableaux", () => {
+    const older = Helpers.backendDateToDate([2026, 9, 30, 18, 0]);
+    const newer = Helpers.backendDateToDate([2026, 10, 1, 8, 0, 5]);
+    expect(newer.getTime()).toBeGreaterThan(older.getTime());
+  });
+
   it("compose une date et une heure saisies séparément", () => {
     const result = Helpers.parseDateTime(new Date(2026, 0, 5), "07:30");
     expect(Helpers.formatToDate(result)).toBe("2026-01-05");
@@ -212,6 +226,19 @@ describe("Helpers — classes de taille", () => {
 
 // #229 : une taille au-delà de la taille max admin demande confirmation au
 // lieu de bloquer l'enregistrement.
+describe("Helpers — cohérence du poids avec la taille (#308)", () => {
+  it("encadre le poids à partir de 25 cm", () => {
+    expect(Helpers.isWeightConsistentWithSize(30, 200)).toBe(true);
+    expect(Helpers.isWeightConsistentWithSize(30, 5000)).toBe(false);
+    expect(Helpers.isWeightConsistentWithSize(30, 50)).toBe(false);
+  });
+
+  it("plafonne à 300 g en dessous de 25 cm", () => {
+    expect(Helpers.isWeightConsistentWithSize(20, 300)).toBe(true);
+    expect(Helpers.isWeightConsistentWithSize(20, 301)).toBe(false);
+  });
+});
+
 describe("Helpers — confirmation de taille au-delà du maximum", () => {
   function clickOnShow(clickedButtonTitle?: string): DialogParams[] {
     const shown: DialogParams[] = [];

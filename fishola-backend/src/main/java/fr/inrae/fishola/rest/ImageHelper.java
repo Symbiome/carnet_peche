@@ -48,6 +48,7 @@ public class ImageHelper {
         byte[] bytes = Base64.getDecoder().decode(base64Image);
         try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
             BufferedImage image = ImageIO.read(bis);
+            Preconditions.checkArgument(image != null, "Format d'image non pris en charge (JPEG ou PNG attendu)");
 
             image = ImageHelper.removeAlphaIfPresent(image);
 

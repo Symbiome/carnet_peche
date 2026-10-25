@@ -47,7 +47,7 @@ public class CarnetVolontaireParsedRow {
     public UUID techniqueId;
     public UUID secondaryTechniqueId; // TODO(#145) : validé, non persisté
     public String baitOrLure; // TODO(#145) : validé, non persisté
-    public UUID expectedSpeciesId; // TODO(#145) : validé, non persisté (null si "Aucune")
+    public UUID expectedSpeciesId; // null si "Aucune"
     public String observations; // TODO(#145) : validé, non persisté
 
     // Niveau capture (catch)

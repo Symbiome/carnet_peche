@@ -23,27 +23,29 @@ package fr.inrae.fishola.database;
 
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.daos.NewsDao;
-import fr.inrae.fishola.entities.tables.daos.NewsWaterEntityDao;
 import fr.inrae.fishola.entities.tables.daos.NewsPictureDao;
 import fr.inrae.fishola.entities.tables.daos.NextScheduledCourrielNotificationCheckDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
+import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.News;
-import fr.inrae.fishola.entities.tables.pojos.NewsWaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
 import fr.inrae.fishola.entities.tables.pojos.NextScheduledCourrielNotificationCheck;
 import fr.inrae.fishola.entities.tables.records.NewsRecord;
 import fr.inrae.fishola.rest.ImageHelper;
+import fr.inrae.fishola.rest.department.Departments;
 import jakarta.inject.Singleton;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.impl.DAOImpl;
+import org.jooq.impl.DSL;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Singleton
 public class NewsCarnetDao extends AbstractCarnetDao {
@@ -61,19 +63,17 @@ public class NewsCarnetDao extends AbstractCarnetDao {
             ).toList();
         }
         if (admin.isPresent() && !admin.get().getIsNationalAdmin()) {
-            // Admin régional : on ne garde que les actus rattachées à une entité hydro
-            // d'un de ses départements de périmètre (#159), buffer staff compris (#231).
-            Set<UUID> newsOfReleventWaterEntities = withContext(context -> context
-                    .selectDistinct(Tables.NEWS_WATER_ENTITY.NEWS_ID)
-                    .from(Tables.NEWS_WATER_ENTITY)
-                    .join(Tables.WATER_ENTITY_DEPARTMENT)
-                        .on(Tables.WATER_ENTITY_DEPARTMENT.WATER_ENTITY_ID.eq(Tables.NEWS_WATER_ENTITY.WATER_ENTITY_ID))
+            // Admin régional : on ne garde que les actus ciblant au moins un de
+            // ses départements de périmètre (#159, #233).
+            Set<UUID> newsOfRelevantDepartments = withContext(context -> context
+                    .selectDistinct(Tables.NEWS_DEPARTMENT.NEWS_ID)
+                    .from(Tables.NEWS_DEPARTMENT)
                     .join(Tables.FISHOLA_ADMIN_DEPARTMENTS)
-                        .on(Tables.FISHOLA_ADMIN_DEPARTMENTS.DEPARTMENT_CODE.eq(Tables.WATER_ENTITY_DEPARTMENT.DEPARTMENT_CODE))
+                        .on(Tables.FISHOLA_ADMIN_DEPARTMENTS.DEPARTMENT_CODE.eq(Tables.NEWS_DEPARTMENT.DEPARTMENT_CODE))
                     .where(Tables.FISHOLA_ADMIN_DEPARTMENTS.FISHOLA_ADMIN_ID.eq(admin.get().getId()))
-                    .fetchSet(Tables.NEWS_WATER_ENTITY.NEWS_ID));
+                    .fetchSet(Tables.NEWS_DEPARTMENT.NEWS_ID));
             allNews = allNews.stream().filter(news ->
-                    newsOfReleventWaterEntities.contains(news.getId())
+                    newsOfRelevantDepartments.contains(news.getId())
             ).toList();
         }
         allNews = allNews.stream().sorted(
@@ -82,57 +82,71 @@ public class NewsCarnetDao extends AbstractCarnetDao {
         return allNews;
     }
 
-    public List<News> getPublishedNewsForWaterEntity(UUID waterEntityId) {
-        DSLContext context = newContext();
+    /**
+     * Actualités publiées visibles pour ces départements : les nationales et
+     * celles qui ciblent au moins l'un d'eux (#233).
+     *
+     * @param departmentCodes départements du lecteur ; vide = nationales seules
+     */
+    public List<News> getPublishedNewsForDepartments(Set<String> departmentCodes) {
         LocalDateTime now = LocalDateTime.now();
-        List<News> allNews = context
-                .select(Tables.NEWS.asterisk())
-                .from(Tables.NEWS)
-                .leftJoin(Tables.NEWS_WATER_ENTITY).on(Tables.NEWS_WATER_ENTITY.NEWS_ID.eq(Tables.NEWS.ID))
-                .where(
-                    Tables.NEWS.IS_NATIONAL.eq(true).or(
-                    Tables.NEWS_WATER_ENTITY.WATER_ENTITY_ID.eq(waterEntityId))
-                )
-                .and(Tables.NEWS.DATE_PUBLICATION_DEBUT.isNotNull())
-                .and(Tables.NEWS.DATE_PUBLICATION_FIN.isNotNull())
+        Condition targetsOneOfDepartments = DSL.exists(DSL.selectOne()
+                .from(Tables.NEWS_DEPARTMENT)
+                .where(Tables.NEWS_DEPARTMENT.NEWS_ID.eq(Tables.NEWS.ID))
+                .and(Tables.NEWS_DEPARTMENT.DEPARTMENT_CODE.in(departmentCodes)));
+        return withContext(context -> context
+                .selectFrom(Tables.NEWS)
+                .where(Tables.NEWS.IS_NATIONAL.isTrue().or(targetsOneOfDepartments))
                 .and(Tables.NEWS.DATE_PUBLICATION_DEBUT.le(now))
                 .and(Tables.NEWS.DATE_PUBLICATION_FIN.ge(now))
                 .orderBy(Tables.NEWS.DATE_PUBLICATION_DEBUT.desc())
-                .fetchInto(News.class);
-        return allNews;
+                .fetchInto(News.class));
+    }
+
+    /**
+     * Départements d'un milieu, buffer staff compris (#231).
+     *
+     * @param waterEntityId milieu consulté
+     */
+    public Set<String> getWaterEntityDepartments(UUID waterEntityId) {
+        return withContext(context -> context
+                .select(Tables.WATER_ENTITY_DEPARTMENT.DEPARTMENT_CODE)
+                .from(Tables.WATER_ENTITY_DEPARTMENT)
+                .where(Tables.WATER_ENTITY_DEPARTMENT.WATER_ENTITY_ID.eq(waterEntityId))
+                .fetchSet(Tables.WATER_ENTITY_DEPARTMENT.DEPARTMENT_CODE));
+    }
+
+    /**
+     * Départements dont un pêcheur reçoit les actualités (#233) : celui de son
+     * code postal et ceux de ses milieux favoris.
+     *
+     * @param user pêcheur lecteur ou destinataire du courriel
+     */
+    public Set<String> getAnglerDepartments(FisholaUser user) {
+        Set<String> departments = new HashSet<>(withContext(context -> context
+                .selectDistinct(Tables.WATER_ENTITY_DEPARTMENT.DEPARTMENT_CODE)
+                .from(Tables.WATER_ENTITY_DEPARTMENT)
+                .join(Tables.FISHOLA_USER_FAVORITE_WATER_ENTITIES)
+                    .on(Tables.FISHOLA_USER_FAVORITE_WATER_ENTITIES.WATER_ENTITY_ID.eq(Tables.WATER_ENTITY_DEPARTMENT.WATER_ENTITY_ID))
+                .where(Tables.FISHOLA_USER_FAVORITE_WATER_ENTITIES.FISHOLA_USER_ID.eq(user.getId()))
+                .fetchSet(Tables.WATER_ENTITY_DEPARTMENT.DEPARTMENT_CODE)));
+        Departments.fromPostalCode(user.getPostalCode()).ifPresent(departments::add);
+        return departments;
     }
 
     public void deleteById(UUID newsId) {
         // Delete pics associated to this news
         DSLContext context = newContext();
         context.deleteFrom(Tables.NEWS_PICTURE).where(Tables.NEWS_PICTURE.NEWS_ID.eq(newsId)).execute();
-        context.deleteFrom(Tables.NEWS_WATER_ENTITY).where(Tables.NEWS_WATER_ENTITY.NEWS_ID.eq(newsId)).execute();
         // Delete news itself
         withDaoNoResult(NewsDao.class, dao -> dao.deleteById(newsId));
     }
 
-    public void update(News news, Set<UUID> newsWaterEntityIds) {
-        withDaoNoResult(NewsWaterEntityDao.class, dao -> {
-            List<NewsWaterEntity> oldNewsWaterEntity = dao.fetchByNewsId(news.getId());
-            Set<UUID> oldNewsWaterEntityIds = oldNewsWaterEntity.stream()
-                    .map(NewsWaterEntity::getWaterEntityId)
-                    .collect(Collectors.toSet());
-
-            // Delete removed waterEntities
-            oldNewsWaterEntity.stream()
-                    .filter(fav -> !newsWaterEntityIds.contains(fav.getWaterEntityId()))
-                    .forEach(dao::delete);
-
-            // Add new waterEntities
-            newsWaterEntityIds.stream()
-                    .filter(id -> !oldNewsWaterEntityIds.contains(id))
-                    .map(id -> new NewsWaterEntity(news.getId(), id))
-                    .forEach(dao::insert);
-        });
+    public void update(News news) {
         withDaoNoResult(NewsDao.class, dao -> dao.update(news));
     }
 
-    public News insert(News news, Set<UUID> newWaterEntityIds) {
+    public News insert(News news, Set<String> departmentCodes) {
         DSLContext context = newContext();
         NewsRecord newRecord = context.newRecord(Tables.NEWS, news);
         News inserted = context.insertInto(Tables.NEWS)
@@ -140,11 +154,11 @@ public class NewsCarnetDao extends AbstractCarnetDao {
                 .returningResult(Tables.NEWS.ID)
                 .fetchOne()
                 .into(News.class);
-        withDaoNoResult(NewsWaterEntityDao.class, dao -> {
-            newWaterEntityIds.stream()
-                    .map(id -> new NewsWaterEntity(inserted.getId(), id))
-                    .forEach(dao::insert);
-        });
+        departmentCodes.forEach(departmentCode -> context
+                .insertInto(Tables.NEWS_DEPARTMENT)
+                .columns(Tables.NEWS_DEPARTMENT.NEWS_ID, Tables.NEWS_DEPARTMENT.DEPARTMENT_CODE)
+                .values(inserted.getId(), departmentCode)
+                .execute());
         return inserted;
     }
 
@@ -246,8 +260,12 @@ public class NewsCarnetDao extends AbstractCarnetDao {
         withDaoNoResult(NextScheduledCourrielNotificationCheckDao.class, dao -> dao.update(nextScheduledNotificationCheck));
     }
 
-    public Set<UUID> getWaterEntityIds(UUID newsId) {
-        return withDao(NewsWaterEntityDao.class, dao -> dao.fetchByNewsId(newsId).stream().map(NewsWaterEntity::getWaterEntityId).collect(Collectors.toSet()));
+    public Set<String> getDepartmentCodes(UUID newsId) {
+        return withContext(context -> context
+                .select(Tables.NEWS_DEPARTMENT.DEPARTMENT_CODE)
+                .from(Tables.NEWS_DEPARTMENT)
+                .where(Tables.NEWS_DEPARTMENT.NEWS_ID.eq(newsId))
+                .fetchSet(Tables.NEWS_DEPARTMENT.DEPARTMENT_CODE));
     }
 
     public void notifySent(News news) {

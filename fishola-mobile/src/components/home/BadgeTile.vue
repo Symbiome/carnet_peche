@@ -19,74 +19,50 @@
   #L%
   -->
 <template>
-  <div class="summary-tile" :class="{ locked: locked }" v-on:click="$emit('clicked')">
-    <div class="tile-icon">
-      <img v-if="icon" :src="icon" alt="" />
-      <span v-else class="tile-emoji">{{ emoji }}</span>
-    </div>
-    <div class="tile-value" v-if="value !== undefined">{{ value }}</div>
-    <div class="tile-label">{{ label }}</div>
+  <div class="badge-tile" :class="{ locked: locked }" v-on:click="$emit('clicked')">
+    <span class="badge-emoji">{{ emoji }}</span>
+    <span class="badge-label">{{ label }}</span>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-facing-decorator";
 
-/** Tuile carrée de l'accueil : pictogramme, valeur et libellé. */
+/** Tuile de badge de l'accueil : emoji et nom, grisés tant que verrouillé. */
 @Component({ emits: ["clicked"] })
-export default class SummaryTile extends Vue {
-  @Prop() icon?: string;
-  @Prop() emoji?: string;
-  @Prop() value?: string | number;
+export default class BadgeTile extends Vue {
+  @Prop() emoji!: string;
   @Prop() label!: string;
-  @Prop({ default: false }) locked: boolean;
+  @Prop({ default: false }) locked!: boolean;
 }
 </script>
 
 <style scoped lang="less">
-.summary-tile {
+.badge-tile {
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  aspect-ratio: 1;
-  padding: 11px 6px 0 6px;
-  border-radius: 6.619px;
+  height: 123px;
+  padding: 10px 6px 0 6px;
+  border-radius: 11px;
   background-color: @surface;
-  opacity: 0.99;
-
-  color: @gunmetal;
+  color: @heading;
   text-align: center;
-  line-height: 1.2;
+  cursor: pointer;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 
-  @media screen and (min-width: @desktop-min-width) {
-    aspect-ratio: auto;
-    padding-bottom: 16px;
+  .badge-emoji {
+    font-size: 44px;
+    line-height: 57px;
   }
 
-  .tile-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 41px;
-  }
-
-  .tile-emoji {
-    font-size: 32px;
-    line-height: 41px;
-  }
-
-  .tile-value {
-    margin-top: 1px;
-    font-size: 22px;
-    font-weight: 700;
-  }
-
-  .tile-label {
-    margin-top: -3px;
-    font-size: 14.562px;
-    font-weight: 500;
+  .badge-label {
+    margin-top: 2px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: @letter-spacing;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -94,14 +70,13 @@ export default class SummaryTile extends Vue {
   }
 
   &.locked {
-    .tile-emoji {
+    .badge-emoji {
       filter: grayscale(100%);
       opacity: 0.4;
     }
 
-    .tile-label {
-      margin-top: 6px;
-      opacity: 0.6;
+    .badge-label {
+      color: @pale-sky;
     }
   }
 }

@@ -134,6 +134,7 @@ class AdminHiddenReferentialsResourceTest {
     void cleanup() {
         DSLContext ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         ctx.execute("DELETE FROM catch WHERE trip_id IN (SELECT id FROM trip WHERE name LIKE '%HIDDEN-REF-TEST%')");
+        ctx.execute("DELETE FROM trip_techniques WHERE trip_id IN (SELECT id FROM trip WHERE name LIKE '%HIDDEN-REF-TEST%')");
         ctx.execute("DELETE FROM trip WHERE name LIKE '%HIDDEN-REF-TEST%'");
         ctx.execute("DELETE FROM import_row_error WHERE import_id IN "
                 + "(SELECT id FROM import_job WHERE file_name LIKE 'hidden-ref-test%')");

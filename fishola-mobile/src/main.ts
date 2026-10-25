@@ -27,11 +27,15 @@ import Vue3TouchEvents, { type Vue3TouchEventsOptions } from "vue3-touch-events"
 import NoMenuLayout from "@/layouts/NoMenuLayout.vue";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import ThemeService from "@/services/ThemeService";
+import { forgetStoredPassword } from "@/services/LegacyCredentials";
 
 moment.locale("fr");
 
 // Thème appliqué avant le premier rendu (#208) : pas de flash en clair.
 ThemeService.init();
+
+// #123 : les versions précédentes mémorisaient le mot de passe en clair.
+forgetStoredPassword();
 
 const app = createApp(App);
 app.component("no-menu-layout", NoMenuLayout);

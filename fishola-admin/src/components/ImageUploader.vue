@@ -25,7 +25,7 @@
       type="file"
       id="avatar"
       name="avatar"
-      accept="image/png, image/jpeg"
+      accept="image/*"
       @change="uploadImageFile"
     />
   </div>
@@ -35,6 +35,7 @@
 import BackendService from "@/services/BackendService";
 import Constants from "@/services/Constants";
 import { useTemplateRef } from "vue";
+import { useToast } from "buefy";
 
 interface Props {
   itemId: string;
@@ -51,35 +52,49 @@ const emit = defineEmits<{
 }>();
 
 const uploadInput = useTemplateRef("upload");
+const Toast = useToast();
 
 async function uploadImageFile(payload: Event) {
   const uploadedFile = uploadInput.value as HTMLInputElement;
-  if (uploadedFile.files) {
+  if (uploadedFile.files && uploadedFile.files.length > 0) {
     const file = uploadedFile.files[0];
-    const base64 = await getBase64(file);
     const id = itemId ? itemId : "temp-id";
     let url = "/v1/news-picture/";
     if (isMiniature) {
       url = "/v1/news-miniature/";
     }
-    const newsPicture = await BackendService.backendPost(url + id, base64);
-    const newsPicturesURL = Constants.apiUrl(
-      "/v1/news-picture/" + newsPicture["id"]
-    );
-    emit("uploadedPic", newsPicturesURL);
+    try {
+      const jpegDataUrl = await toJpegDataUrl(file);
+      const newsPicture = await BackendService.backendPost(url + id, jpegDataUrl);
+      const newsPicturesURL = Constants.apiUrl(
+        "/v1/news-picture/" + newsPicture["id"]
+      );
+      emit("uploadedPic", newsPicturesURL);
+    } catch (e) {
+      Toast.open({
+        message: "Impossible d'ajouter cette image : format non reconnu",
+        type: "is-danger"
+      });
+    } finally {
+      uploadedFile.value = "";
+    }
   }
 }
 
-function getBase64(file: any): Promise<string> {
-  return new Promise<any>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = function () {
-      resolve(reader.result);
-    };
-    reader.onerror = function (error) {
-      reject(error);
-    };
-  });
+/**
+ * Re-encode any image the browser can display (WebP, AVIF, GIF, PNG…) as a
+ * JPEG data URL, the backend only decoding JPEG and PNG (#233).
+ */
+async function toJpegDataUrl(file: File): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  return canvas.toDataURL("image/jpeg", 0.9);
 }
 </script>

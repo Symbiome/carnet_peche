@@ -194,7 +194,7 @@ export default class MyTripsList extends Vue {
       padding: @margin-small @margin-medium;
       border-left: 4px solid @accent-text;
       border-radius: 8px;
-      background-color: @white;
+      background-color: @white-smoke;
 
       .sync-queue-title {
         display: flex;

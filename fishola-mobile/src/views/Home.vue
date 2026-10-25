@@ -23,14 +23,17 @@
     <div class="home-content">
       <div class="home-header">
         <Title class="hide-on-desktop" />
-        <Avatar
-          v-if="initials"
-          class="home-avatar"
-          v-bind:initials="initials"
-          v-on:goProfile="goAccount"
-        />
+        <div class="home-header-buttons">
+          <Avatar
+            v-if="initials"
+            class="home-avatar"
+            v-bind:initials="initials"
+            v-on:goProfile="goAccount"
+          />
+          <!-- Menu sur mobile (#307) : « Communauté » et « Le projet » ne sont plus dans « Compte ». -->
+          <MenuAnchor class="hide-on-desktop" />
+        </div>
       </div>
-
       <h1 class="home-greeting">Bonjour {{ firstName }} !</h1>
 
       <h2 class="home-section-title">Ma dernière sortie</h2>
@@ -47,87 +50,97 @@
         </div>
       </div>
 
-      <h2 class="home-section-title">Résumé</h2>
-      <div class="home-tiles">
-        <SummaryTile icon="img/carnet/stat-trips.svg" :value="tripsCount" label="Sorties" v-on:clicked="goActivitySummary" />
-        <SummaryTile icon="img/carnet/stat-hours.svg" :value="hoursCount" label="Heures" v-on:clicked="goActivitySummary" />
-        <SummaryTile icon="img/carnet/stat-catches.svg" :value="catchesCount" label="Prises" v-on:clicked="goActivitySummary" />
-      </div>
+      <HomeSummary
+        v-bind:trips="trips"
+        v-bind:markers="markers"
+        v-bind:speciesKnown="markersLoaded"
+        v-on:open="goActivitySummary"
+      />
 
-      <h2 class="home-section-title">Progression</h2>
-      <div class="home-progress" v-if="badges.length" v-on:click="goBadges">
-        <div class="progress-label">
-          {{ unlockedBadgesCount }} / {{ badges.length }} badges débloqués
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: unlockedRatio + '%' }"></div>
-        </div>
+      <div class="home-badges-header">
+        <h2 class="home-section-title">Badges</h2>
+        <span class="badges-count" v-if="badges.length">
+          <strong>{{ unlockedBadgesCount }}</strong>/{{ badges.length }}
+        </span>
       </div>
-      <div class="home-tiles" v-if="nextBadges.length">
-        <SummaryTile
-          v-for="badge in nextBadges"
+      <div class="home-badges" v-if="displayedBadges.length">
+        <BadgeTile
+          v-for="badge in displayedBadges"
           :key="badge.id"
           :emoji="badge.icon || defaultBadgeEmoji"
           :label="badge.name"
-          :locked="true"
+          :locked="!badge.unlocked"
           v-on:clicked="goBadges"
         />
       </div>
+      <button class="home-more" v-on:click="goBadges">Voir la collection&nbsp;›</button>
     </div>
     <BottomNav />
+    <OnboardingSlides
+      v-if="showOnboarding"
+      v-on:skip="onboardingSkipped"
+      v-on:finished="onboardingSlidesFinished"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { BadgeBean, TripLight } from "@/pojos/BackendPojos";
+import { BadgeBean, CatchMarker, TripLight } from "@/pojos/BackendPojos";
 import UserProfile from "@/pojos/UserProfile";
-
 import Constants from "@/services/Constants";
 import DashboardService, { DashboardAndSpecies } from "@/services/DashboardService";
 import GamificationService from "@/services/GamificationService";
+import Helpers from "@/services/Helpers";
 import ProfileService from "@/services/ProfileService";
 import ReferentialService from "@/services/ReferentialService";
 import TripsService, { TripsAndCount } from "@/services/TripsService";
 import { RouterUtils } from "@/router/RouterUtils";
-
 import Avatar from "@/components/common/Avatar.vue";
+import MenuAnchor from "@/components/common/MenuAnchor.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 import Title from "@/components/layout/Title.vue";
+import BadgeTile from "@/components/home/BadgeTile.vue";
+import HomeSummary from "@/components/home/HomeSummary.vue";
 import LastTripCard from "@/components/home/LastTripCard.vue";
-import SummaryTile from "@/components/home/SummaryTile.vue";
+import OnboardingSlides from "@/components/onboarding/OnboardingSlides.vue";
+import OnboardingService from "@/services/OnboardingService";
+import { startOnboardingTour } from "@/services/OnboardingTour";
 
 import { Component, Vue } from "vue-facing-decorator";
 
-const UNKNOWN_VALUE = "–";
-const NEXT_BADGES_COUNT = 3;
+const DISPLAYED_BADGES_COUNT = 3;
 const DEFAULT_BADGE_EMOJI = "🏅";
+// Assez de sorties pour couvrir les 12 mois du résumé en un seul appel.
+const SUMMARY_TRIPS_PAGE_SIZE = 500;
 
 /** Accueil du pêcheur : dernière sortie, résumé de l'activité, badges. */
 @Component({
-  components: { Avatar, BottomNav, Title, LastTripCard, SummaryTile },
+  components: { Avatar, MenuAnchor, BottomNav, Title, BadgeTile, HomeSummary, LastTripCard, OnboardingSlides },
 })
 export default class HomeView extends Vue {
   firstName: string = "";
   initials: string = "";
   tripsLoaded: boolean = false;
-  lastTrip: TripLight | null = null;
+  trips: TripLight[] = [];
+  markers: CatchMarker[] = [];
+  markersLoaded: boolean = false;
   lastTripWaterName: string = "";
   lastTripPhotoUrl: string = "";
-  tripsCount: string | number = UNKNOWN_VALUE;
-  hoursCount: string | number = UNKNOWN_VALUE;
-  catchesCount: string | number = UNKNOWN_VALUE;
   badges: BadgeBean[] = [];
   defaultBadgeEmoji: string = DEFAULT_BADGE_EMOJI;
+  showOnboarding: boolean = false;
 
   mounted() {
+    // Onboarding au premier passage sur l'accueil, donc après la connexion (#194).
+    this.showOnboarding = !OnboardingService.isDone();
     ProfileService.getProfile().then(this.profileLoaded, () => undefined);
-    TripsService.listTrips(true, "").then(this.tripsListed, this.tripsFailed);
+    TripsService.listTrips(true, "", 0, SUMMARY_TRIPS_PAGE_SIZE).then(
+      this.tripsListed,
+      this.tripsFailed
+    );
+    TripsService.catchMarkers().then(this.markersListed, () => undefined);
     DashboardService.loadDashboardOrTimeout(undefined, "").then(
       this.dashboardLoaded,
-      () => undefined
-    );
-    DashboardService.loadEffortStatisticsOrTimeout(undefined, "").then(
-      (stats) => (this.hoursCount = Math.round(stats.totalHours)),
       () => undefined
     );
     GamificationService.getMyBadges().then(
@@ -143,13 +156,10 @@ export default class HomeView extends Vue {
 
   tripsListed(data: TripsAndCount) {
     this.tripsLoaded = true;
-    this.tripsCount = data.count;
-    const sorted = data.trips
-      .slice()
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    this.lastTrip = sorted.length ? sorted[0] : null;
-    if (this.lastTrip && this.lastTrip.waterEntityId) {
-      ReferentialService.getWaterEntityById(this.lastTrip.waterEntityId).then(
+    this.trips = data.trips;
+    const lastTrip = this.lastTrip;
+    if (lastTrip && lastTrip.waterEntityId) {
+      ReferentialService.getWaterEntityById(lastTrip.waterEntityId).then(
         (water) => (this.lastTripWaterName = water ? water.name : "")
       );
     }
@@ -159,9 +169,12 @@ export default class HomeView extends Vue {
     this.tripsLoaded = true;
   }
 
+  markersListed(markers: CatchMarker[]) {
+    this.markers = markers;
+    this.markersLoaded = true;
+  }
+
   dashboardLoaded(data: DashboardAndSpecies) {
-    const counts = data.dashboard.caughtSpeciesCount || {};
-    this.catchesCount = Object.values(counts).reduce((sum, n) => sum + n, 0);
     const pictures = (data.dashboard.picturesPerTrip || []).find(
       (p) => this.lastTrip && p.tripId === this.lastTrip.id
     );
@@ -170,18 +183,35 @@ export default class HomeView extends Vue {
     }
   }
 
+  get lastTrip(): TripLight | null {
+    const sorted = this.trips
+      .slice()
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return sorted.length ? sorted[0] : null;
+  }
+
   get unlockedBadgesCount(): number {
     return this.badges.filter((b) => b.unlocked).length;
   }
 
-  get unlockedRatio(): number {
-    return this.badges.length
-      ? Math.round((100 * this.unlockedBadgesCount) / this.badges.length)
-      : 0;
+  /** Derniers badges débloqués, complétés par les prochains à débloquer. */
+  get displayedBadges(): BadgeBean[] {
+    const unlocked = this.badges
+      .filter((b) => b.unlocked)
+      .sort((a, b) => Helpers.backendDateToDate(b.unlockedAt).getTime() - Helpers.backendDateToDate(a.unlockedAt).getTime());
+    const locked = this.badges.filter((b) => !b.unlocked);
+    return [...unlocked, ...locked].slice(0, DISPLAYED_BADGES_COUNT);
   }
 
-  get nextBadges(): BadgeBean[] {
-    return this.badges.filter((b) => !b.unlocked).slice(0, NEXT_BADGES_COUNT);
+  onboardingSkipped() {
+    OnboardingService.markDone();
+    this.showOnboarding = false;
+  }
+
+  /** Fin des écrans d'introduction : la visite guidée de l'accueil prend le relais. */
+  onboardingSlidesFinished() {
+    this.showOnboarding = false;
+    this.$nextTick(() => startOnboardingTour(() => OnboardingService.markDone()));
   }
 
   startNewTrip() {
@@ -197,7 +227,7 @@ export default class HomeView extends Vue {
   }
 
   goActivitySummary() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/activity-summary");
   }
 }
 </script>
@@ -237,6 +267,12 @@ export default class HomeView extends Vue {
     padding: 0;
   }
 
+  .home-header-buttons {
+    display: flex;
+    align-items: center;
+    gap: @margin-small;
+  }
+
   .home-avatar {
     width: 56px;
     height: 56px;
@@ -246,18 +282,20 @@ export default class HomeView extends Vue {
 
 .home-greeting {
   margin: 23px 0 0 2px;
-  color: @gunmetal;
+  color: @heading;
   font-size: 27px;
   font-weight: 700;
   line-height: 1.2;
+  letter-spacing: @letter-spacing;
 }
 
 .home-section-title {
-  margin: 30px 0 22px 0;
-  color: @gunmetal;
-  font-size: 18px;
+  margin: 30px 0 18px 0;
+  color: @heading;
+  font-size: 22px;
   font-weight: 600;
   line-height: 1.2;
+  letter-spacing: @letter-spacing;
 }
 
 .home-empty {
@@ -272,38 +310,53 @@ export default class HomeView extends Vue {
   text-align: center;
 }
 
-.home-tiles {
+.home-badges-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 40px;
+
+  .home-section-title {
+    margin: 0 0 26px 2px;
+  }
+
+  .badges-count {
+    color: @heading;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: @letter-spacing;
+
+    strong {
+      color: @accent-text;
+      font-size: 22px;
+      font-weight: 700;
+    }
+  }
+}
+
+.home-badges {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  gap: 14px;
 
   @media screen and (min-width: @desktop-min-width) {
     grid-template-columns: repeat(3, 160px);
   }
 }
 
-.home-progress {
-  margin-bottom: 18px;
-  cursor: pointer;
+.home-more {
+  display: block;
+  margin: 24px 4px 0 auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: @heading;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: @letter-spacing;
 
-  .progress-label {
-    margin-bottom: 8px;
-    color: @gunmetal;
-    font-size: 14.562px;
-    font-weight: 500;
-  }
-
-  .progress-bar {
-    height: 10px;
-    border-radius: 5px;
-    background-color: @carnet-blue-soft;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    border-radius: 5px;
-    background-color: @carnet-blue;
+  &:active {
+    animation: none;
   }
 }
 </style>

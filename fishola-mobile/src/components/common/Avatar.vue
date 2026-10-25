@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="pastille color0" v-on:click="goProfile">
+  <div class="pastille color0" :class="{ 'on-color': onColor }" v-on:click="goProfile">
     <span>{{initials}}</span>
   </div>
 </template>
@@ -31,6 +31,8 @@ import { Component, Prop, Vue } from "vue-facing-decorator";
 export default class Avatar extends Vue {
 
   @Prop() initials:string;
+  /** Pastille posée sur un fond de couleur de marque : fond blanc, initiales bleues. */
+  @Prop({ default: false }) onColor: boolean;
 
   goProfile() {
     this.$emit('goProfile');
@@ -49,6 +51,12 @@ export default class Avatar extends Vue {
   :root[data-theme="dark"] .pastille.color0 {
     color: @white;
     background: @carnet-blue;
+  }
+
+  .pastille.color0.on-color,
+  :root[data-theme="dark"] .pastille.color0.on-color {
+    color: @carnet-blue;
+    background: @white;
   }
 
 </style>

@@ -25,6 +25,7 @@ import {
   SouvenirTripBean,
 } from "@/pojos/BackendPojos";
 import moment from "moment";
+import Helpers from "@/services/Helpers";
 
 /** `generic` : carte actuelle (#146), sans prise associée ou souvenir indisponible. */
 export type SouvenirLayout = "generic" | "catch" | "mosaic" | "trips";
@@ -218,7 +219,7 @@ export default class BadgeSouvenir {
   }
 
   private altitudeHeadline(trip: SouvenirTripBean): string {
-    const name = this.waterEntityName(trip) || "Lac d'altitude";
+    const name = this.waterEntityName(trip) || "Milieu d'altitude";
     return trip.waterEntityAltitude ? `${name} — ${Math.round(trip.waterEntityAltitude)} m d'altitude` : name;
   }
 
@@ -264,17 +265,12 @@ export default class BadgeSouvenir {
     return names.length > MAX_LISTED_PLACES ? `${listed}…` : listed;
   }
 
-  // #90, même conversion défensive que Badges.vue : LocalDate arrive en [y, m(1-12), d].
+  // #90 : LocalDate arrive en [y, m(1-12), d], cf. Helpers.formatBackendDate.
   private competitionDate(): string {
-    const d: any = this.badge.competitionDate;
-    if (!this.badge.competitionName || !d) {
+    if (!this.badge.competitionName) {
       return "";
     }
-    if (Array.isArray(d)) {
-      const [year, month, day] = d;
-      return moment([year, month - 1, day]).format("DD/MM/YYYY");
-    }
-    return moment(d).format("DD/MM/YYYY");
+    return Helpers.formatBackendDate(this.badge.competitionDate);
   }
 
   private formatDate(isoDateTime: any): string {

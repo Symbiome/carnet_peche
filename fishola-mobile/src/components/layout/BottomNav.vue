@@ -79,11 +79,11 @@ export default class BottomNav extends Vue {
 
   leftItems: BottomNavItem[] = [
     { name: "home", label: "Accueil", icon: "img/carnet/nav-home.svg", route: "/home" },
-    { name: "map", label: "Carte", icon: "img/carnet/nav-map.svg", route: "/my-trips/map" },
+    { name: "map", label: "Carte", icon: "img/carnet/nav-map.svg", route: "/map" },
   ];
 
   rightItems: BottomNavItem[] = [
-    { name: "catches", label: "Mes prises", icon: "img/carnet/nav-fish.svg", route: "/dashboard-personal/dashboard" },
+    { name: "catches", label: "Mes prises", icon: "img/carnet/nav-fish.svg", route: "/trips" },
     { name: "account", label: "Compte", icon: "img/carnet/nav-user.svg", route: "/account" },
   ];
 
@@ -166,7 +166,7 @@ export default class BottomNav extends Vue {
     border: 4px solid @white-smoke;
     border-radius: 31.5px;
 
-    background-color: @carnet-blue;
+    background-color: @carnet-sky;
     color: @white;
     font-family: @font-family;
     font-size: 41.745px;
@@ -189,5 +189,11 @@ export default class BottomNav extends Vue {
       animation: none;
     }
   }
+}
+
+// Maquette du mode sombre : bouton « + » bleu, le bleu ciel ressortant trop
+// sur le fond bleu nuit.
+:root[data-theme="dark"] .bottom-nav .nav-action:not(.delete-mode) {
+  background-color: @carnet-blue;
 }
 </style>

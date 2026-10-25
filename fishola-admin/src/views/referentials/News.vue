@@ -44,39 +44,38 @@ import Constants from "@/services/Constants";
 
 import router from "@/router";
 import { useDialog, useToast } from "buefy";
-import { reactive, Reactive, ref, Ref } from "vue";
+import { ref, Ref } from "vue";
 
 const Dialog = useDialog();
 const Toast = useToast();
 
-const lakesIdToNameMap = reactive(new Map<string, string>());
-const lakesOptions: Reactive<any[]> = reactive([]);
 const docColumns: Ref<any[]> = ref([]);
-const loggedAdmin: Ref<any> = ref({});
 const nextPlannifiedDate: Ref<number[]> = ref([]);
 
 refreshNextPlannifiedDate();
 
+/**
+ * Nouvelle communication : période de publication du jour (date locale de
+ * l'appareil, #278), que l'admin prolonge ; heures fixées à la sauvegarde.
+ */
 function createDocumentation() {
-  const tomorow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
+  const today = LocalDateTime.now();
   return {
     name: "Titre de votre communication",
     content: "<h1>Partie 1</h1><p>Le corps de votre <b>communication</b>",
-    lakeIds: [],
-    isNational: false,
     datePublicationDebut: [
-      tomorow.year(),
-      tomorow.monthValue(),
-      tomorow.dayOfMonth(),
+      today.year(),
+      today.monthValue(),
+      today.dayOfMonth(),
       7,
       30
     ],
     datePublicationFin: [
-      tomorow.year(),
-      tomorow.monthValue(),
-      tomorow.dayOfMonth(),
-      7,
-      30
+      today.year(),
+      today.monthValue(),
+      today.dayOfMonth(),
+      21,
+      0
     ],
     isPublished: false
   };
@@ -96,9 +95,9 @@ function computeIsPublicAndMiniatureURLs(actualites: any[]) {
       ? Constants.apiUrl("/v1/news-picture/" + actualite.miniatureId)
       : "";
 
-    actualite.lakeNames = actualite.isNational ?
-      "National" :
-      actualite.lakeIds.map((lakeId: string) => lakesIdToNameMap.get(lakeId)).join(", ");
+    actualite.scope = actualite.isNational ?
+      "Nationale" :
+      "Départements " + [...(actualite.departmentCodes ?? [])].sort().join(", ");
   });
 }
 
@@ -153,17 +152,7 @@ function parseLocalDateTime(someLocalDateTime: number[]): Date {
 
 async function refreshNextPlannifiedDate(): Promise<void> {
   try {
-    loggedAdmin.value = await BackendService.backendGet("/v1/admin/check");
-    const lakes = await BackendService.backendGet("/v1/referential/waterEntities");
-    lakes.forEach((lake: { id: string; name: string }) => {
-      lakesIdToNameMap.set(lake.id, lake.name);
-    });
-    lakes.forEach((l: any) => {
-      lakesOptions.push({
-        id: l.id,
-        label: l.name,
-      })
-    });
+    await BackendService.backendGet("/v1/admin/check");
 
     docColumns.value = [
       {
@@ -174,8 +163,8 @@ async function refreshNextPlannifiedDate(): Promise<void> {
         hiddenInPopup: true
       },
       {
-        field: "lakeNames",
-        label: "Plans d'eau",
+        field: "scope",
+        label: "Portée",
         searchable: true,
         hiddenInPopup: true
       },
@@ -194,28 +183,6 @@ async function refreshNextPlannifiedDate(): Promise<void> {
         field: "datePublicationDebut",
         label: "Début de publication",
         isAPeriodBeginning: true
-      },
-      {
-        field: "isNational",
-        isABoolean: true,
-        label: "National (concerne tous les plans d'eau)",
-        visible: false,
-        showItemIfFunction: (news: News) => {
-          return loggedAdmin.value.isNationalAdmin;
-        },
-      },
-      {
-        field: "lakeIds",
-        label: "Plans d'eau",
-        isArray: true,
-        visible: false,
-        showItemIfFunction: (news: News) => {
-          return !news.isNational
-        },
-        possibleValuesForItemFunction: (news: News) => {
-          return news.lakeIds ?? [];
-        },
-        arrayOptions: lakesOptions
       },
       {
         field: "datePublicationFin",

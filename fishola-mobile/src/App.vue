@@ -231,7 +231,9 @@ html {
   font-family: @font-family;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: @white;
+  // Couleur de texte par défaut suivant le thème : un texte sans couleur
+  // explicite ne doit pas hériter du blanc (illisible sur fond clair).
+  color: @gunmetal;
   height: 100%;
   max-height: 100%;
   max-width: 100%;
@@ -295,11 +297,22 @@ html {
   }
 }
 
+// Pages sur photo bleue (connexion, mot de passe, vérification) : texte blanc.
 .full-background {
+  color: @white;
   background-image: url("img/background_transparent.png");
   background-repeat: no-repeat;
   background-size: 100%;
   background-position: center;
+}
+
+// Le pictogramme bleu disparaît sur la photo bleue : logo posé sur une tuile blanche.
+.carnet-logo-tile {
+  width: fit-content;
+  margin: 0 auto;
+  padding: @margin-small @margin-medium;
+  border-radius: 16px;
+  background-color: @white;
 }
 
 .shifted-background {

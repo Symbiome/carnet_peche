@@ -111,6 +111,7 @@ class SurveyImportXlsxTest {
         String tripFilter = "(survey_session_id IN (SELECT id FROM survey_session WHERE code LIKE 'SURVEY-TEST%') "
                 + "OR surveyed_angler_id IN (SELECT id FROM surveyed_angler WHERE code IN ('P1', 'P-TPL')))";
         ctx.execute("DELETE FROM catch WHERE trip_id IN (SELECT id FROM trip WHERE " + tripFilter + ")");
+        ctx.execute("DELETE FROM trip_techniques WHERE trip_id IN (SELECT id FROM trip WHERE " + tripFilter + ")");
         ctx.execute("DELETE FROM trip WHERE " + tripFilter);
         ctx.execute("DELETE FROM import_row_error WHERE import_id IN (SELECT id FROM import_job WHERE file_name LIKE 'survey-test%')");
         ctx.execute("DELETE FROM import_job WHERE file_name LIKE 'survey-test%'");

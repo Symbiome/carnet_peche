@@ -42,6 +42,7 @@ export interface TripBean {
     waterEntityId: string;
     speciesIds: string[];
     otherSpecies: string;
+    allSpecies: boolean;
     date: Date;
     startedAt: string;
     endDate?: Date;
@@ -174,7 +175,7 @@ export interface NewsBean {
     dateNotificationSent: Date;
     miniatureId: string;
     isNational: boolean;
-    waterEntityIds: string[];
+    departmentCodes: string[];
 }
 
 export interface UserSettings {

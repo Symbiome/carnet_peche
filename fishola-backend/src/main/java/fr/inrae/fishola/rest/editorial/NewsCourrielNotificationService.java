@@ -27,7 +27,6 @@ import com.github.mustachejava.MustacheFactory;
 import com.google.common.collect.Lists;
 import fr.inrae.fishola.database.NewsCarnetDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
-import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.mails.ImmutableCarnetMail;
 import fr.inrae.fishola.mails.MailService;
@@ -50,6 +49,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static io.quarkus.scheduler.Scheduled.ConcurrentExecution.SKIP;
@@ -150,11 +150,11 @@ public class NewsCourrielNotificationService extends AbstractCarnetResource {
         if (!allNewsToNotify.isEmpty()) {
             for (FisholaUser user : usersDao.findAllUsersAllowingCourriel()) {
                 StringBuilder htmlContent = new StringBuilder();
-                List<UUID> favoriteWaterEntities = usersDao.getFavoriteWaterEntities(user.getId()).stream().map(WaterEntity::getId).toList();
-                // Only keep national news and news related to user waterEntity
+                Set<String> anglerDepartments = dao.getAnglerDepartments(user);
+                // Actus nationales et actus ciblant un département du pêcheur (#233)
                 List<News> newsToNotifyByMail = allNewsToNotify.stream().filter(n ->
                                 n.getIsNational()
-                                || dao.getWaterEntityIds(n.getId()).stream().anyMatch(favoriteWaterEntities::contains))
+                                || dao.getDepartmentCodes(n.getId()).stream().anyMatch(anglerDepartments::contains))
                         .toList();
                 notifySingleUserByCourrielAboutNews(user, newsToNotifyByMail, htmlContent);
             }

@@ -95,6 +95,7 @@ class CarnetVolontaireManualEntryResourceTest {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         for (UUID tripId : createdTripIds) {
             ctx.execute("DELETE FROM catch WHERE trip_id = ?", tripId);
+            ctx.execute("DELETE FROM trip_techniques WHERE trip_id = ?", tripId);
             ctx.execute("DELETE FROM trip WHERE id = ?", tripId);
         }
         ctx.execute("DELETE FROM fishola_admin WHERE id = ?", operatorId);
@@ -199,5 +200,51 @@ class CarnetVolontaireManualEntryResourceTest {
                 UUID.fromString(tripId));
         Assertions.assertEquals("carnet_volontaire", row.get("origine_donnee", String.class));
         Assertions.assertEquals("CARNET-PAPIER-42", row.get("code_session", String.class));
+    }
+
+    /**
+     * #300 : l'espèce recherchée et la technique de la sortie sont enregistrées et renvoyées,
+     * avec l'origine, à l'onglet « Sorties » de l'admin. Une capture est nécessaire : le
+     * cloisonnement départemental de l'onglet porte sur le département de la capture.
+     */
+    @Test
+    void tripExpectedSpeciesTechniqueAndOriginReachTheTripsTab() {
+        var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+        UUID expectedSpeciesId = ctx.fetchOne("SELECT id FROM species WHERE export_as IS NOT NULL LIMIT 1")
+                .get("id", UUID.class);
+        CarnetVolontaireTripBean trip = bredouilleTrip(45.86, 6.18);
+        trip.noExpectedSpecies = false;
+        trip.expectedSpeciesId = expectedSpeciesId;
+        trip.sessionCode = "CARNET-300";
+        trip.bredouille = false;
+        CarnetVolontaireCatchBean capture = new CarnetVolontaireCatchBean();
+        capture.speciesId = expectedSpeciesId;
+        capture.quantity = 1;
+        capture.size = 300;
+        trip.captures = List.of(capture);
+        String tripId = given()
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/json")
+                .body(trip)
+                .when().post(URI)
+                .then().statusCode(201)
+                .extract().jsonPath().getString("tripId");
+        createdTripIds.add(UUID.fromString(tripId));
+
+        String expectedSpecies = ctx.fetchOne("SELECT normalize_for_export(export_as) AS name FROM species WHERE id = ?",
+                expectedSpeciesId).get("name", String.class);
+        String technique = ctx.fetchOne("SELECT export_as FROM technique WHERE id = ?", techniqueId)
+                .get("export_as", String.class);
+        var element = given()
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .queryParam("id_sortie", tripId)
+                .when().get("/api/v1/trips/export/0/date_de_la_sortie/desc")
+                .then().statusCode(200)
+                .extract().jsonPath();
+        Assertions.assertEquals(1, element.getInt("total"));
+        Assertions.assertEquals(expectedSpecies, element.getString("elements[0].especeRecherchee"));
+        Assertions.assertEquals(technique, element.getString("elements[0].techniqueDePecheParSortie"));
+        Assertions.assertEquals("carnet_volontaire", element.getString("elements[0].origineDonnee"));
+        Assertions.assertEquals("CARNET-300", element.getString("elements[0].codeSession"));
     }
 }

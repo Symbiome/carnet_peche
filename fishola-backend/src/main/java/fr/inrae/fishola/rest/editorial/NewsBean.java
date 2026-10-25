@@ -25,6 +25,11 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Actualité vue du back-office. La portée ({@code isNational},
+ * {@code departmentCodes}) découle de l'administrateur auteur et n'est jamais
+ * lue depuis la requête (#233).
+ */
 public class NewsBean {
 
     public UUID id;
@@ -35,9 +40,9 @@ public class NewsBean {
     public LocalDateTime dateNotificationSent;
     public UUID miniatureId;
     public Boolean isNational;
-    public Set<UUID> waterEntityIds;
+    public Set<String> departmentCodes;
 
-    public NewsBean(UUID id, String name, String content, LocalDateTime datePublicationDebut, LocalDateTime datePublicationFin, LocalDateTime dateNotificationSent, UUID miniatureId, Boolean isNational, Set<UUID> waterEntityIds) {
+    public NewsBean(UUID id, String name, String content, LocalDateTime datePublicationDebut, LocalDateTime datePublicationFin, LocalDateTime dateNotificationSent, UUID miniatureId, Boolean isNational, Set<String> departmentCodes) {
         this.id = id;
         this.name = name;
         this.content = content;
@@ -46,6 +51,6 @@ public class NewsBean {
         this.dateNotificationSent = dateNotificationSent;
         this.miniatureId = miniatureId;
         this.isNational = isNational;
-        this.waterEntityIds = waterEntityIds;
+        this.departmentCodes = departmentCodes;
     }
 }

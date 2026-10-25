@@ -25,7 +25,9 @@
         class="password-reset-title keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly"
       >
         <div class="welcome keyboardSensitive">Bienvenue sur</div>
-        <CarnetLogo class="carnet-logo-centered keyboardSensitive" />
+        <div class="carnet-logo-tile force-light-theme keyboardSensitive">
+          <CarnetLogo />
+        </div>
       </div>
       <div class="pending" v-if="pending">
         <p>Réinitialisation du mot de passe en cours, veuillez patientier...</p>

@@ -73,8 +73,8 @@ export default class Top extends Vue {
 
   .top-4, .top-5 {
     background-color: transparent;
-    color: @cyprus;
-    border: 1px solid @cyprus;
+    color: @gunmetal;
+    border: 1px solid @gunmetal;
     line-height: @fontsize-top4;
   }
 

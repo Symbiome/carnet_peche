@@ -7,35 +7,57 @@
 :root,
 .force-light-theme {
   --carnet-gunmetal: @carnet-navy;
-  --carnet-pale-sky: #5B6B78;
+  --carnet-pale-sky: #526170;
   --carnet-very-light-grey: #D5D9DC;
   --carnet-link-water: #D2DAE2;
-  --carnet-white-smoke: #FFFFFF;
+  --carnet-white-smoke: @carnet-sand;
   --carnet-gainsboro: #ECE6E3;
   --carnet-zircon: #F3EEEB;
   --carnet-solitude: #E8EAEC;
-  --carnet-surface: @carnet-sand;
+  --carnet-surface: #FFFFFF;
   --carnet-surface-overlay: rgba(255, 255, 255, 0.92);
   --carnet-text-strong: @carnet-navy;
   --carnet-divider: rgba(20, 38, 52, 0.1);
   --carnet-accent-text: @carnet-blue;
+  --carnet-heading: @carnet-ink;
+  --carnet-blue-text: @carnet-ink;
+  --carnet-blue-box: #CCCCF9;
+  --carnet-sky-text: @carnet-deep-blue;
+  --carnet-sky-box: #CCE8FE;
+  --carnet-green-text: @carnet-dark-green;
+  --carnet-green-box: #CFF5E1;
+  --carnet-yellow-text: @carnet-dark-yellow;
+  --carnet-yellow-box: #FFF2CD;
+  --carnet-warning-text: #A65200;
   color-scheme: light;
 }
 
+// Mode sombre : fond bleu nuit de la maquette (#00004C) ; les déclinaisons
+// texte passent à des teintes claires (contraste AA sur leur boîte).
 :root[data-theme="dark"] {
   --carnet-gunmetal: #FFFFFF;
-  --carnet-pale-sky: #A7B4BF;
-  --carnet-very-light-grey: #33485A;
-  --carnet-link-water: #2C4253;
-  --carnet-white-smoke: @carnet-navy;
-  --carnet-gainsboro: #22394B;
-  --carnet-zircon: #1B3142;
-  --carnet-solitude: #22394B;
-  --carnet-surface: #1D3446;
-  --carnet-surface-overlay: rgba(20, 38, 52, 0.92);
+  --carnet-pale-sky: #B4B4D9;
+  --carnet-very-light-grey: #2E2E85;
+  --carnet-link-water: #26267A;
+  --carnet-white-smoke: @carnet-ink;
+  --carnet-gainsboro: #1C1C6E;
+  --carnet-zircon: #101058;
+  --carnet-solitude: #1C1C6E;
+  --carnet-surface: #15155E;
+  --carnet-surface-overlay: rgba(0, 0, 76, 0.92);
   --carnet-text-strong: #FFFFFF;
   --carnet-divider: rgba(255, 255, 255, 0.1);
   --carnet-accent-text: #8F8FFF;
+  --carnet-heading: #FFFFFF;
+  --carnet-blue-text: #B3B3FF;
+  --carnet-blue-box: rgba(0, 0, 224, 0.2);
+  --carnet-sky-text: #7CC4FF;
+  --carnet-sky-box: rgba(0, 139, 248, 0.2);
+  --carnet-green-text: #6EE7A8;
+  --carnet-green-box: rgba(12, 206, 107, 0.2);
+  --carnet-yellow-text: #FFD966;
+  --carnet-yellow-box: rgba(255, 191, 0, 0.2);
+  --carnet-warning-text: @carnet-orange;
   color-scheme: dark;
 }
 
@@ -403,5 +425,71 @@ body {
       color: @pale-sky;
       font-size: 0.75rem;
     }
+  }
+}
+
+/* ========== Visite guidée intro.js (#194) ========== */
+// La bulle est ajoutée au <body>, hors de #app : couleurs explicites, tirées
+// des propriétés du thème, pour rester lisible en clair comme en sombre.
+.introjs-tooltip.carnet-tour {
+  --introjs-arrow-color: var(--carnet-surface);
+  border-radius: 13px;
+  background-color: @surface;
+  color: @gunmetal;
+  font-family: @font-family;
+
+  .introjs-tooltip-title {
+    color: @heading;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .introjs-tooltiptext {
+    color: @gunmetal;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .introjs-skipbutton {
+    width: auto;
+    padding: 0 6px;
+    color: @accent-text;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .introjs-bullets ul li a {
+    background-color: @pale-sky;
+    opacity: 0.45;
+
+    &.active {
+      background-color: @accent-text;
+      opacity: 1;
+    }
+  }
+
+  .introjs-button {
+    border: 2px solid @accent-text;
+    border-radius: 18px;
+    background: transparent;
+    color: @accent-text;
+    font-family: @font-family;
+    font-weight: 600;
+    text-shadow: none;
+
+    &:focus,
+    &:hover {
+      box-shadow: none;
+    }
+  }
+
+  .introjs-nextbutton {
+    border-color: @carnet-blue;
+    background-color: @carnet-blue;
+    color: @white;
+  }
+
+  .introjs-disabled {
+    opacity: 0.4;
   }
 }

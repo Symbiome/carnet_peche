@@ -50,7 +50,7 @@
                 </span>
                 <select
                   class="lake-gallery-select"
-                  placeholder="lake"
+                  placeholder="zone"
                   v-model="selectedLakeId"
                 >
                   <option
@@ -330,7 +330,7 @@ export default class GaleryFull extends Vue {
   }
 
   goBack() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/activity-summary");
   }
 
   async downloadSelectedPic() {
@@ -609,7 +609,7 @@ export default class GaleryFull extends Vue {
       line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
       color: @accent-text;
-      background-color: #dadada;
+      background-color: @solitude;
 
       border: 0px;
       border: 1px solid @accent-text;

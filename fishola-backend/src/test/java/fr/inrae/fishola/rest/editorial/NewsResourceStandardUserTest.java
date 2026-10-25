@@ -23,7 +23,6 @@ package fr.inrae.fishola.rest.editorial;
 
 import fr.inrae.fishola.database.NewsCarnetDao;
 import fr.inrae.fishola.database.ReferentialDao;
-import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.AbstractCarnetTest;
@@ -38,7 +37,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -66,7 +65,8 @@ class NewsResourceStandardUserTest extends AbstractCarnetTest {
         unpublishedNews.setName(this.token);
         unpublishedNews.setDatePublicationDebut(now.plusDays(10));
         unpublishedNews.setDatePublicationFin(now.plusDays(20));
-        this.newsDao.insert(unpublishedNews, referentialDao.listWaterEntities().stream().map(WaterEntity::getId).collect(Collectors.toSet()));
+        unpublishedNews.setIsNational(true);
+        this.newsDao.insert(unpublishedNews, Set.of());
 
         // Insert a published news
         News publishedNews = new News();
@@ -74,18 +74,19 @@ class NewsResourceStandardUserTest extends AbstractCarnetTest {
         publishedNews.setName("published-" + token);
         publishedNews.setDatePublicationDebut(now.minusDays(10));
         publishedNews.setDatePublicationFin(now.plusDays(10));
-        this.newsDao.insert(publishedNews, referentialDao.listWaterEntities().stream().map(WaterEntity::getId).collect(Collectors.toSet()));
+        publishedNews.setIsNational(true);
+        this.newsDao.insert(publishedNews, Set.of());
     }
 
     @Test
     @Transactional
     void testGetPublishedNews() {
         // Get news : only news with active publication date should be displayed
-        int expectedPublishedNewsCount = this.newsDao.getNews(false, Optional.empty()).stream().filter(
-                news -> news.getName().startsWith("published-")
-        ).toList().size();
-        List<News> publishedNews = this.newsDao.getNews(true, Optional.empty());
-        Assertions.assertEquals(expectedPublishedNewsCount, publishedNews.size());
+        // Sans session pêcheur, seules les actus nationales publiées sont renvoyées (#233)
+        int expectedPublishedNewsCount = this.newsDao.getNews(true, Optional.empty()).stream()
+                .filter(News::getIsNational)
+                .toList().size();
+        Assertions.assertNotEquals(0, expectedPublishedNewsCount);
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
