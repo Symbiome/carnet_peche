@@ -60,7 +60,8 @@ const enableWeightPrompt = () =>
   );
 
 const fillCatch = ({ size, weight, technique = true }) => {
-  cy.get("#field-species").select("Brochet");
+  cy.get("#field-species").type("bro");
+  cy.contains('[role="option"]', "Brochet").click();
   cy.get("#field-size").clear().type(String(size));
   cy.get("#field-weight").clear().type(String(weight));
   cy.get("#field-keep-false").check({ force: true });
