@@ -87,6 +87,7 @@ describe("Navigation (#301)", () => {
         "Paramètres",
         "Contact",
         "A propos",
+        "Qui porte le projet ?",
         "Revoir la présentation",
         "Déconnexion",
       ]);

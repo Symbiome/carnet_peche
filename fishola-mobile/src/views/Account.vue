@@ -95,6 +95,7 @@ export default class AccountView extends Vue {
         items: [
           { label: "Contact", icon: "img/carnet/account-contact.svg", action: this.openFeedback },
           { label: "A propos", icon: "img/carnet/account-about.svg", action: () => this.go("/documentation/doc") },
+          { label: "Qui porte le projet ?", icon: "img/carnet/account-who.svg", action: () => this.go("/credits") },
           { label: "Revoir la présentation", fontIcon: "icon-info", action: this.replayOnboarding },
           { label: "Déconnexion", fontIcon: "icon-logout", action: this.logout },
         ],
