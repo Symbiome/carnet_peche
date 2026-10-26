@@ -43,6 +43,9 @@ public interface Feedback {
     /** Partie de l'application concernée (« Carte », « Administration »…). */
     Optional<String> module();
 
+    /** Application d'origine du retour : « Administration » ; absente pour l'app pêcheur. */
+    Optional<String> source();
+
     Optional<String> userId();
 
     Optional<String> email();

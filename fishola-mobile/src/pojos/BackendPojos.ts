@@ -207,6 +207,7 @@ export interface Feedback {
     id: string;
     category: string;
     module?: string;
+    source?: string;
     userId?: string;
     email?: string;
     description?: string;

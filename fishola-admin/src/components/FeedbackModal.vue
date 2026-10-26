@@ -88,9 +88,10 @@ import { BButton, BField, BIcon, BInput, BModal, BRadio, BUpload, useToast } fro
 import { computed, ref, watch } from "vue";
 
 /**
- * Formulaire de retour des testeurs de l'administration : même envoi que
- * « Des retours ? » de l'app pêcheur (e-mail à l'équipe), classé par
- * catégorie et par module, avec une capture d'écran facultative.
+ * Formulaire de retour des testeurs de l'administration (admins et
+ * opérateurs) : même envoi que « Des retours ? » de l'app pêcheur (e-mail à
+ * l'équipe), marqué « Administration », classé par catégorie et par module,
+ * avec une capture d'écran facultative.
  */
 
 const CATEGORIES = [
@@ -166,6 +167,7 @@ async function send() {
   sending.value = true;
   try {
     await BackendService.backendPut("/v1/feedback", {
+      source: "Administration",
       category: category.value,
       module: module.value || undefined,
       description: description.value,

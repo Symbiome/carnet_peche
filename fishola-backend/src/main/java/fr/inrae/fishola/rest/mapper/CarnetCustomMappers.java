@@ -199,6 +199,7 @@ public class CarnetCustomMappers implements ObjectMapperCustomizer {
             Preconditions.checkArgument(StringUtils.isNotEmpty(category), "La catégorie est obligatoire");
             builder.category(category);
             readText(node, "module").ifPresent(builder::module);
+            readText(node, "source").ifPresent(builder::source);
             readText(node, "userId").ifPresent(builder::userId);
             readText(node, EMAIL).ifPresent(builder::email);
             readText(node, "description").ifPresent(builder::description);
