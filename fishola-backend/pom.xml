@@ -437,6 +437,7 @@
                         <class>fr.inrae.fishola.rest.dashboard.GlobalDashboard</class>
                         <class>fr.inrae.fishola.rest.dashboard.EvolutionMetricsForWaterEntity</class>
                         <class>fr.inrae.fishola.rest.dashboard.AnglerEffortStatistics</class>
+                        <class>fr.inrae.fishola.rest.dashboard.PersonalStatistics</class>
                         <class>fr.inrae.fishola.rest.licences.LicenceFromClientBean</class>
                         <class>fr.inrae.fishola.rest.licences.LicenceResponseBean</class>
                         <class>fr.inrae.fishola.rest.trips.CatchMarker</class>
