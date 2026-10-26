@@ -32,6 +32,11 @@
           </h1>
         </div>
 
+        <button class="back-to-app" v-if="connected && closed" v-on:click="goToLogin">
+          <i class="icon-arrow icon-back" />
+          Retour à l'application
+        </button>
+
         <div class="burger" v-if="closed" @click="closed = !closed">
           <i class="icon-menu"></i>
         </div>
@@ -67,7 +72,7 @@
             </ul>
           </nav>
           <div class="authentication">
-            <button v-on:click="goToLogin">Connexion</button>
+            <button v-on:click="goToLogin">{{ connected ? "Retour à l'application" : "Connexion" }}</button>
           </div>
         </div>
       </header>
@@ -284,6 +289,7 @@ export default class AboutView extends Vue {
   frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
 
   closed: boolean = true;
+  connected: boolean = false;
   keyFiguresObserver?: IntersectionObserver;
 
   constructor() {
@@ -291,6 +297,10 @@ export default class AboutView extends Vue {
   }
 
   created() {
+    ProfileService.fetchProfile().then(
+      () => (this.connected = true),
+      () => (this.connected = false)
+    );
     AboutService.getKeyFigures().then(
       (kf) => {
         console.debug("Chiffres clés", kf);
@@ -511,6 +521,30 @@ export default class AboutView extends Vue {
     justify-content: space-between;
 
     .site-logo-smartphone {
+      @media only screen and (min-width: 900px) {
+        display: none;
+      }
+    }
+
+    // Retour visible sans ouvrir le menu, pour le pêcheur connecté.
+    .back-to-app {
+      align-self: center;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+      margin-right: 16px;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 20px;
+      background-color: @carnet-blue;
+      color: @white;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+
       @media only screen and (min-width: 900px) {
         display: none;
       }
