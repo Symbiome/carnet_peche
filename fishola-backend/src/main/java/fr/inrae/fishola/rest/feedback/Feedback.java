@@ -40,6 +40,9 @@ public interface Feedback {
 
     String category();
 
+    /** Partie de l'application concernée (« Carte », « Administration »…). */
+    Optional<String> module();
+
     Optional<String> userId();
 
     Optional<String> email();

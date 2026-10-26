@@ -19,110 +19,116 @@
   #L%
   -->
 <template>
-  <div
-    class="feedback page-with-header-and-footer"
-    v-bind:class="display ? '' : 'feedback-hidden'"
-  >
-    <div class="page feedback-page">
-      <div class="pane">
-        <div class="pane-content rounded">
-          <h1>Des retours ?</h1>
-          <p>
-            Si vous voyez une anomalie ou si vous avez simplement une remarque à
-            faire, remplissez ce formulaire pour nous faire parvenir votre avis.
-          </p>
-          <p>N'hésitez pas à en abuser !</p>
+  <div class="feedback-overlay" v-if="display" v-on:click.self="closeFeedback">
+    <div class="feedback-dialog" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+      <header class="feedback-header">
+        <h2 id="feedback-title">Des retours ?</h2>
+        <button class="feedback-close" aria-label="Fermer" v-on:click="closeFeedback">
+          <i class="icon-error" />
+        </button>
+      </header>
 
-          <FormRadio
-            name="category"
-            label="Catégorie"
-            v-bind:options="categories"
-            v-model="model.category"
-          />
-          <FormInput
-            name="email"
-            label="E-mail (optionnel)"
-            placeholder="Indiquez votre e-mail pour rester informé"
-            v-model="model.email"
-          />
-          <FormTextarea
-            name="description"
-            label="Description"
-            placeholder="Écrivez une description"
-            v-model="model.description"
-          />
-          <div class="form-checkbox">
-            <input
-              type="checkbox"
-              id="feedback-with-picture"
-              class="pelorous-checkbox"
-              v-model="withPicture"
-            />
-            <label for="feedback-with-picture"></label>
-            <label for="feedback-with-picture" class="real-label"
-              >Inclure une copie d'écran</label
-            >
+      <div class="feedback-body">
+        <p class="feedback-intro">
+          Un bug, une remarque, une idée ? Remplissez ce formulaire pour nous
+          faire parvenir votre avis.
+        </p>
+
+        <fieldset class="feedback-choices">
+          <legend>Catégorie</legend>
+          <label v-for="option in categories" :key="option" class="choice">
+            <input type="radio" name="feedback-category" :value="option" v-model="model.category" />
+            <span>{{ option }}</span>
+          </label>
+        </fieldset>
+
+        <fieldset class="feedback-choices">
+          <legend>Module concerné</legend>
+          <label v-for="option in modules" :key="option" class="choice">
+            <input type="radio" name="feedback-module" :value="option" v-model="model.module" />
+            <span>{{ option }}</span>
+          </label>
+        </fieldset>
+
+        <FormTextarea
+          name="feedback-description"
+          label="Description"
+          placeholder="Décrivez ce que vous avez constaté ou ce que vous proposez"
+          v-model="model.description"
+        />
+
+        <div class="feedback-screenshot">
+          <span class="feedback-label">Capture d'écran (optionnel)</span>
+          <div v-if="screenshot" class="screenshot-preview">
+            <img :src="screenshot" alt="Capture d'écran jointe" />
+            <button class="screenshot-remove" v-on:click="removeScreenshot">Retirer</button>
           </div>
-          <FormInput
-            name="version"
-            label="Version de l'application"
-            readonly="true"
-            v-model="model.frontendVersion"
-          />
-
-          <div class="buttons-bar hide-on-mobile">
-            <div class="button button-primary">
-              <button v-on:click="sendClicked">
-                <i class="icon-send" /> Envoyer
-              </button>
-            </div>
-            <div class="button button-secondary">
-              <button v-on:click="closeFeedback">Annuler</button>
-            </div>
-          </div>
-
-          <div class="bottom-page-spacer"></div>
+          <label v-else class="screenshot-add">
+            <input type="file" accept="image/*" v-on:change="screenshotChosen" />
+            <i class="icon-photo" />
+            {{ screenshotLoading ? "Chargement…" : "Ajouter une capture d'écran" }}
+          </label>
+          <span v-if="screenshotError" class="screenshot-error">{{ screenshotError }}</span>
         </div>
+
+        <FormInput
+          name="feedback-email"
+          label="E-mail (optionnel)"
+          placeholder="Indiquez votre e-mail pour rester informé"
+          v-model="model.email"
+        />
+        <p class="feedback-version">Version de l'application : {{ frontendVersion }}</p>
       </div>
+
+      <footer class="feedback-actions">
+        <div class="button button-secondary">
+          <button v-on:click="closeFeedback">Annuler</button>
+        </div>
+        <div class="button button-primary">
+          <button v-on:click="sendClicked" :disabled="!canSend">
+            <i class="icon-send" /> Envoyer
+          </button>
+        </div>
+      </footer>
     </div>
-    <CarnetFooter
-      shortcuts="back,credits,feedback"
-      button-icon="icon-send"
-      button-text="Envoyer"
-      v-on:buttonClicked="sendClicked"
-      back-event="onBackButton"
-      v-on:onBackButton="closeFeedback"
-      selected="feedback"
-    />
   </div>
 </template>
 
 <script lang="ts">
-import CarnetHeader from "@/components/layout/CarnetHeader.vue";
-import CarnetFooter from "@/components/layout/CarnetFooter.vue";
-
 import FormInput from "@/components/common/FormInput.vue";
-import FormRadio from "@/components/common/FormRadio.vue";
 import FormTextarea from "@/components/common/FormTextarea.vue";
 
 import { Feedback } from "@/pojos/BackendPojos";
 import UserProfile from "@/pojos/UserProfile";
 
-import ProfileService from "@/services/ProfileService";
-import FeedbackService from "@/services/FeedbackService";
-
-import html2canvas from "html2canvas";
-
-import { Component, Vue } from "vue-facing-decorator";
 import EventBus from "@/services/EventBus";
-import { Device } from "@capacitor/device";
+import FeedbackService from "@/services/FeedbackService";
+import ProfileService from "@/services/ProfileService";
+import { resizeScreenshot } from "@/services/ScreenshotResizer";
 
+import { Device } from "@capacitor/device";
+import { Component, Vue } from "vue-facing-decorator";
+
+const CATEGORIES = [
+  "Bug",
+  "Ergonomie",
+  "Contenu",
+  "Fonctionnalité manquante",
+  "Performance",
+  "Suggestion d'amélioration",
+  "Autre",
+];
+
+const MODULES = ["Mon compte", "Carte", "Saisie des captures", "Badges et récompenses", "Autre"];
+
+/**
+ * Fenêtre « Des retours ? » : remontée des bugs et des retours des pêcheurs,
+ * classés par catégorie et par module, avec une capture d'écran choisie par
+ * l'utilisateur. Les boutons restent visibles, seul le contenu défile.
+ */
 @Component({
   components: {
-    CarnetHeader,
-    CarnetFooter,
     FormInput,
-    FormRadio,
     FormTextarea,
   },
 })
@@ -134,19 +140,17 @@ export default class FeedbackModal extends Vue {
   frontendVersion: string = `${this.mvnVersion} ${this.packageJSONVersion} ${this.gitRevision}`;
 
   device: string = "";
+  categories = CATEGORIES;
+  modules = MODULES;
 
-  model: Feedback = {
-    category: "BUG",
-    id: "" + new Date().getTime(),
-    frontendVersion: this.frontendVersion,
-  };
-  withPicture: boolean = false;
+  model: Feedback = this.newModel("Bug");
+  screenshot: string = "";
+  screenshotLoading = false;
+  screenshotError = "";
 
-  categories: any[] = [
-    { id: "BUG", name: "Bug" },
-    { id: "ERGO", name: "Ergonomie" },
-    { id: "OTHER", name: "Autre" },
-  ];
+  get canSend(): boolean {
+    return !!(this.model.description && this.model.description.trim()) && !this.screenshotLoading;
+  }
 
   created() {
     Device.getInfo().then((info) => {
@@ -155,7 +159,7 @@ export default class FeedbackModal extends Vue {
   }
 
   mounted() {
-    EventBus.on("open-feedback", event => this.openFeedback(event));
+    EventBus.on("open-feedback", (event) => this.openFeedback(event));
     EventBus.on("close-feedback", this.closeFeedback);
   }
 
@@ -164,17 +168,17 @@ export default class FeedbackModal extends Vue {
     EventBus.off("close-feedback");
   }
 
-  openFeedback(feedbackType: string) {
-    // Hide footer to avoid having footer overlaping
-    const footer = document?.querySelector("#root")?.querySelector(".footer");
-    if (footer != null) {
-      footer.classList.add("hidden");
-    }
-    this.model = {
-      category: feedbackType ? "OTHER" : "BUG",
+  newModel(category: string): Feedback {
+    return {
+      category: category,
       id: "" + new Date().getTime(),
       frontendVersion: this.frontendVersion,
     };
+  }
+
+  openFeedback(feedbackType: string) {
+    this.model = this.newModel(feedbackType ? "Autre" : "Bug");
+    this.removeScreenshot();
     if (feedbackType == "scale") {
       this.model.description =
         "Bonjour,\nJe souhaiterais devenir collecteur d'écailles salmonidés.\nVoici mon adresse : ...\n";
@@ -182,14 +186,7 @@ export default class FeedbackModal extends Vue {
       this.model.description =
         "Bonjour,\nJe souhaiterais devenir ambassadeur Carnet de pêche.\n";
     }
-    this.loadProfile();
-  }
-
-  loadProfile() {
-    ProfileService.getProfile().then(
-      this.profileLoaded,
-      () => (this.display = true)
-    );
+    ProfileService.getProfile().then(this.profileLoaded, () => (this.display = true));
   }
 
   profileLoaded(profile: UserProfile) {
@@ -199,33 +196,45 @@ export default class FeedbackModal extends Vue {
   }
 
   closeFeedback() {
-    // Reveal footer now that modal is closed
-    const footer = document?.querySelector("#root")?.querySelector(".footer");
-    if (footer != null) {
-      footer.classList.remove("hidden");
-    }
     this.display = false;
   }
 
-  sendClicked() {
-    this.closeFeedback();
-
-    if (this.withPicture) {
-      const rootElement: HTMLElement = this.castRootElement(
-        document.querySelector("#default-layout")
-      );
-      html2canvas(rootElement).then((canvas: any) => {
-        const pngPicture = canvas.toDataURL("image/png");
-        this.model.screenshot = pngPicture;
-        this.sendFeedback();
-      });
-    } else {
-      this.sendFeedback();
+  screenshotChosen(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    input.value = "";
+    if (!file) {
+      return;
     }
+    this.screenshotError = "";
+    this.screenshotLoading = true;
+    resizeScreenshot(file).then(
+      (dataUrl) => {
+        this.screenshot = dataUrl;
+        this.screenshotLoading = false;
+      },
+      () => {
+        this.screenshotError = "Cette image ne peut pas être lue. Essayez une capture au format PNG ou JPEG.";
+        this.screenshotLoading = false;
+      }
+    );
   }
 
-  castRootElement(whatever: any): HTMLElement {
-    return whatever;
+  removeScreenshot() {
+    this.screenshot = "";
+    this.screenshotError = "";
+    this.screenshotLoading = false;
+  }
+
+  sendClicked() {
+    if (!this.canSend) {
+      return;
+    }
+    if (this.screenshot) {
+      this.model.screenshot = this.screenshot;
+    }
+    this.closeFeedback();
+    this.sendFeedback();
   }
 
   addEnvInfo() {
@@ -276,94 +285,229 @@ export default class FeedbackModal extends Vue {
     this.model.date = new Date();
     this.model.location = window.location.href;
     this.model.device = this.device;
-    FeedbackService.sendFeedback(this.model).then(() => {
-      EventBus.emit(
-        "toaster-success",
-        "Votre retour a été enregistré, merci"
-      );
-    });
+    FeedbackService.sendFeedback(this.model).then(
+      () => EventBus.emit("toaster-success", "Votre retour a été enregistré, merci"),
+      () => EventBus.emit("toaster-error", "Votre retour n'a pas pu être enregistré")
+    );
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style scoped lang="less">
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000; // Au-dessus du menu latéral (998) et de la barre du bas
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: @black-alpha-60;
+}
 
-
-.form-checkbox {
+.feedback-dialog {
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  height: 100%;
+  background-color: @surface;
+  color: @gunmetal;
+  letter-spacing: @letter-spacing;
 
-  .real-label {
-    margin-left: @margin-small;
+  @media screen and (min-width: @desktop-min-width) {
+    width: 640px;
+    height: auto;
+    max-height: 90vh;
+    border-radius: 13px;
+    overflow: hidden;
   }
 }
 
-.feedback-page {
-  &.keyboardShowing {
-    margin-top: -50px !important;
-    height: 100vh !important;
+.feedback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  padding: calc(14px + env(safe-area-inset-top)) 20px 14px 20px;
+  border-bottom: 1px solid @divider;
+
+  @media screen and (min-width: @desktop-min-width) {
+    padding-top: 14px;
+  }
+
+  h2 {
+    margin: 0;
+    color: @heading;
+    font-size: 20px;
+    font-weight: 700;
   }
 }
 
-.feedback {
-  position: absolute;
-  top: @feedback-top;
-  left: 0px;
-  z-index: 50;
-  background-color: transparent;
-  width: 100%;
-  height: calc(100% - @feedback-top);
-  padding-top: 0px;
+.feedback-close {
+  padding: 4px;
+  border: none;
+  background: none;
+  color: @pale-sky;
+  font-size: 20px;
+  cursor: pointer;
+}
 
-  &.feedback-hidden {
+.feedback-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.feedback-intro {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.feedback-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px 0;
+  padding: 0;
+  border: none;
+
+  legend {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 0;
+    color: @heading;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .choice {
+    cursor: pointer;
+
+    input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    span {
+      display: inline-block;
+      padding: 7px 12px;
+      border: 1px solid @divider;
+      border-radius: 20px;
+      background-color: @white-smoke;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    input:checked + span {
+      border-color: @carnet-sky;
+      background-color: @carnet-sky;
+      color: @carnet-ink;
+      font-weight: 600;
+    }
+
+    input:focus-visible + span {
+      outline: 2px solid @accent-text;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.feedback-screenshot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 16px 0;
+
+  .feedback-label {
+    color: @heading;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+.screenshot-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border: 1px dashed @accent-text;
+  border-radius: 8px;
+  color: @accent-text;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  input {
     display: none;
   }
+}
 
-  .page {
-    height: calc(100% - @footer-height);
-    &.keyboardShowing {
-      // Make page take new footer height into account
-      height: calc(100% - env(safe-area-inset-top) - @reduced-footer-height);
-    }
+.screenshot-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 
-    .pane {
-      margin-top: 0px;
-
-      .pane-content {
-        color: @gunmetal;
-        font-size: @fontsize-feedback-paragraph;
-        line-height: calc(
-          @fontsize-feedback-paragraph + @line-height-padding-medium
-        );
-
-        p {
-          text-align: center;
-        }
-      }
-    }
+  img {
+    max-width: 160px;
+    max-height: 120px;
+    border: 1px solid @divider;
+    border-radius: 8px;
+    object-fit: contain;
   }
+}
+
+.screenshot-remove {
+  padding: 6px 12px;
+  border: 1px solid @error;
+  border-radius: 20px;
+  background: none;
+  color: @error;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.screenshot-error {
+  color: @error;
+  font-size: 13px;
+}
+
+.feedback-version {
+  margin: 8px 0 0 0;
+  color: @pale-sky;
+  font-size: 12px;
+}
+
+.feedback-actions {
+  display: flex;
+  flex: none;
+  gap: 12px;
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom)) 20px;
+  border-top: 1px solid @divider;
+
   @media screen and (min-width: @desktop-min-width) {
-    top: 0px;
-    z-index: 1000001; // Juste au dessus du menu
-    height: 100%;
-    .feedback-page {
-      height: 100%;
-      .pane {
-        background-color: @black-alpha-60;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        .pane-content {
-          background-color: @white-smoke;
-          width: auto;
-          height: auto;
-          max-width: 70vw;
-          max-height: 70vh;
-          border-bottom-left-radius: 30px;
-          border-bottom-right-radius: 30px;
-        }
-      }
+    justify-content: flex-end;
+    padding-bottom: 12px;
+  }
+
+  .button {
+    flex: 1 1 0;
+    margin: 0;
+
+    @media screen and (min-width: @desktop-min-width) {
+      flex: none;
+      width: 160px;
+    }
+
+    button {
+      width: 100%;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 }

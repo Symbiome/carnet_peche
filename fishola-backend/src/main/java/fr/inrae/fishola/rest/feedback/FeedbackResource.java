@@ -98,13 +98,15 @@ public class FeedbackResource extends AbstractCarnetResource {
         Map<String, Object> args = Map.of(
                 "feedback", feedback,
                 "descriptionText", description,
-                "screenshotText", screenshot
+                "screenshotText", screenshot,
+                "moduleText", feedback.module().orElse("Non précisé")
                                          );
 
         ImmutableCarnetMail.Builder builder = mailService.newMailFromTemplate(
                 "emails/new-feedback.html",
                 args);
-        builder.subject("Nouveau feedback : " + feedback.category());
+        builder.subject("Nouveau feedback : " + feedback.category()
+                + feedback.module().map(module -> " · " + module).orElse(""));
         builder.addTos(config.feedbackMailTo());
         if (screenshotBytes.isPresent()) {
             byte[] bytes = screenshotBytes.get();

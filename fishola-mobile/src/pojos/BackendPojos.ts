@@ -206,6 +206,7 @@ export interface KeyFigures {
 export interface Feedback {
     id: string;
     category: string;
+    module?: string;
     userId?: string;
     email?: string;
     description?: string;
