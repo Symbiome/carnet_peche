@@ -22,8 +22,8 @@
 /* eslint-disable no-undef */
 /**
  * Navigation de l'app pêcheur (#301) : « Carte » n'affiche que la carte,
- * « Mes prises » la liste des sorties, et « Résumé de mon activité » le tableau
- * de bord personnel. Les anciennes routes redirigent vers les nouvelles.
+ * « Mes prises » la liste des sorties, et « Statistiques » (anciennement
+ * « Résumé de mon activité ») le tableau de bord personnel. Les anciennes routes redirigent vers les nouvelles.
  *
  * « Compte » simplifié (#307) : plus de « Communauté » ni de « Le projet »,
  * repris dans le menu ; les statistiques du réseau se masquent dans « Statistiques ».
@@ -63,12 +63,13 @@ describe("Navigation (#301)", () => {
     cy.contains(".bottom-nav .nav-item", "Mes prises").should("have.attr", "aria-current", "page");
   });
 
-  it("« Résumé de mon activité » affiche Mes données, sans les statistiques du réseau", () => {
+  it("« Statistiques » du Compte affiche les statistiques personnelles, sans celles du réseau", () => {
     cy.visit("/#/account");
-    cy.contains(".account-row", "Résumé de mon activité").click();
+    cy.contains(".account-row", "Statistiques").click();
     cy.location("hash").should("match", /^#\/activity-summary/);
-    cy.contains("h1", "Mes données").should("be.visible");
-    cy.contains("h1", "Statistiques").should("not.exist");
+    cy.contains("h1", "Mes statistiques").should("be.visible");
+    cy.get(".year-toggle").should("be.visible");
+    cy.get(".network-toggle").should("not.exist");
   });
 
   it("« Compte » n'affiche que Mon espace et Aide (#307)", () => {
@@ -79,7 +80,7 @@ describe("Navigation (#301)", () => {
     cy.get(".account-row .row-label").then(($labels) => {
       expect([...$labels].map((l) => l.textContent.trim())).to.deep.eq([
         "Mon profil",
-        "Résumé de mon activité",
+        "Statistiques",
         "Mes badges",
         "Données et confidentialité",
         "Mode hors ligne",
@@ -92,10 +93,13 @@ describe("Navigation (#301)", () => {
     });
   });
 
-  it("le bandeau de gauche donne accès à Communauté, Statistiques et au projet (#307)", () => {
+  it("le bandeau de gauche donne accès aux Statistiques personnelles et au projet (#307)", () => {
     cy.viewport(1280, 800);
     cy.visit("/#/home");
-    ["Communauté", "Statistiques", "Pourquoi carnet de pêche ?", "Qui porte le projet ?"].forEach((label) => {
+    cy.contains(".menu .item", "Communauté").should("not.exist");
+    cy.get(".menu .item:visible").filter(":contains('Statistiques')").should("have.length", 1).click();
+    cy.location("hash").should("match", /^#\/activity-summary/);
+    ["Pourquoi carnet de pêche ?", "Qui porte le projet ?"].forEach((label) => {
       cy.contains(".menu .item", label).should("be.visible");
     });
     cy.contains(".menu .item", "Qui porte le projet ?").click();
@@ -104,15 +108,13 @@ describe("Navigation (#301)", () => {
     cy.location("hash").should("eq", "#/about");
   });
 
-  it("sur mobile, le menu s'ouvre depuis l'accueil et mène à Communauté et au projet (#307)", () => {
+  it("sur mobile, pas de menu à côté des initiales du pêcheur", () => {
     cy.visit("/#/home");
-    cy.get(".home-header .icon-menu").click();
-    cy.contains(".menu .item", "Communauté").should("be.visible");
-    cy.contains(".menu .item", "Qui porte le projet ?").should("be.visible").click();
-    cy.location("hash").should("eq", "#/credits");
-    cy.get(".header .icon-menu").click();
-    cy.contains(".menu .item", "Pourquoi carnet de pêche ?").should("be.visible").click();
-    cy.location("hash").should("eq", "#/about");
+    cy.get(".home-avatar").should("be.visible");
+    cy.get(".home-header .icon-menu").should("not.exist");
+    cy.visit("/#/badges");
+    cy.get(".header .header-avatar").should("be.visible");
+    cy.get(".header .icon-menu").should("not.exist");
   });
 
   it("« Statistiques » masque les statistiques du réseau et retient le choix (#307)", () => {

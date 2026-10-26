@@ -75,7 +75,7 @@ export const ONBOARDING_TOUR_STEPS: OnboardingTourStep[] = [
   {
     selector: ".home-summary .trips-card",
     title: "Vos statistiques",
-    text: "Suivez vos sorties, vos prises et vos espèces sur 30 jours ou 12 mois. Le détail est dans « Compte › Résumé de mon activité ».",
+    text: "Suivez vos sorties, vos prises et vos espèces sur 30 jours ou 12 mois. Le détail est dans « Compte › Statistiques ».",
   },
   {
     selector: ".home-badges-header",
