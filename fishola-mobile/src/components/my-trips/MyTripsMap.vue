@@ -80,6 +80,7 @@
 import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 import { CatchMarker } from '@/pojos/BackendPojos';
 import TripsService from '@/services/TripsService';
+import { medianLatitudeTrip } from '@/services/MapFraming';
 import Helpers from '@/services/Helpers';
 import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
@@ -143,7 +144,7 @@ export default class MyTripsMapView extends Vue {
         } else if (this.visible) {
             this.$nextTick(() => {
                 this.map?.resize();
-                this.fitToMarkers();
+                this.frameOnMedianTrip();
             });
         }
     }
@@ -176,7 +177,7 @@ export default class MyTripsMapView extends Vue {
         if (this.map) {
             const source = this.map.getSource('catches') as GeoJSONSource | undefined;
             source?.setData(this.buildGeoJson());
-            this.fitToMarkers();
+            this.frameOnMedianTrip();
             this.mapIsLoading = false;
             return;
         }
@@ -214,7 +215,7 @@ export default class MyTripsMapView extends Vue {
         });
         this.map.on('load', () => {
             this.addCatchLayers();
-            this.fitToMarkers();
+            this.frameOnMedianTrip();
             this.mapIsLoading = false;
         });
     }
@@ -293,6 +294,24 @@ export default class MyTripsMapView extends Vue {
         }
     }
 
+    // Cadrage à l'ouverture : zoom englobant toutes les sorties, mais centré sur
+    // la sortie médiane en latitude. Le centre de l'emprise tombait entre deux
+    // zones de pêche éloignées, loin de toute sortie.
+    private frameOnMedianTrip() {
+        const median = medianLatitudeTrip(this.validMarkers);
+        if (!this.map || !median || this.validMarkers.length === 1) {
+            this.fitToMarkers();
+            return;
+        }
+        const bounds = new maplibregl.LngLatBounds();
+        this.validMarkers.forEach((m) => bounds.extend([m.longitude, m.latitude] as [number, number]));
+        const camera = this.map.cameraForBounds(bounds, { padding: 50, maxZoom: 13 });
+        this.map.jumpTo({
+            center: [median.longitude, median.latitude],
+            zoom: camera && camera.zoom !== undefined ? camera.zoom : DEFAULT_ZOOM,
+        });
+    }
+
     private fitToMarkers() {
         if (!this.map || this.validMarkers.length === 0) {
             return;
@@ -357,6 +376,25 @@ export default class MyTripsMapView extends Vue {
     position: relative;
     height: 80vh;
     z-index: 995;
+}
+
+// Écran large : la carte occupe toute la hauteur laissée par la légende.
+@media screen and (min-width: @desktop-min-width) {
+    .pane {
+        height: 100%;
+        padding-bottom: @margin-small;
+    }
+
+    .map {
+        flex: 1 1 auto;
+        height: auto;
+        min-height: 0;
+    }
+
+    .legend,
+    .error-markers {
+        flex: none;
+    }
 }
 
 .mtm-container {
