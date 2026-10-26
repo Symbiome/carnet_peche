@@ -57,9 +57,7 @@
       </div>
 
       <div class="dashboard-page legacy-dashboard">
-        <div class="pane-content large">
-          <PersonalDashboardSection />
-        </div>
+        <PersonalDashboardSection />
       </div>
     </div>
     <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
@@ -182,22 +180,6 @@ export default class ActivitySummaryView extends Vue {
 
 <style lang="less">
 @import "../less/_dashboard-page";
-
-// Le titre « Mes données » prenait son style de l'ancêtre `.pane` de l'ancienne page.
-.legacy-dashboard .dashboard-section > h1 {
-  margin: @margin-x-small @margin-medium;
-  font-weight: 700;
-  font-size: @fontsize-title;
-  line-height: calc(@fontsize-title + @line-height-padding-xx-large);
-  color: @accent-text;
-  text-align: left;
-
-  @media screen and (min-width: @desktop-min-width) {
-    margin: @margin-medium;
-    font-size: @fontsize-title-desktop;
-    line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
-  }
-}
 </style>
 
 <style scoped lang="less">
@@ -306,9 +288,6 @@ export default class ActivitySummaryView extends Vue {
 }
 
 .legacy-dashboard {
-  position: relative;
   margin-top: 25px;
-  border-radius: 8.873px;
-  background-color: @surface;
 }
 </style>

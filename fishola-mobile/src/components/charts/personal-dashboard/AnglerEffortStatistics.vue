@@ -24,34 +24,39 @@
   le tableau de bord (année, plan d'eau).
   -->
 <template>
-  <div>
-    <div class="section">
-      <div class="shrinked">
-        <h2><i class="icon-fishing" />Sessions et heures de pêche par mois</h2>
-      </div>
+  <div class="effort-cards">
+    <section class="effort-card tone-sky">
+      <h2 class="card-title">
+        <span>Sessions et heures de pêche par mois</span>
+        <span class="card-year">{{ year }}</span>
+      </h2>
       <div class="not-enough-data" v-if="!loading && !hasMonthlyEffort">
         <span>Pas assez de données</span>
       </div>
-      <div class="shrinked effort-chart" v-if="hasMonthlyEffort">
+      <div class="effort-chart" v-if="hasMonthlyEffort">
         <Bar :data="monthlyChartData" :options="monthlyChartOptions" />
       </div>
-    </div>
+    </section>
 
-    <div class="section">
-      <div class="shrinked">
-        <h2><i class="icon-fishing" />Temps passé par technique</h2>
-      </div>
+    <section class="effort-card tone-yellow">
+      <h2 class="card-title">
+        <span>Temps passé par technique</span>
+        <span class="card-year">{{ year }}</span>
+      </h2>
       <div class="not-enough-data" v-if="!loading && techniqueSlices.length == 0">
         <span>Pas assez de données</span>
       </div>
-      <div class="shrinked effort-chart" v-if="techniqueSlices.length > 0">
+      <div class="effort-chart" v-if="techniqueSlices.length > 0">
         <Pie :data="techniqueChartData" :options="techniqueChartOptions" />
       </div>
-    </div>
+    </section>
 
-    <div class="section">
-      <div class="shrinked">
-        <h2><i class="icon-fish" />Prises par heure de pêche (CPUE)</h2>
+    <section class="effort-card tone-green">
+      <div>
+        <h2 class="card-title">
+        <span>Prises par heure de pêche (CPUE)</span>
+        <span class="card-year">{{ year }}</span>
+      </h2>
         <p class="explanation" v-if="stats">
           Nombre de poissons capturés d'une espèce rapporté à vos heures de pêche
           ({{ totalHoursRounded }} h sur la période). Calculé à partir de
@@ -61,7 +66,7 @@
       <div class="not-enough-data" v-if="!loading && cpueRows.length == 0">
         <span>Pas assez de données</span>
       </div>
-      <ul class="shrinked cpue-list" v-if="cpueRows.length > 0">
+      <ul class="cpue-list" v-if="cpueRows.length > 0">
         <li v-for="row in cpueRows" :key="row.speciesId">
           <span class="cpue-species">{{ row.label }}</span>
           <span v-if="row.catchesPerHour !== undefined" class="cpue-value">
@@ -73,19 +78,20 @@
           </span>
         </li>
       </ul>
-    </div>
+    </section>
 
-    <div class="section" v-if="selectedLakeId">
-      <div class="shrinked">
-        <h2><i class="icon-lake" />Ma contribution sur ce secteur</h2>
-      </div>
+    <section class="effort-card tone-sky" v-if="selectedLakeId">
+      <h2 class="card-title">
+        <span>Ma contribution sur ce secteur</span>
+        <span class="card-year">{{ year }}</span>
+      </h2>
       <div class="not-enough-data" v-if="!loading && stats && !stats.sectorContribution">
         <span>
           Pas encore assez de pêcheurs sur ce secteur (au moins {{ stats.sectorMinAnglers }})
           pour afficher votre contribution.
         </span>
       </div>
-      <div class="shrinked contribution" v-if="selectedLakeId && contribution">
+      <div class="contribution" v-if="selectedLakeId && contribution">
         <div class="contribution-row">
           <div class="contribution-label">
             Sorties : <b>{{ tripsShare }} %</b>
@@ -105,7 +111,7 @@
           plan d'eau pour la période.
         </p>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -201,7 +207,7 @@ export default class AnglerEffortStatistics extends Vue {
       labels: Constants.MONTHS,
       datasets: [
         { label: "Sessions", data: series.trips, backgroundColor: CARNET_COLORS.sky, yAxisID: "trips" },
-        { label: "Heures", data: series.hours, backgroundColor: CARNET_COLORS.orange, yAxisID: "hours" },
+        { label: "Heures", data: series.hours, backgroundColor: CARNET_COLORS.yellow, yAxisID: "hours" },
       ],
     };
   }
@@ -282,14 +288,61 @@ export default class AnglerEffortStatistics extends Vue {
 </script>
 
 <style scoped lang="less">
+@import (reference) "../../../less/_statistics-card";
+
+.effort-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+// Fonds colorés en alternance, comme les cartes de « Mes statistiques ».
+.effort-card {
+  .statistics-card();
+  text-align: left;
+}
+
+.tone-sky {
+  background-color: @sky-box;
+  color: @sky-text;
+}
+
+.tone-green {
+  background-color: @green-box;
+  color: @green-text;
+}
+
+.tone-yellow {
+  background-color: @yellow-box;
+  color: @yellow-text;
+}
+
+.card-title {
+  .statistics-card-title();
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 15px 2px;
+}
+
+.card-year {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background-color: @surface;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .effort-chart {
   position: relative;
   height: 250px;
 }
 
 .explanation {
-  font-size: @fontsize-small-paragraph;
-  color: @pale-sky;
+  .statistics-hint();
+  margin: 0 2px 15px 2px;
 }
 
 .cpue-list {
@@ -301,7 +354,7 @@ export default class AnglerEffortStatistics extends Vue {
     justify-content: space-between;
     gap: @margin-small;
     padding: @vertical-margin-xx-small 0;
-    border-bottom: 1px solid @solitude;
+    border-bottom: 1px solid @divider;
   }
 
   .cpue-species {
@@ -309,7 +362,7 @@ export default class AnglerEffortStatistics extends Vue {
   }
 
   .cpue-value {
-    color: @accent-text;
+    color: inherit;
     font-weight: bold;
   }
 
@@ -327,13 +380,13 @@ export default class AnglerEffortStatistics extends Vue {
 .contribution-bar {
   height: 14px;
   border-radius: 7px;
-  background: @solitude;
+  background: @white-smoke;
   overflow: hidden;
 
   & > div {
     height: 100%;
     border-radius: 7px;
-    background: @pelorous;
+    background: @carnet-sky;
   }
 }
 </style>
