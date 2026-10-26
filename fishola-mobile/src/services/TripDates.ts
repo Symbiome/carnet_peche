@@ -91,6 +91,11 @@ export default class TripDates {
     return value.substring(0, 10);
   }
 
+  /** Heure HH:mm, ou HH:mm:ss quand elle est prise sur l'appareil (sortie en direct). */
+  static isValidTime(time: string): boolean {
+    return moment(time, ["HH:mm", "HH:mm:ss"], true).isValid();
+  }
+
   /** Instant local d'un jour AAAA-MM-JJ à une heure HH:mm ou HH:mm:ss. */
   static atTime(isoDate: string, time: string): moment.Moment {
     return moment(`${isoDate}T${time}`);
@@ -160,14 +165,18 @@ export default class TripDates {
    * Instant de la capture dans la sortie : jour de capture s'il est connu, sinon premier
    * jour de la sortie où l'heure tombe dans la sortie (comme le backend). Une sortie en
    * cours, sans fin, s'étend jusqu'à {@code now}. Vide si la capture est hors de la sortie.
+   *
+   * L'heure de capture est saisie à la minute, le début et la fin peuvent avoir des
+   * secondes (sortie en direct) : la comparaison se fait à la minute (#310), une capture
+   * à la minute de début ou de fin est dans la sortie.
    */
   static catchMoment(trip: TripPeriodFields, aCatch: CatchTimeFields,
                      now: moment.Moment = moment()): moment.Moment | undefined {
-    const begin = TripDates.begin(trip);
+    const begin = TripDates.begin(trip)?.startOf("minute");
     if (!begin || !aCatch.caughtAt) {
       return undefined;
     }
-    const end = TripDates.end(trip) || now;
+    const end = (TripDates.end(trip) || now).clone().endOf("minute");
     const isWithin = (instant: moment.Moment) => !instant.isBefore(begin) && !instant.isAfter(end);
     if (aCatch.caughtOn) {
       const candidate = TripDates.atTime(aCatch.caughtOn, aCatch.caughtAt);
@@ -220,6 +229,8 @@ export default class TripDates {
     }
     if (!trip.startedAt) {
       errors.startedAtError = "Vous devez renseigner l'heure de début";
+    } else if (!TripDates.isValidTime(trip.startedAt)) {
+      errors.startedAtError = Helpers.TIME_FORMAT_ERROR;
     }
     if (!trip.endDate) {
       errors.endDateError = "Vous devez renseigner la date de fin";
@@ -228,6 +239,8 @@ export default class TripDates {
     }
     if (!trip.finishedAt) {
       errors.finishedAtError = "Vous devez renseigner l'heure de fin";
+    } else if (!TripDates.isValidTime(trip.finishedAt)) {
+      errors.finishedAtError = Helpers.TIME_FORMAT_ERROR;
     }
     const hasError = Object.values(errors).some((error) => !!error);
     if (hasError) {

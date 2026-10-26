@@ -28,18 +28,46 @@ import 'moment/dist/locale/fr';
 
 export default class Helpers {
   static readonly TIME_24H_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+  static readonly TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
   // Taille maximale par défaut (cm) quand l'administrateur n'en a pas défini.
   static readonly DEFAULT_MAX_SIZE = 1000;
 
   // Masque de saisie HH:mm indépendant de la locale du navigateur/OS : les
   // champs <input type="time"> natifs affichent AM/PM selon la locale de
   // l'appareil (notamment iOS Safari), pas selon la langue de l'app.
+  // Un séparateur (« : », « h », « . », espace) après un seul chiffre marque une
+  // heure à un chiffre, de même qu'un premier chiffre de 3 à 9 (#309) :
+  // « 9h1 » et « 91 » donnent « 09:1 ».
   static maskTimeInput(raw: string): string {
-    const digits = (raw || "").replace(/\D/g, "").slice(0, 4);
-    if (digits.length <= 2) {
+    const typed = (raw || "").replace(/[^\d:hH. ]/g, "").replace(/^\D+/, "");
+    const separated = typed.match(/^(\d{1,2})[:hH. ](.*)$/);
+    if (separated) {
+      const minutes = separated[2].replace(/\D/g, "").slice(0, 2);
+      return `${separated[1].padStart(2, "0")}:${minutes}`;
+    }
+    const digits = typed.replace(/\D/g, "");
+    const hourLength = Number(digits[0]) >= 3 ? 1 : 2;
+    if (digits.length <= hourLength) {
       return digits;
     }
-    return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+    return `${digits.slice(0, hourLength).padStart(2, "0")}:${digits.slice(hourLength, hourLength + 2)}`;
+  }
+
+  /**
+   * Heure saisie complétée au format HH:mm en quittant le champ (#309) :
+   * « 9 » et « 9h » donnent « 09:00 », « 18h5 » donne « 18:05 ». Une heure
+   * impossible (« 25:00 ») est laissée telle quelle, pour être signalée.
+   */
+  static normalizeTimeInput(raw: string): string {
+    const masked = Helpers.maskTimeInput(raw);
+    if (/^\d{1,2}$/.test(masked)) {
+      return `${masked.padStart(2, "0")}:00`;
+    }
+    const partial = masked.match(/^(\d{2}):(\d?)$/);
+    if (partial) {
+      return `${partial[1]}:${partial[2].padStart(2, "0")}`;
+    }
+    return masked;
   }
 
   static isValidTimeString(value: string): boolean {

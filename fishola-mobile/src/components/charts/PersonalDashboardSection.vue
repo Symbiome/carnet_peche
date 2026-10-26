@@ -20,22 +20,30 @@
   -->
 <template>
   <section class="dashboard-section">
-    <h1 class="no-margin-pane h1-with-selects">
-      <span>{{ title }}</span>
-      <LakeAndYearSelection
-          :years="getDashboardYears()"
-          :showYears="true"
-          :showLake="false"
-          :yearQueryKey="yearQueryKey"
-          @lake-and-year="yearAndLakeChangedChanged"
-          @year="yearChanged"
-      />
-      <a v-bind:href="exportUrl" v-if="!asyncExport" id="export-button"
-        class="export" title="Exporter" target="_blank">
-        <span>Exporter</span>
-        <i class="icon-download" />
-      </a>
-    </h1>
+    <div class="year-filter">
+      <div class="year-filter-header">
+        <p class="year-filter-label">
+          <i class="icon-calendar" />
+          Année affichée dans les cartes ci-dessous
+        </p>
+        <a v-bind:href="exportUrl" v-if="!asyncExport" id="export-button"
+          class="export" title="Exporter mes données" target="_blank">
+          <i class="icon-download" />
+          <span>Exporter</span>
+        </a>
+      </div>
+      <div class="year-toggle" role="group" aria-label="Année des cartes ci-dessous">
+        <button
+          v-for="aYear in years"
+          :key="aYear"
+          :class="{ active: year === aYear }"
+          :aria-pressed="year === aYear"
+          v-on:click="selectYear(aYear)"
+        >
+          {{ aYear }}
+        </button>
+      </div>
+    </div>
 
     <div class="spinner-wrapper" v-if="!ready">
       <div class="spinner"></div>
@@ -56,25 +64,26 @@
 
 <script lang="ts">
 import PersonalDashboard from "@/components/charts/PersonalDashboard.vue";
-import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
 import DashboardService, { DashboardAndSpecies } from "@/services/DashboardService";
 import EventBus from "@/services/EventBus";
 import Helpers from "@/services/Helpers";
 import { RouterUtils } from "@/router/RouterUtils";
 import { Component, Prop, Vue } from "vue-facing-decorator";
 
+const FIRST_DASHBOARD_YEAR = 2020;
+
 /**
- * Tableau de bord personnel « Mes données » : filtre par année, export et
- * graphiques du pêcheur, tous plans d'eau confondus (#301).
+ * Tableau de bord personnel : année, export et graphiques du pêcheur, tous
+ * plans d'eau confondus (#301), affichés en cartes sous celles de « Mes
+ * statistiques ». L'année choisie est rappelée dans le titre de chaque carte
+ * et gardée dans l'URL (`yearQueryKey`) pour le retour depuis une prise.
  */
 @Component({
   components: {
     PersonalDashboard,
-    LakeAndYearSelection
   },
 })
 export default class PersonalDashboardSection extends Vue {
-  @Prop({ default: "Mes données" }) title: string;
   @Prop({ default: "currentYear" }) yearQueryKey: string;
 
   exportUrl: string = "";
@@ -83,27 +92,39 @@ export default class PersonalDashboardSection extends Vue {
   asyncExport: boolean = false;
   personalDashboard: DashboardAndSpecies | null = null;
   year: number = new Date().getFullYear();
-  // « Mes données » montre les données tous plans d'eau confondus : plus de
-  // filtre par plan d'eau, ni d'onglet « Évolution » (calculée par plan d'eau).
+  // Données tous plans d'eau confondus : plus de filtre par plan d'eau, ni
+  // d'onglet « Évolution » (calculée par plan d'eau).
   readonly selectedLakeId = "";
   isFirstLoad = true;
 
-  mounted() {
-    DashboardService.loadDashboardOrTimeout(this.year, "").then(
-      this.personalDashboardLoaded,
-      this.cannotLoad
+  get years(): number[] {
+    const currentYear = new Date().getFullYear();
+    return Array.from(
+      { length: currentYear - FIRST_DASHBOARD_YEAR + 1 },
+      (_, index) => currentYear - index
     );
+  }
+
+  mounted() {
+    const yearFromURL = parseInt(this.$route.query[this.yearQueryKey] as string);
+    if (this.years.includes(yearFromURL)) {
+      this.year = yearFromURL;
+      this.isFirstLoad = false;
+    }
+    this.reloadDashboard();
     this.exportUrl = DashboardService.getExportUrl();
     Helpers.ifApplication(() => (this.asyncExport = true));
   }
 
-  yearChanged(newYear: number) {
-    this.year = newYear;
-    this.reloadDashboard();
-  }
-
-  yearAndLakeChangedChanged(event: any) {
-    this.year = event.year;
+  selectYear(year: number) {
+    if (year === this.year) {
+      return;
+    }
+    this.year = year;
+    this.isFirstLoad = false;
+    this.$router.replace({
+      query: { ...this.$route.query, [this.yearQueryKey]: "" + year },
+    });
     this.reloadDashboard();
   }
 
@@ -114,14 +135,9 @@ export default class PersonalDashboardSection extends Vue {
     ).then(this.personalDashboardLoaded, this.cannotLoad);
   }
 
-  getDashboardYears(): number[] {
-    const rangeDesc = (from: number, to: number) =>
-      [...Array(Math.floor(from - to) + 1)].map((_, i) => from + i * -1);
-    return rangeDesc(new Date().getFullYear(), 2020);
-  }
-
   personalDashboardLoaded(data: DashboardAndSpecies) {
-    // If no data for current year and this is first load, select year - 1 by default
+    // Sans prise sur l'année en cours au premier chargement, on montre l'année
+    // précédente : le sélecteur suit, puisqu'il lit `year`.
     if (
       this.isFirstLoad &&
       data.dashboard &&
@@ -147,3 +163,81 @@ export default class PersonalDashboardSection extends Vue {
   }
 }
 </script>
+
+<style scoped lang="less">
+.year-filter {
+  margin-bottom: 25px;
+  text-align: left;
+  letter-spacing: @letter-spacing;
+}
+
+.year-filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 0 2px 10px 2px;
+}
+
+.year-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: @heading;
+  font-size: 14px;
+  font-weight: 600;
+
+  i {
+    color: @accent-text;
+  }
+}
+
+.export {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  color: @accent-text;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+// Même bascule que « 30 jours / Saison » en haut de la page.
+.year-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 7px 8px;
+  border-radius: 8.873px;
+  background-color: @surface;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  button {
+    flex: 1 0 auto;
+    min-width: 56px;
+    height: 43px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: @pale-sky;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: @letter-spacing;
+
+    &.active {
+      background-color: @carnet-sky;
+      color: @carnet-ink;
+    }
+
+    &:active {
+      animation: none;
+    }
+  }
+}
+</style>

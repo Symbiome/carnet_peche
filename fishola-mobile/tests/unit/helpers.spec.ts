@@ -133,6 +133,57 @@ describe("Helpers — masque de saisie horaire 24h", () => {
     expect(Helpers.maskTimeInput("235959")).toBe("23:59");
   });
 
+  it("respecte un séparateur tapé après un seul chiffre (#309)", () => {
+    expect(Helpers.maskTimeInput("9:")).toBe("09:");
+    expect(Helpers.maskTimeInput("9h")).toBe("09:");
+    expect(Helpers.maskTimeInput("9 1")).toBe("09:1");
+    expect(Helpers.maskTimeInput("9.18")).toBe("09:18");
+    expect(Helpers.maskTimeInput("13h")).toBe("13:");
+  });
+
+  it("prend un premier chiffre de 3 à 9 pour l'heure (#309)", () => {
+    expect(Helpers.maskTimeInput("9")).toBe("9");
+    expect(Helpers.maskTimeInput("91")).toBe("09:1");
+    expect(Helpers.maskTimeInput("918")).toBe("09:18");
+    expect(Helpers.maskTimeInput("2")).toBe("2");
+    expect(Helpers.maskTimeInput("25")).toBe("25");
+  });
+
+  it("n'ajoute pas de chiffre en effaçant (#309)", () => {
+    expect(Helpers.maskTimeInput("09:1")).toBe("09:1");
+    expect(Helpers.maskTimeInput("09:")).toBe("09:");
+    expect(Helpers.maskTimeInput("09")).toBe("09");
+  });
+
+  it.each([
+    ["9:18", "09:18"],
+    ["9h18", "09:18"],
+    ["9H18", "09:18"],
+    ["9.18", "09:18"],
+    ["9 18", "09:18"],
+    ["918", "09:18"],
+    ["0918", "09:18"],
+    ["09:18", "09:18"],
+    ["9", "09:00"],
+    ["9h", "09:00"],
+    ["18h5", "18:05"],
+    ["13", "13:00"],
+  ])("normalise « %s » en « %s » en quittant le champ (#309)", (typed, expected) => {
+    expect(Helpers.normalizeTimeInput(typed)).toBe(expected);
+    expect(Helpers.isValidTimeString(Helpers.normalizeTimeInput(typed))).toBe(true);
+  });
+
+  it.each(["25:00", "9:75"])("laisse « %s » invalide en quittant le champ (#309)", (typed) => {
+    expect(Helpers.isValidTimeString(Helpers.normalizeTimeInput(typed))).toBe(false);
+  });
+
+  it("ne produit plus « 91:8 » pour « 9:18 » (#309)", () => {
+    const typedKeyByKey = ["9", "9:", "09:1", "09:18"];
+    const masked = ["9", ":", "1", "8"].reduce((value, key) => Helpers.maskTimeInput(value + key), "");
+    expect(masked).toBe("09:18");
+    typedKeyByKey.forEach((value) => expect(Helpers.maskTimeInput(value)).not.toContain("91"));
+  });
+
   it("valide uniquement les heures au format 24h complet", () => {
     expect(Helpers.isValidTimeString("00:00")).toBe(true);
     expect(Helpers.isValidTimeString("23:59")).toBe(true);

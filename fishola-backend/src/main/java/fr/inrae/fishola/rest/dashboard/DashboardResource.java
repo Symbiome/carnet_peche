@@ -25,6 +25,9 @@ import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.AnglerStatisticsDao;
 import fr.inrae.fishola.database.AnglerStatisticsDao.TripFilter;
 import fr.inrae.fishola.database.DashboardDao;
+import fr.inrae.fishola.database.PersonalStatisticsDao;
+import fr.inrae.fishola.database.PersonalStatisticsDao.Period;
+import fr.inrae.fishola.database.PersonalStatisticsDao.TripsQuality;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.mails.CarnetMail;
@@ -48,6 +51,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +62,8 @@ import java.util.UUID;
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class DashboardResource extends AbstractCarnetResource {
+
+    private static final int MAX_STATISTICS_DAYS = 366;
 
     @Inject
     protected MailService mailService;
@@ -69,6 +76,9 @@ public class DashboardResource extends AbstractCarnetResource {
 
     @Inject
     protected AnglerStatisticsDao anglerStatisticsDao;
+
+    @Inject
+    protected PersonalStatisticsDao personalStatisticsDao;
 
     @Inject
     protected CarnetCache cache;
@@ -123,6 +133,49 @@ public class DashboardResource extends AbstractCarnetResource {
                         config.sectorContributionMinAnglers()))
                 .build();
         return wrapEntity(result, userIdAndRenewal);
+    }
+
+    /**
+     * Statistiques du pêcheur connecté sur une période (page « Mes
+     * statistiques ») : saison ou 30 derniers jours, bornes incluses au
+     * format AAAA-MM-JJ, période d'au plus 366 jours.
+     */
+    @GET
+    @Path("/dashboard/statistics")
+    public Response getPersonalStatistics(
+            @QueryParam("from") String from,
+            @QueryParam("to") String to
+    ) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        Period period = new Period(userIdAndRenewal.userId(), parseDay(from), parseDay(to));
+        long days = ChronoUnit.DAYS.between(period.from(), period.to());
+        if (days < 0 || days >= MAX_STATISTICS_DAYS) {
+            throw new IllegalArgumentException("Période invalide : du " + from + " au " + to);
+        }
+        TripsQuality quality = personalStatisticsDao.tripsQuality(period);
+        PersonalStatistics result = ImmutablePersonalStatistics.builder()
+                .from(period.from())
+                .to(period.to())
+                .dailyActivity(personalStatisticsDao.dailyActivity(period))
+                .tripsPerMoment(personalStatisticsDao.tripsPerMoment(period))
+                .catchesPerSpecies(personalStatisticsDao.catchesPerSpecies(period))
+                .completeTripsCount(quality.completeTripsCount())
+                .catchesWithPictureCount(personalStatisticsDao.catchesWithPictureCount(period))
+                .tripsEnteredWithinADayCount(quality.tripsEnteredWithinADayCount())
+                .waterEntities(personalStatisticsDao.waterEntities(period, config.sparselyDocumentedMaxTrips()))
+                .build();
+        return wrapEntity(result, userIdAndRenewal);
+    }
+
+    protected static LocalDate parseDay(String day) {
+        if (day == null) {
+            throw new IllegalArgumentException("Date de période manquante");
+        }
+        try {
+            return LocalDate.parse(day);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Date de période invalide : " + day, e);
+        }
     }
 
     protected List<AnglerEffortStatistics.SpeciesCpue> toCpuePerSpecies(Map<UUID, Integer> catchesPerSpecies,

@@ -19,11 +19,12 @@
   #L%
   -->
 <template>
-  <div>
-    <div class="section" v-if="picturesPerTrip">
-      <div class="shrinked pointer">
-        <h2 @click="openGalery"><i class="icon-photo" />Mes photos</h2>
-      </div>
+  <div class="dashboard-cards">
+    <section class="dashboard-card tone-yellow" v-if="picturesPerTrip">
+      <h2 class="card-title pointer" @click="openGalery">
+        <span>Mes photos</span>
+        <span class="card-year">{{ year }}</span>
+      </h2>
       <div class="dashboard-top-catchs catch-preview-list-scrollable">
         <GaleryPreviewList
           v-bind:picturesPerTrip="picturesPerTrip"
@@ -32,43 +33,43 @@
           bottomMode="index"
         />
       </div>
-    </div>
-    <div class="section">
-      <div class="section shrinked">
-        <h2><i class="icon-fish" />Mes poissons</h2>
-        <DistributionChart
-          :distribution="caughtSpeciesDistribution"
-          legend="Capturés"
-          greenLegend="conservés"
-        ></DistributionChart>
-      </div>
-  </div>
+    </section>
 
-    <div class="section">
-        <div class="shrinked avg-size">
-          <h2>
-            <i class="icon-fish" /> Nombre de prises par mois
-          </h2>
-        </div>
-        <div class="not-enough-data" v-if="monthlySizesOptions.length == 0">
+    <section class="dashboard-card tone-sky">
+      <h2 class="card-title">
+        <span>Mes poissons</span>
+        <span class="card-year">{{ year }}</span>
+      </h2>
+      <DistributionChart
+        :distribution="caughtSpeciesDistribution"
+        legend="Capturés"
+        greenLegend="conservés"
+      ></DistributionChart>
+    </section>
+
+    <section class="dashboard-card tone-green">
+      <h2 class="card-title">
+        <span>Nombre de prises par mois</span>
+        <span class="card-year">{{ year }}</span>
+      </h2>
+      <div class="not-enough-data" v-if="monthlySizesOptions.length == 0">
         <span>Pas assez de données</span>
       </div>
-        <OptionsList
-          :items="monthlyCountOptions"
-          v-if="monthlyCountOptions.length > 0"
-          v-on:item-selected="onMonthlyCountSelected"
-        >
-        </OptionsList>
-        <div class="shrinked" v-if="monthlyCount">
-          <HistogramChart
-            :values="monthlyCount"
-            :orderedMonths="orderedMonths"
-            :is-active-month-condition="isActiveMonth"
-            :average="averageCatchsPerTripRounded"
-            averageLabel="Nombre moyen de prises par sortie de pêche (Toutes espèces confondues)"
-          ></HistogramChart>
-        </div>
-    </div>
+      <OptionsList
+        :items="monthlyCountOptions"
+        v-if="monthlyCountOptions.length > 0"
+        v-on:item-selected="onMonthlyCountSelected"
+      >
+      </OptionsList>
+      <HistogramChart
+        v-if="monthlyCount"
+        :values="monthlyCount"
+        :orderedMonths="orderedMonths"
+        :is-active-month-condition="isActiveMonth"
+        :average="averageCatchsPerTripRounded"
+        averageLabel="Nombre moyen de prises par sortie de pêche (Toutes espèces confondues)"
+      ></HistogramChart>
+    </section>
 
     <AnglerEffortStatistics
       :year="year"
@@ -76,12 +77,12 @@
       :species="dashboardData.species"
     />
 
-    <div class="section">
-      <div class="shrinked avg-size">
-        <h2>
-          <i class="icon-size" />Taille moyenne
-          <span class="hide-if-small">par espèce</span> (cm)
-        </h2>
+    <section class="dashboard-card tone-sky">
+      <div class="avg-size">
+        <h2 class="card-title">
+        <span>Taille moyenne par espèce (cm)</span>
+        <span class="card-year">{{ year }}</span>
+      </h2>
         <MaillageLegend
           :selectedLakeId="selectedLakeId"
           :maillages="maillages"
@@ -96,19 +97,19 @@
         v-on:item-selected="onMonthlySizeSelected"
       >
       </OptionsList>
-      <div class="shrinked" v-if="monthlySizes">
-        <HistogramChart
-          :values="monthlySizes"
-          :orderedMonths="orderedMonths"
-          :is-active-month-condition="isActiveMonth"
-        ></HistogramChart>
-      </div>
-    </div>
+      <HistogramChart
+        v-if="monthlySizes"
+        :values="monthlySizes"
+        :orderedMonths="orderedMonths"
+        :is-active-month-condition="isActiveMonth"
+      ></HistogramChart>
+    </section>
 
-    <div class="section">
-      <div class="shrinked">
-        <h2><i class="icon-size" />Top 5 tailles</h2>
-      </div>
+    <section class="dashboard-card tone-yellow">
+      <h2 class="card-title">
+        <span>Top 5 tailles</span>
+        <span class="card-year">{{ year }}</span>
+      </h2>
       <div class="not-enough-data" v-if="topBySizeOptions.length == 0">
         <span>Pas assez de données</span>
       </div>
@@ -130,12 +131,13 @@
           bottomMode="index"
         />
       </div>
-    </div>
+    </section>
 
-    <div class="section">
-      <div class="shrinked">
-        <h2><i class="icon-weight" />Top 5 poids</h2>
-      </div>
+    <section class="dashboard-card tone-green">
+      <h2 class="card-title">
+        <span>Top 5 poids</span>
+        <span class="card-year">{{ year }}</span>
+      </h2>
       <div class="not-enough-data" v-if="topByWeightOptions.length == 0">
         <span>Pas assez de données</span>
       </div>
@@ -158,7 +160,7 @@
           bottomMode="index"
         />
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -500,8 +502,9 @@ export default class PersonalDashboard extends Vue {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
+@import (reference) "../../less/_statistics-card";
+
 .average {
   position: relative;
   margin-top: @vertical-margin-small;
@@ -590,12 +593,137 @@ export default class PersonalDashboard extends Vue {
   display: flex;
   gap: 8px;
   justify-content: start;
+  align-items: center;
   @media screen and (max-width: 1400px) {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-title {
+    align-self: stretch;
+  }
+
+  :deep(.maillage-legend) {
+    margin: 0 0 15px 2px;
+    padding: 0;
   }
 }
 
-.pointer {
-  cursor: pointer;
+.card-year {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background-color: @surface;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dashboard-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+// Fonds colorés en alternance, comme les cartes de « Mes statistiques ».
+.dashboard-card {
+  .statistics-card();
+  text-align: left;
+}
+
+.tone-sky {
+  background-color: @sky-box;
+  color: @sky-text;
+}
+
+.tone-green {
+  background-color: @green-box;
+  color: @green-text;
+}
+
+.tone-yellow {
+  background-color: @yellow-box;
+  color: @yellow-text;
+}
+
+.card-title {
+  .statistics-card-title();
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 15px 2px;
+}
+
+// Graphiques partagés avec « Statistiques » : recolorés ici seulement, aux
+// teintes des cartes de « Mes statistiques ». Les sélecteurs reprennent ceux
+// des composants pour l'emporter sur eux.
+.dashboard-card {
+  :deep(.options-list) {
+    padding-left: 0;
+    padding-right: 0;
+
+    div.item.selected {
+      color: inherit;
+      border-bottom-color: @carnet-sky;
+    }
+  }
+
+  :deep(.distribution .distribution-row) {
+    .distribution-row-data .species {
+      color: inherit;
+    }
+
+    .distribution-row-data .percent .green-label {
+      color: @green-text;
+    }
+
+    .distribution-row-bar {
+      background: @white-smoke;
+
+      .distribution-row-bar-filled.even,
+      .distribution-row-bar-filled.odd {
+        background: @carnet-sky;
+      }
+
+      .distribution-row-bar-filled.green {
+        background: @carnet-green;
+      }
+    }
+  }
+
+  :deep(.histogram .bars .bar) {
+    background-color: @white-smoke;
+
+    .bar-filled.maillee.even,
+    .bar-filled.maillee.odd {
+      background: @carnet-sky;
+    }
+
+    .bar-filled.non-maillee.even,
+    .bar-filled.non-maillee.odd {
+      background: @carnet-orange;
+    }
+
+    .bar-filled.is-active-month {
+      background: @carnet-yellow !important;
+    }
+  }
+
+  :deep(.histogram .labels) {
+    .label-short:not(.is-active-month),
+    .label-mid:not(.is-active-month) {
+      color: inherit;
+    }
+  }
+
+  :deep(.maillage-legend .maillage) {
+    .square.square-maillee {
+      background-color: @carnet-sky;
+    }
+
+    .square.square-non-maillee {
+      background-color: @carnet-orange;
+    }
+  }
 }
 </style>

@@ -107,6 +107,10 @@
         <b-icon icon="help-circle" size="is-medium"></b-icon>
         Aide
       </b-navbar-item>
+      <b-navbar-item tag="a" class="help-link" @click="feedbackOpen = true">
+        <b-icon icon="message-alert" size="is-medium"></b-icon>
+        Des retours ?
+      </b-navbar-item>
       <b-navbar-item class="user-dropdown-wrapper">
         <b-dropdown
           class="is-right"
@@ -180,10 +184,13 @@
       </div>
     </template>
   </b-navbar>
+  <FeedbackModal v-model:active="feedbackOpen" :email="loggedAdmin.email" />
 </template>
 
 <script setup lang="ts">
 import router from "@/router";
+
+import FeedbackModal from "@/components/FeedbackModal.vue";
 
 import BackendService from "@/services/BackendService";
 import ThemeService, { ThemePreference } from "@/services/ThemeService";
@@ -192,6 +199,7 @@ import {computed, onMounted, ref, Ref} from "vue";
 
 const loggedAdmin: Ref<Admin> = ref({ email: "" });
 const themePreference: Ref<ThemePreference> = ref(ThemeService.getPreference());
+const feedbackOpen = ref(false);
 
 function changeTheme() {
   ThemeService.setPreference(themePreference.value);

@@ -31,7 +31,7 @@
     <i class="icon-error close-button" @click="close" />
 
     <div class="nearby-header">
-        <h3>Plans d'eau autour de moi</h3>
+        <h3>Milieux autour de moi</h3>
         <div class="kind-filter">
             <button
                 type="button"

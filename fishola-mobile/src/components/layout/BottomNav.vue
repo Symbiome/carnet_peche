@@ -110,7 +110,9 @@ export default class BottomNav extends Vue {
   position: absolute;
   bottom: 0;
   left: 0;
-  z-index: 10;
+  // Au-dessus des vignettes photo (z-index 15 et 20) qui défilent sous la
+  // moitié haute du « + », sous les menus, dialogues et toasts (≥ 996).
+  z-index: 30;
 
   display: grid;
   grid-template-columns: 1fr 1fr 80px 1fr 1fr;

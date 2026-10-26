@@ -21,7 +21,7 @@
 <template>
     <div class="lake-selection">
       <label for="lakes-autocomplete-input">
-        Plan<span v-if="allowMultipleSelection">s</span> d'eau
+        Milieu<span v-if="allowMultipleSelection">x</span>
       </label>
       <span class="input-wrapper">
         <input
@@ -48,7 +48,7 @@
         <span class="input-actions">
           <i class="icon-chevron" @click="toggleSuggestionsDisplay" title="Voir les suggestions" />
           <i class="icon-magnifying-glass" @click="toggleCommuneSearchDisplay" title="Rechercher par commune" />
-          <i class="icon-fishing" @click="toggleNearbyDisplay" title="Plans d'eau autour de moi" />
+          <i class="icon-fishing" @click="toggleNearbyDisplay" title="Milieux autour de moi" />
           <i class="icon-map" @click="toggleMapDisplay" title="Voir les suggestions sur une carte"/>
         </span>
         <ul class="suggestions" v-show="displaySuggestions">

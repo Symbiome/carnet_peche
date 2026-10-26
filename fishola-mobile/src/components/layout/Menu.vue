@@ -51,7 +51,7 @@
         v-for="i in availableMenuItems()"
         :key="'menu-item-' + i.name"
         v-on:click="i.clickHandler"
-        :class="{ active: isActive(i.name), 'is-back': i.name == 'back' }"
+        :class="{ active: isActive(i.name), 'is-back': i.name == 'back', 'hide-on-desktop': i.hideOnDesktop }"
       >
         <span>
           {{ i.label }}
@@ -89,7 +89,8 @@ export class MenuItem {
     public clickHandler: any,
     public onlyConnected: boolean,
     public onlyUnlogged: boolean,
-    public path?: string
+    public path?: string,
+    public hideOnDesktop?: boolean
   ) {}
 }
 
@@ -275,11 +276,6 @@ export default class Menu extends Vue {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/doc");
   }
 
-  goCommunity() {
-    this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/community");
-  }
-
   goBadges() {
     this.closeMenu();
     RouterUtils.pushRouteNoDuplicate(this.$router, "/badges");
@@ -354,17 +350,9 @@ export default class Menu extends Vue {
       },
       {
         name: "activity-summary",
-        label: "Résumé de mon activité",
+        label: "Statistiques",
         iconName: "dashboard",
         clickHandler: this.goActivitySummary,
-        onlyConnected: true,
-        onlyUnlogged: false,
-      },
-      {
-        name: "community",
-        label: "Communauté",
-        iconName: "fishing",
-        clickHandler: this.goCommunity,
         onlyConnected: true,
         onlyUnlogged: false,
       },
@@ -383,6 +371,8 @@ export default class Menu extends Vue {
         clickHandler: this.goDashboardGlobal,
         onlyConnected: true,
         onlyUnlogged: false,
+        // Écran large : remplacé par les statistiques personnelles ci-dessus.
+        hideOnDesktop: true,
       },
       {
         name: "about",

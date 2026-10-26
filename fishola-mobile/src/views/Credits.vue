@@ -24,30 +24,23 @@
     <div class="page credits-page">
       <div class="pane pane-only">
         <div class="pane-content rounded">
-          <h1>Information et crédits</h1>
+          <h1>Qui porte le projet ?</h1>
 
-          <div class="credits-row">
-            <p v-for="p in paragraphs" v-bind:key="p" class="credits-p">
-              {{ p }}
-            </p>
-          </div>
-
-          <div v-if="link" class="credits-link">
-            <a v-bind:href="link" target="_blank">
-              Plus d'informations
-              <button>
-                <i class="icon-arrow" />
-              </button>
+          <div class="credits-card">
+            <a v-bind:href="ufbrmcUrl" target="_blank" rel="noopener" class="credits-logo">
+              <img src="/img/logo/ufbrmc.jpg" alt="Union des Bassins Rhône-Méditerranée-Corse (UFBRMC)" />
             </a>
-          </div>
-
-          <div class="credits-logos">
-            <a href="https://www.inrae.fr" target="_blank" rel="noopener"><img src='/img/credits/inrae.svg'
-                alt="INRAE" /></a>
-            <a href="https://ofb.gouv.fr/" target="_blank" rel="noopener"><img src='/img/credits/ofb.png'
-                alt="OFB" /></a>
-            <a href="https://www.codelutin.com" target="_blank" rel="noopener"><img src='/img/credits/code-lutin.svg'
-                alt="Code Lutin" /></a>
+            <p class="credits-description">
+              Carnet de pêche est porté par l'UFBRMC, qui réunit les fédérations
+              de pêche du bassin Rhône-Méditerranée &amp; Corse et leurs quelque
+              400 000 pêcheurs. Avec cet outil commun et open source, vos
+              captures aident à mieux connaître les poissons des rivières, lacs
+              et étangs, et à mieux les gérer.
+            </p>
+            <a v-bind:href="ufbrmcUrl" target="_blank" rel="noopener" class="credits-link">
+              Découvrir l'UFBRMC
+              <i class="icon-arrow" />
+            </a>
           </div>
 
           <div class="bottom-page-spacer"></div>
@@ -60,130 +53,84 @@
 </template>
 
 <script lang="ts">
-
-import CarnetHeader from '@/components/layout/CarnetHeader.vue';
-import RunningOverlay from '@/components/layout/RunningOverlay.vue';
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
+import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 
-import { Editorial } from '@/pojos/BackendPojos';
-import DocumentationService from '@/services/DocumentationService';
-import TripsService from '@/services/TripsService';
+import TripsService from "@/services/TripsService";
 
 import { Component, Vue } from "vue-facing-decorator";
 
+/**
+ * « Qui porte le projet ? » : logo, courte présentation et lien vers le site
+ * de l'UFBRMC, porteur de Carnet de pêche.
+ */
 @Component({
   components: {
     CarnetHeader,
     RunningOverlay,
-    BottomNav
-  }
+    BottomNav,
+  },
 })
 export default class CreditsView extends Vue {
-
-  paragraphs: string[] = [];
-  link = '';
+  readonly ufbrmcUrl =
+    "https://www.peche-auvergne-rhonealpes.fr/actualite/3754/1913-union-des-bassins-rhone-mediterranee-corse.htm";
 
   hasRunningTrip: boolean = false;
 
-  constructor() {
-    super();
-  }
-
   mounted() {
-    DocumentationService.getCredits()
-      .then(this.creditsLoaded);
-    TripsService.hasRunningTrip()
-      .then((result: boolean) => this.hasRunningTrip = result);
+    TripsService.hasRunningTrip().then((result: boolean) => (this.hasRunningTrip = result));
   }
-
-  creditsLoaded(editorial: Editorial) {
-    editorial.content
-      .split("<br/>")
-      .forEach((p: string) => {
-        this.paragraphs.push(p);
-      });
-    this.link = editorial.link;
-  }
-
 }
-
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
-.credits-page {
+<style scoped lang="less">
+.credits-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-top: @vertical-margin-medium;
+  padding: 24px 20px;
+  border-radius: 13px;
+  background-color: @surface;
+  letter-spacing: @letter-spacing;
+}
 
-  p.credits-p {
-    font-size: @fontsize-small-paragraph;
-    line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
-    color: @pale-sky;
-    text-align: left;
+.credits-logo img {
+  display: block;
+  width: 160px;
+  border-radius: 8px;
+}
+
+.credits-description {
+  margin: 0;
+  color: @gunmetal;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.credits-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background-color: @carnet-blue;
+  color: @white;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media screen and (min-width: @desktop-min-width) {
+  .credits-card {
+    max-width: 700px;
   }
 
-  .credits-link {
-    width: 100%;
-    text-align: right;
-    font-weight: bold;
-    font-size: @fontsize-header-paragraph;
-    line-height: calc(@fontsize-header-paragraph + @line-height-padding-large);
-
-    a,
-    a:visited {
-      text-decoration: none;
-      color: @accent-text;
-    }
-
-    button {
-      width: 32px;
-      height: 20px;
-      background-color: @summer-sky;
-      color: @white;
-      border: 0px;
-      border-radius: 50px;
-      margin-left: @margin-small;
-    }
+  .credits-description {
+    font-size: 16px;
   }
-
-  .credits-logos {
-    margin-top: @vertical-margin-large;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-
-    img {
-      width: 200px;
-      margin-bottom: @vertical-margin-small;
-    }
-  }
-
-  @media screen and (min-width: @desktop-min-width) {
-
-    p.credits-p {
-      font-size: @fontsize-paragraph;
-      line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
-    }
-
-    .credits-link {
-
-      font-size: @fontsize-paragraph;
-      line-height: calc(@fontsize-paragraph + @line-height-padding-large);
-
-      button {
-        width: 38px;
-        height: 24px;
-        font-size: @fontsize-paragraph;
-        line-height: calc(@fontsize-paragraph + @line-height-padding-large);
-      }
-    }
-
-    .credits-logos {
-      margin-top: @vertical-margin-xx-large;
-
-      img {
-        width: 240px;
-      }
-    }
-  }
-
 }
 </style>

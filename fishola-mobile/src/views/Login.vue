@@ -84,6 +84,8 @@ export default class LoginView extends Vue {
   emailError = "";
   password = "";
   passwordError = "";
+  // Fermée tant que le backend n'a pas confirmé l'ouverture (#192).
+  registrationEnabled: boolean = false;
 
   constructor() {
     super();

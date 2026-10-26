@@ -101,6 +101,11 @@ public interface CarnetConfiguration {
     @WithDefault("5")
     int sectorContributionMinAnglers();
 
+    // Page « Mes statistiques » : un milieu est « peu documenté » tant qu'il
+    // compte au plus ce nombre de sorties, tous pêcheurs confondus.
+    @WithDefault("10")
+    int sparselyDocumentedMaxTrips();
+
     default String computeBackendBaseUrl(HttpServletRequest httpServletRequest) {
         Optional<String> backendBaseUrl = backendBaseUrl();
         String result;

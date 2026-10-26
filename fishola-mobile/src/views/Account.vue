@@ -83,7 +83,7 @@ export default class AccountView extends Vue {
         title: "Mon espace",
         items: [
           { label: "Mon profil", icon: "img/carnet/account-profile.svg", action: () => this.go("/profile/profile") },
-          { label: "Résumé de mon activité", icon: "img/carnet/account-activity.svg", action: () => this.go("/activity-summary") },
+          { label: "Statistiques", icon: "img/carnet/account-activity.svg", action: () => this.go("/activity-summary") },
           { label: "Mes badges", fontIcon: "icon-star", action: () => this.go("/badges") },
           { label: "Données et confidentialité", icon: "img/carnet/account-privacy.svg", action: this.openCgu },
           { label: "Mode hors ligne", icon: "img/carnet/account-offline.svg", action: () => this.go("/offline-areas") },
@@ -95,6 +95,7 @@ export default class AccountView extends Vue {
         items: [
           { label: "Contact", icon: "img/carnet/account-contact.svg", action: this.openFeedback },
           { label: "A propos", icon: "img/carnet/account-about.svg", action: () => this.go("/documentation/doc") },
+          { label: "Qui porte le projet ?", icon: "img/carnet/account-who.svg", action: () => this.go("/credits") },
           { label: "Revoir la présentation", fontIcon: "icon-info", action: this.replayOnboarding },
           { label: "Déconnexion", fontIcon: "icon-logout", action: this.logout },
         ],

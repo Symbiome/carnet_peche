@@ -33,7 +33,7 @@
         <FormInput
           v-if="readonly"
           name="lake"
-          label="Plan d'eau"
+          label="Milieu"
           v-bind:modelValue="selectedLakeName"
           v-bind:readonly="true"
         />

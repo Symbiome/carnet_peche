@@ -206,6 +206,8 @@ export interface KeyFigures {
 export interface Feedback {
     id: string;
     category: string;
+    module?: string;
+    source?: string;
     userId?: string;
     email?: string;
     description?: string;
@@ -263,6 +265,18 @@ export interface AnglerEffortStatistics {
     cpuePerSpecies: SpeciesCpue[];
     sectorMinAnglers: number;
     sectorContribution?: SectorContribution;
+}
+
+export interface PersonalStatistics {
+    from: Date;
+    to: Date;
+    dailyActivity: DailyActivity[];
+    tripsPerMoment: { [P in DayMoment]?: number };
+    catchesPerSpecies: { [index: string]: number };
+    completeTripsCount: number;
+    catchesWithPictureCount: number;
+    tripsEnteredWithinADayCount: number;
+    waterEntities: FrequentedWaterEntity[];
 }
 
 export interface LicenceFromClientBean {
@@ -410,6 +424,19 @@ export interface SectorContribution {
     totalCatchesCount: number;
 }
 
+export interface DailyActivity {
+    day: Date;
+    tripsCount: number;
+    catchesCount: number;
+}
+
+export interface FrequentedWaterEntity {
+    id: string;
+    name: string;
+    tripsCount: number;
+    sparselyDocumented: boolean;
+}
+
 export interface SouvenirCatchBean {
     id: string;
     tripId: string;
@@ -455,5 +482,7 @@ export type WaterEntityKind = "STILL" | "FLOWING";
 export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" | "JULY" | "AUGUST" | "SEPTEMBER" | "OCTOBER" | "NOVEMBER" | "DECEMBER";
 
 export type Maillage = "MAILLEE" | "NON_MAILLEE" | "NON_DEFINI";
+
+export type DayMoment = "DAWN" | "MORNING" | "AFTERNOON" | "EVENING";
 
 export type LicenceType = "PDF" | "JPEG" | "PNG";

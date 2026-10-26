@@ -189,15 +189,16 @@ export default class ProfileService extends AbstractCarnetService {
 
   /**
    * Indique si l'inscription libre est ouverte (#192). En cas d'échec (hors
-   * ligne), on la suppose ouverte : le backend refuse de toute façon une
-   * inscription fermée.
+   * ligne, backend indisponible), on la suppose fermée : en production, les
+   * comptes bêta-testeurs sont importés par CSV et l'app ne doit pas proposer
+   * l'inscription sans que le backend l'ait confirmée.
    */
   static async isRegistrationEnabled(): Promise<boolean> {
     try {
       const status: RegistrationStatus = await this.backendGet("/v1/security/registration");
-      return status.enabled;
+      return status.enabled === true;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
