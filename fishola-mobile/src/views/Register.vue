@@ -105,7 +105,8 @@ export default class RegisterView extends Vue {
     passwordConfirm: "",
   };
   cgu: boolean = false;
-  registrationEnabled: boolean = true;
+  // Fermée tant que le backend n'a pas confirmé l'ouverture (#192).
+  registrationEnabled: boolean = false;
   cguUrl: string = "";
 
   constructor() {
