@@ -275,11 +275,6 @@ export default class Menu extends Vue {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/doc");
   }
 
-  goCommunity() {
-    this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/community");
-  }
-
   goBadges() {
     this.closeMenu();
     RouterUtils.pushRouteNoDuplicate(this.$router, "/badges");
@@ -357,14 +352,6 @@ export default class Menu extends Vue {
         label: "Résumé de mon activité",
         iconName: "dashboard",
         clickHandler: this.goActivitySummary,
-        onlyConnected: true,
-        onlyUnlogged: false,
-      },
-      {
-        name: "community",
-        label: "Communauté",
-        iconName: "fishing",
-        clickHandler: this.goCommunity,
         onlyConnected: true,
         onlyUnlogged: false,
       },

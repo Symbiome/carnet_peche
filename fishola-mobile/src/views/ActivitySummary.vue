@@ -55,6 +55,12 @@
         <QualityStatisticsCard :view="view" />
         <WaterEntitiesStatisticsCard :waterEntities="stats.waterEntities" />
       </div>
+
+      <div class="dashboard-page legacy-dashboard">
+        <div class="pane-content large">
+          <PersonalDashboardSection />
+        </div>
+      </div>
     </div>
     <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     <BottomNav />
@@ -62,6 +68,7 @@
 </template>
 
 <script lang="ts">
+import PersonalDashboardSection from "@/components/charts/PersonalDashboardSection.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import CatchesStatisticsCard from "@/components/statistics/CatchesStatisticsCard.vue";
@@ -88,8 +95,9 @@ import { Component, Vue } from "vue-facing-decorator";
 /**
  * « Mes statistiques » (maquette Figma « Statistiques ») : sorties,
  * régularité, prises, espèces, qualité des données et cours d'eau du
- * pêcheur, sur la saison en cours ou les 30 derniers jours. Remplace
- * l'ancien « Résumé de mon activité » (#301).
+ * pêcheur, sur la saison en cours ou les 30 derniers jours, suivies du
+ * tableau de bord de l'ancien « Résumé de mon activité » (#301) : photos,
+ * poissons, prises par mois, records de taille, techniques de pêche…
  */
 @Component({
   components: {
@@ -101,6 +109,7 @@ import { Component, Vue } from "vue-facing-decorator";
     SpeciesStatisticsCard,
     QualityStatisticsCard,
     WaterEntitiesStatisticsCard,
+    PersonalDashboardSection,
   },
 })
 export default class ActivitySummaryView extends Vue {
@@ -170,6 +179,26 @@ export default class ActivitySummaryView extends Vue {
   }
 }
 </script>
+
+<style lang="less">
+@import "../less/_dashboard-page";
+
+// Le titre « Mes données » prenait son style de l'ancêtre `.pane` de l'ancienne page.
+.legacy-dashboard .dashboard-section > h1 {
+  margin: @margin-x-small @margin-medium;
+  font-weight: 700;
+  font-size: @fontsize-title;
+  line-height: calc(@fontsize-title + @line-height-padding-xx-large);
+  color: @accent-text;
+  text-align: left;
+
+  @media screen and (min-width: @desktop-min-width) {
+    margin: @margin-medium;
+    font-size: @fontsize-title-desktop;
+    line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+  }
+}
+</style>
 
 <style scoped lang="less">
 .statistics {
@@ -274,5 +303,12 @@ export default class ActivitySummaryView extends Vue {
   flex-direction: column;
   gap: 25px;
   margin-top: 23px;
+}
+
+.legacy-dashboard {
+  position: relative;
+  margin-top: 25px;
+  border-radius: 8.873px;
+  background-color: @surface;
 }
 </style>

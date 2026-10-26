@@ -175,7 +175,7 @@ export default class TripMetaView extends Vue {
           );
           if (JSON.stringify(e).indexOf("location unavailable") != -1) {
             this.hereIAmError =
-              "La position n'est pas activée, il n'est pas possible de pré-sélectionner le plan d'eau";
+              "La position n'est pas activée, il n'est pas possible de pré-sélectionner le milieu";
             if (!GeolocationService.notifiedPositionDisabled) {
               GeolocationService.notifiedPositionDisabled = true;
               Helpers.alert(
@@ -185,7 +185,7 @@ export default class TripMetaView extends Vue {
             }
           } else if (JSON.stringify(e).indexOf("User denied") != -1) {
             this.hereIAmError =
-              "Partage de position refusé, il n'est pas possible de pré-sélectionner le plan d'eau";
+              "Partage de position refusé, il n'est pas possible de pré-sélectionner le milieu";
           }
         }
       );
@@ -212,7 +212,7 @@ export default class TripMetaView extends Vue {
       this.lakeIdError = "";
     } else {
       hasError = true;
-      this.lakeIdError = "Vous devez sélectionner le plan d'eau";
+      this.lakeIdError = "Vous devez sélectionner le milieu";
     }
     if (localStorage) {
       localStorage.latestSelectedLakeUUID = this.trip.lakeId
