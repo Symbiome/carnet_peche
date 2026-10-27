@@ -80,9 +80,21 @@ onMounted(() => {
 });
 
 watch(() => defaultSelection, (newSelection) => {
+  if (sameIds(newSelection, selectedIds.value)) {
+    return;
+  }
   selectedIds.value = [...newSelection];
   emit("updated", selectedIds.value);
 });
+
+/**
+ * Le parent (ReferentialItem) renvoie en defaultSelection le tableau qu'on vient
+ * d'émettre : sans cette comparaison, copie → émission → nouveau tableau → watch
+ * boucle à l'infini et fige la page (création d'admin / d'opérateur).
+ */
+function sameIds(first: string[], second: string[]): boolean {
+  return first.length === second.length && first.every((id, index) => id === second[index]);
+}
 
 function selectOption(option: any) {
   if (option) {

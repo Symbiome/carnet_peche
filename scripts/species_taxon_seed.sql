@@ -7,11 +7,8 @@
 -- Usage : psql "$DATABASE_URL" -f scripts/species_taxon_seed.sql
 -- (nécessite le schéma V1.7.0__Species_taxon_reference.sql).
 --
--- Unités du fichier source : taille en mm, masse en g. Les colonnes
--- species_size_bounds.min_size_cm/max_size_cm sont en cm (convention déjà en
--- place dans le backend, cf. ImportService#sizeOutOfBounds / capture_longueur_cm) :
--- conversion mm -> cm par arrondi vers l'extérieur (floor pour le minimum,
--- ceil pour le maximum) afin de ne pas resserrer les bornes réelles.
+-- Unités du fichier source : taille en mm, masse en g. Les tailles du fichier
+-- ne sont pas reprises comme bornes (cf. étape 3).
 --
 -- Deux libellés usuels du fichier source sont en doublon (contrainte
 -- d'unicité sur species.name/export_as) et corrigés ici pour rester
@@ -138,12 +135,15 @@ SELECT split_part(t.nom_usuel, ',', 1), split_part(t.nom_usuel, ',', 1), true, t
 FROM species_taxon_staging t
 WHERE NOT EXISTS (SELECT 1 FROM public.species s WHERE s.code_espece = t.code_espece);
 
--- 3) Bornes de taille (mm -> cm, arrondi vers l'extérieur) et de masse (g,
--- inchangé) pour la détection des valeurs aberrantes (#12 / ImportService).
+-- 3) Bornes de taille et de masse (g, inchangé) pour la détection des valeurs
+-- aberrantes (#12 / ImportService). Taille : plafond unique 1–300 cm (cf.
+-- V3.8.0__Species_size_bounds_single_ceiling.sql), taille_min_mm/taille_max_mm
+-- du fichier source étant des étendues observées (Sandre 32–125 mm) qui
+-- rejetaient des captures réelles.
 INSERT INTO public.species_size_bounds (species_id, min_size_cm, max_size_cm, min_weight_g, max_weight_g)
 SELECT s.id,
-       CASE WHEN t.taille_min_mm IS NULL THEN NULL ELSE floor(t.taille_min_mm / 10.0) END,
-       CASE WHEN t.taille_max_mm IS NULL THEN NULL ELSE ceil(t.taille_max_mm / 10.0) END,
+       1,
+       300,
        CASE WHEN t.masse_min_g IS NULL THEN NULL ELSE floor(t.masse_min_g) END,
        CASE WHEN t.masse_max_g IS NULL THEN NULL ELSE ceil(t.masse_max_g) END
 FROM species_taxon_staging t
