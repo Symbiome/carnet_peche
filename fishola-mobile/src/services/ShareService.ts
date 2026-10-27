@@ -31,6 +31,12 @@ export default class ShareService extends AbstractCarnetService {
     ShareService.shareBase64File(base64, fileName, "application/png");
   }
 
+  /** Carte de pêche (#331) : remet le PDF au lecteur du téléphone quand l'app ne sait pas l'afficher. */
+  static async sharePdf(pdfURL: string, fileName: string) {
+    const base64 = await ShareService.getBase64FromUrl(pdfURL);
+    ShareService.shareBase64File(base64, fileName, "application/pdf");
+  }
+
   /** Carte de partage social (#146) : image déjà générée côté client (canvas/html2canvas), au format `data:image/png;base64,...`. */
   static async shareGeneratedImage(dataUrl: string, fileName: string) {
     const base64 = dataUrl.replace("data:", "").replace(/^.+,/, "");

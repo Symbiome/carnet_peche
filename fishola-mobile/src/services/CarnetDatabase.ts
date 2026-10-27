@@ -24,6 +24,7 @@ import StoredPicture from "@/pojos/StoredPicture";
 import OfflineEntry from "@/pojos/OfflineEntry";
 import OfflineArea from "@/pojos/OfflineArea";
 import CachedTile from "@/pojos/CachedTile";
+import StoredLicenceFile from "@/pojos/StoredLicenceFile";
 import { toStorable } from "@/services/Storable";
 
 /**
@@ -73,6 +74,8 @@ export default class CarnetDatabase extends Dexie {
   // Packs hydro départementaux téléchargés (#54), clé = code département.
   offlineAreas: Dexie.Table<OfflineArea, string>;
   tileCache: Dexie.Table<CachedTile, string>;
+  // Fichiers des cartes de pêche, consultables hors ligne (#331).
+  licenceFiles: Dexie.Table<StoredLicenceFile, string>;
 
   constructor() {
     super("Fishola");
@@ -181,6 +184,20 @@ export default class CarnetDatabase extends Dexie {
       tileCache: "url, accessedAt",
     });
 
+    // Cartes de pêche consultables sans réseau, pour un contrôle au bord de l'eau (#331).
+    this.version(11).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+      dirtyPictures: "id, order, catch",
+      toDeletePictures: "id, order, catch",
+      offlineStorage: "key",
+      offlineFeedbacks: "id",
+      lastMeasurementPic: "id",
+      offlineAreas: "code, downloadedAt",
+      tileCache: "url, accessedAt",
+      licenceFiles: "licenceId",
+    });
+
     this.onCreationTrip = this.table("onCreationTrip");
     this.dirtyTrips = this.table("dirtyTrips");
     this.dirtyPictures = this.table("dirtyPictures");
@@ -190,6 +207,7 @@ export default class CarnetDatabase extends Dexie {
     this.lastMeasurementPic = this.table("lastMeasurementPic");
     this.offlineAreas = this.table("offlineAreas");
     this.tileCache = this.table("tileCache");
+    this.licenceFiles = this.table("licenceFiles");
 
     this.use({
       stack: "dbcore",
