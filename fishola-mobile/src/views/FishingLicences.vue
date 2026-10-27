@@ -46,6 +46,7 @@ import NewFishingLicence from "@/components/fishing-licences/NewFishingLicence.v
 
 import FishingLicenceService from "@/services/FishingLicenceService";
 import TripsService from "@/services/TripsService";
+import EventBus from "@/services/EventBus";
 
 import { Component, Vue } from "vue-facing-decorator";
 import orderBy from "lodash/orderBy";
@@ -78,7 +79,12 @@ export default class FishingLicencesView extends Vue {
   }
 
   fetchAllLicences() {
-    FishingLicenceService.getAllLicences().then(this.loadLicences);
+    FishingLicenceService.getAllLicences().then(this.loadLicences, () =>
+      EventBus.emit(
+        "toaster-warning",
+        "Vos cartes de pêche ne sont pas disponibles sans connexion internet."
+      )
+    );
   }
 
   loadLicences(licences: LicenceResponseBean[]) {

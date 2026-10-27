@@ -21,6 +21,7 @@
 import AbstractCarnetService from "@/services/AbstractCarnetService";
 import UserProfile from "@/pojos/UserProfile";
 import TripsService from "./TripsService";
+import FishingLicenceService from "./FishingLicenceService";
 import { UserSettings, UpdatePasswordBean, RegistrationStatus, WaterEntity as Lake } from "@/pojos/BackendPojos";
 import UserRegister from "@/pojos/UserRegister";
 import ReferentialService from "./ReferentialService";
@@ -204,6 +205,8 @@ export default class ProfileService extends AbstractCarnetService {
 
   static logout(): Promise<void> {
     this.deleteFromOfflineStorage("/v1/security/profile");
+    // Carte de pêche gardée pour les contrôles (#331) : donnée personnelle.
+    FishingLicenceService.clearOfflineCopies();
     return new Promise<void>((resolve, reject) => {
       this.backendPost("/v1/security/logout").then(() => {
         UserProfile.unsetCurrent();
