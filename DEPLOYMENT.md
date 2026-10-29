@@ -170,9 +170,14 @@ Le playbook :
 5. build les images Docker (`docker compose build`), dont celle de
    `docker_pg` (PostGIS + pgBackRest, `docker/postgres/Dockerfile`) ;
 6. démarre la stack et attend qu'elle soit prête (`docker compose up -d --wait`) ;
-7. crée la stanza pgBackRest au premier déploiement, puis vérifie le dépôt et
+7. attend que le backend ait appliqué les migrations Flyway puis, si la table
+   `species` est vide (premier déploiement), charge le référentiel d'espèces
+   par défaut (`scripts/species_taxon_seed.sql`). Sur une base qui a déjà des
+   espèces, l'étape est sautée ; pour y rejouer le référentiel à la main :
+   `docker compose exec -T -u postgres docker_pg psql -d fishola -v ON_ERROR_STOP=1 < scripts/species_taxon_seed.sql` ;
+8. crée la stanza pgBackRest au premier déploiement, puis vérifie le dépôt et
    l'archivage des WAL (`pgbackrest check`) ;
-8. installe les deux tâches cron de sauvegarde dans la crontab de
+9. installe les deux tâches cron de sauvegarde dans la crontab de
    l'utilisateur (voir §6).
 
 Rejouable sans risque. Pour forcer un rebuild complet (sans cache Docker ni
@@ -331,3 +336,10 @@ service `fishola-backend` de `docker-compose.yml` et dans
   l'existant (celui que `start_all.sh` lance en local).
 - Sauvegardes (§6) : pas encore de copie hors serveur ni d'alerte
   automatique en cas d'échec, à arbitrer avec Adventiel.
+
+
+## Chargement des entités hydo:
+
+docker compose exec -T -u postgres docker_pg psql -d fishola -c "SELECT count(*) FROM water_entity;"
+
+PG_CONTAINER=carnet_peche-docker_pg-1 PGPASSWORD="$POSTGRES_PASSWORD"   ./scripts/import_hydro_france.sh ./data 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 2A 2B 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69D 69M 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 971 972 973 974 975 976 977 978
