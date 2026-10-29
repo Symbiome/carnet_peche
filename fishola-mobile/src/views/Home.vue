@@ -83,11 +83,10 @@
 </template>
 
 <script lang="ts">
-import { BadgeBean, CatchMarker, TripLight } from "@/pojos/BackendPojos";
+import { BadgeBean, CatchMarker, TripBean, TripLight } from "@/pojos/BackendPojos";
 import UserProfile from "@/pojos/UserProfile";
-import Constants from "@/services/Constants";
-import DashboardService, { DashboardAndSpecies } from "@/services/DashboardService";
 import GamificationService from "@/services/GamificationService";
+import PicturesService from "@/services/PicturesService";
 import Helpers from "@/services/Helpers";
 import ProfileService from "@/services/ProfileService";
 import ReferentialService from "@/services/ReferentialService";
@@ -136,10 +135,6 @@ export default class HomeView extends Vue {
       this.tripsFailed
     );
     TripsService.catchMarkers().then(this.markersListed, () => undefined);
-    DashboardService.loadDashboardOrTimeout(undefined, "").then(
-      this.dashboardLoaded,
-      () => undefined
-    );
     GamificationService.getMyBadges().then(
       (badges) => (this.badges = badges),
       () => undefined
@@ -160,6 +155,20 @@ export default class HomeView extends Vue {
         (water) => (this.lastTripWaterName = water ? water.name : "")
       );
     }
+    if (lastTrip) {
+      TripsService.getTrip(lastTrip.id, this.lastTripDetailsLoaded);
+    }
+  }
+
+  /** Photo de la carte « dernière sortie » : celle de la première prise qui en a une. */
+  async lastTripDetailsLoaded(trip: TripBean) {
+    for (const aCatch of trip.catchs || []) {
+      const photoSrc = await PicturesService.getCatchPreviewSrc(aCatch);
+      if (photoSrc) {
+        this.lastTripPhotoUrl = photoSrc;
+        return;
+      }
+    }
   }
 
   tripsFailed() {
@@ -169,15 +178,6 @@ export default class HomeView extends Vue {
   markersListed(markers: CatchMarker[]) {
     this.markers = markers;
     this.markersLoaded = true;
-  }
-
-  dashboardLoaded(data: DashboardAndSpecies) {
-    const pictures = (data.dashboard.picturesPerTrip || []).find(
-      (p) => this.lastTrip && p.tripId === this.lastTrip.id
-    );
-    if (pictures && pictures.pictureURLs.length) {
-      this.lastTripPhotoUrl = Constants.apiUrl(pictures.pictureURLs[0]);
-    }
   }
 
   get lastTrip(): TripLight | null {

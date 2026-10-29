@@ -605,7 +605,11 @@ export default class TripsService extends AbstractCarnetService {
     return this.doSendTripAndCancelCreations(trip);
   }
 
-  static syncTrips(): Promise<boolean> {
+  /**
+   * Pousse au serveur les sorties locales. {@code force} (« Synchroniser maintenant »)
+   * envoie aussi les sorties modifiées il y a moins de 30 min (cf. shouldDelaySave).
+   */
+  static syncTrips(force: boolean = false): Promise<boolean> {
     // Verrou anti-concurrence : la sync peut être déclenchée par plusieurs
     // sources (poll 30 s, évènement de retour réseau #10, ask-for-sync-check).
     // Sans ce garde, deux passes simultanées peuvent lire les mêmes dirtyTrips
@@ -628,7 +632,7 @@ export default class TripsService extends AbstractCarnetService {
         .then((dirtyTrips) => {
           try {
             if (dirtyTrips && dirtyTrips.length > 0) {
-              TripsService.doSyncDirtyTrips(dirtyTrips, resolve, reject);
+              TripsService.doSyncDirtyTrips(dirtyTrips, force, resolve, reject);
             } else {
               console.info("Aucune sortie à synchroniser");
               resolve(false);
@@ -653,6 +657,7 @@ export default class TripsService extends AbstractCarnetService {
 
   static doSyncDirtyTrips(
     dirtyTrips: TripBean[],
+    force: boolean,
     resolve: (value: boolean | PromiseLike<boolean>) => void,
     reject: (cause: any) => void
   ) {
@@ -660,7 +665,7 @@ export default class TripsService extends AbstractCarnetService {
     let someTripsSaved: boolean = false;
     const allPromises: Promise<void>[] = [];
     dirtyTrips.forEach((dirtyTrip: TripBean) => {
-      if (this.shouldDelaySave(dirtyTrip)) {
+      if (!force && this.shouldDelaySave(dirtyTrip)) {
         console.debug(
           `On ignore la sortie qui est peut-être encore en cours de modif`,
           dirtyTrip.id

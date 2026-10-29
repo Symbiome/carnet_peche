@@ -194,9 +194,9 @@ export default class MyTripsView extends Vue {
 
   // Synchronisation à la demande (#53) : même passe que le polling d'App.vue,
   // qui émet « trips-saved » (et donc le rechargement de la liste) en cas de
-  // succès.
+  // succès, mais sans le délai de 30 min après une modification.
   syncNow() {
-    EventBus.emit("ask-for-sync-check");
+    EventBus.emit("ask-for-sync-now");
     EventBus.emit("toaster-success", "Synchronisation lancée");
   }
 

@@ -159,6 +159,7 @@ export default class AppView extends Vue {
     this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
 
     EventBus.on("ask-for-sync-check", this.checkOutOfSyncTrips);
+    EventBus.on("ask-for-sync-now", this.syncTripsNow);
 
     // Sync immédiate au retour du réseau (#10), sans attendre le polling 30 s.
     this.unsubscribeNetwork = NetworkStatusService.subscribe((online) => {
@@ -171,6 +172,7 @@ export default class AppView extends Vue {
 
   beforeUnmount() {
     EventBus.off("ask-for-sync-check");
+    EventBus.off("ask-for-sync-now");
     clearInterval(this.interval);
     if (this.unsubscribeNetwork) {
       this.unsubscribeNetwork();
@@ -179,7 +181,16 @@ export default class AppView extends Vue {
   }
 
   checkOutOfSyncTrips() {
-    TripsService.syncTrips().then(this.tripsSyncFinished, (e) => {
+    this.syncTripsThenPictures(false);
+  }
+
+  /** « Synchroniser maintenant » : sans attendre la fin du délai de modification d'une sortie. */
+  syncTripsNow() {
+    this.syncTripsThenPictures(true);
+  }
+
+  syncTripsThenPictures(force: boolean) {
+    TripsService.syncTrips(force).then(this.tripsSyncFinished, (e) => {
       console.error("Apparement, il y a un pb de sync", e);
       // Même en cas d'erreur on essaye de synchro les photos
       this.checkOutOfSyncPicturesAndFeedbacks();
