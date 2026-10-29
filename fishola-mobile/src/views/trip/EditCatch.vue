@@ -966,8 +966,11 @@ export default class EditCatchView extends Vue {
       return "invalid";
     }
     this.aCatch.caughtAt = this.caughtAt;
+    // Sortie d'un jour : le jour se déduit de la sortie, jamais du jour de saisie.
     if (this.multiDayTrip && this.caughtOn) {
       this.aCatch.caughtOn = this.caughtOn;
+    } else {
+      delete this.aCatch.caughtOn;
     }
     if (!TripDates.isCatchWithinTrip(this.tripPeriod, this.aCatch)) {
       this.caughtAtError = TripDates.catchOutOfTripMessage(this.tripPeriod);

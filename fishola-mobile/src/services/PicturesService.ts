@@ -171,6 +171,26 @@ export default class PicturesService extends AbstractCarnetService {
     return null;
   }
 
+  /**
+   * Aperçu de la photo d'une capture, comme dans CatchPreview : photo locale pas encore
+   * synchronisée, sinon photo de la galerie serveur, sinon photo de mesure ; vide sinon.
+   */
+  static async getCatchPreviewSrc(
+    aCatch: Pick<CatchBean, "id" | "hasPicture" | "hasMeasurementPicture">
+  ): Promise<string> {
+    const localPics = await PicturesService.getPicturesFromLocalDB(aCatch.id);
+    if (localPics.length && localPics[0].content) {
+      return localPics[0].content;
+    }
+    if (aCatch.hasPicture) {
+      return Constants.apiUrl(`/v1/pictures/${aCatch.id}/preview`);
+    }
+    if (aCatch.hasMeasurementPicture) {
+      return Constants.apiUrl(`/v1/pictures/measure/${aCatch.id}/preview`);
+    }
+    return "";
+  }
+
   static checkForPicturesToRename(map: any) {
     const keys: string[] = Object.keys(map);
     keys.forEach((key: string) => {
