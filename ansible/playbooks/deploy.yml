@@ -15,11 +15,6 @@
 # copier à la main : ce playbook génère lui-même le .env consommé par
 # docker compose.
 #
-# Rejouable sans risque (idempotent) : `mvn clean package` et
-# `docker compose build/up` ne refont que ce qui a changé, sauf
-# --extra-vars "force_rebuild=true". La stanza pgBackRest n'est créée qu'une
-# fois et les tâches cron de sauvegarde sont identifiées par leur nom (#279).
-#
 # Usage :
 #   cd ansible
 #   ansible-playbook -i inventories/recette --vault-id recette@.vault_pass_recette playbooks/deploy.yml
