@@ -39,7 +39,6 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-fishola}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
-      PGBACKREST_REPO1_CIPHER_PASS: ${PGBACKREST_REPO1_CIPHER_PASS:?PGBACKREST_REPO1_CIPHER_PASS manquant dans .env}
     volumes:
       - fishola_pgdata:/var/lib/postgresql
       - fishola_pgbackrest:/var/lib/pgbackrest
