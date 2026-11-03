@@ -65,12 +65,12 @@ postgres_image: postgis/postgis:18-3.6
 # # Destinataire des retours pêcheurs : valeur actuelle de l'application,
 # # capturée par Maildev en recette.
 # feedback_mail_to: contact@carnet-peche.fr
-smtp_host: pro3.mail.ovh.net
-smtp_port: 587
+smtp_host: ssl0.ovh.net
+smtp_port: 993
 smtp_start_tls: REQUIRED
 smtp_ssl: true
-smtp_username: arthur@symbiome.eu
-smtp_from: arthur@symbiome.eu
+smtp_username: contact@carnet-peche.fr
+smtp_from: contact@carnet-peche.fr
 # Destinataire des retours pêcheurs : valeur actuelle de l'application,
 # capturée par Maildev en recette.
-feedback_mail_to: arthur@symbiome.eu
+feedback_mail_to: contact@carnet-peche.fr
