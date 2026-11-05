@@ -22,7 +22,7 @@ Le dossier `config` doit contenir un fichier `application.properties`.
 Ce fichier est lu au démarrage de l'application.
 
 Il y a 5 propriétés obligatoires à définir sans quoi l'application ne peut pas démarrer :
- - `quarkus.datasource.jdbc.url` : L'URL JDBC de la base de données telle que `jdbc:postgresql://HOST:PORT/DATABASE`. Exemple : `jdbc:postgresql://docker_pg:5432/fishola`
+ - `quarkus.datasource.jdbc.url` : L'URL JDBC de la base de données telle que `jdbc:postgresql://HOST:PORT/DATABASE`. Exemple : `jdbc:postgresql://docker_postgres:5432/fishola`
  - `quarkus.datasource.username` : Le nom d'utilisateur pour la base de données
  - `quarkus.datasource.password` : Le mot de passe pour la base de données
  - `fishola.jwt-secret` : La clé utilisée pour les token JWT. C'est une chaîne de caractère arbitraire. Dès que cette chaîne change, les token JWT générés ne seront plus valides et les utilisateurs seront donc tous déconnectés de l'application ;

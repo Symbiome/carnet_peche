@@ -40,6 +40,7 @@
           <span class="hide-if-small">par espèce</span> (cm)
         </h2>
         <MaillageLegend
+          v-if="maillages.length < 2"
           :selectedLakeId="selectedLakeId"
           :maillages="maillages"
         />
@@ -113,7 +114,7 @@ export default class GlobalDashboardComponent extends Vue {
     this.dashboardDataChanged();
   }
 
-  @Watch("dashboardData")
+  @Watch("dashboardData", { immediate: true })
   dashboardDataChanged() {
     this.speciesIndex = {};
     this.caughtSpeciesDistribution = [];

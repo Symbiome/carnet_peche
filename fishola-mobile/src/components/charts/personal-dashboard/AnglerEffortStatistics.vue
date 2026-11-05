@@ -124,24 +124,15 @@ import {
   Technique,
 } from "@/pojos/BackendPojos";
 import AnglerEffortHelpers, { CpueRow, TechniqueSlice } from "@/services/AnglerEffortHelpers";
+import CarnetCharts from "@/services/CarnetCharts";
 import { CARNET_CHART_PALETTE, CARNET_COLORS } from "@/services/CarnetPalette";
 import Constants from "@/services/Constants";
 import DashboardService from "@/services/DashboardService";
 import ReferentialService from "@/services/ReferentialService";
 import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 
-import {
-  Chart as ChartJS,
-  ArcElement,
-  BarElement,
-  CategoryScale,
-  Legend,
-  LinearScale,
-  Tooltip,
-} from "chart.js";
+import { Chart as ChartJS } from "chart.js";
 import { Bar, Pie } from "vue-chartjs";
-
-ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Legend, Tooltip);
 
 const MONTHS: Month[] = [
   "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
@@ -212,17 +203,22 @@ export default class AnglerEffortStatistics extends Vue {
     };
   }
 
+  // Légende cliquable : n'afficher que les sessions ou que les heures, l'axe de
+  // la série masquée disparaît avec elle.
   get monthlyChartOptions(): any {
     const grid = { color: ChartJS.defaults.borderColor as string };
     return {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { position: "top", align: "end" } },
+      plugins: {
+        legend: CarnetCharts.toggleableLegend("top"),
+        datalabels: CarnetCharts.barValueLabels(),
+      },
       scales: {
-        trips: { position: "left", beginAtZero: true, ticks: { precision: 0 }, grid,
-          title: { display: true, text: "Sessions" } },
-        hours: { position: "right", beginAtZero: true, grid: { drawOnChartArea: false },
-          title: { display: true, text: "Heures" } },
+        trips: CarnetCharts.autoHiddenAxis({ position: "left", beginAtZero: true, ticks: { precision: 0 }, grid,
+          title: { display: true, text: "Sessions" } }),
+        hours: CarnetCharts.autoHiddenAxis({ position: "right", beginAtZero: true, grid: { drawOnChartArea: false },
+          title: { display: true, text: "Heures" } }),
       },
     };
   }
@@ -252,9 +248,9 @@ export default class AnglerEffortStatistics extends Vue {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: "right" },
+        legend: CarnetCharts.toggleableLegend("bottom"),
         tooltip: { callbacks: { label: (context: any) => `${context.label} : ${context.raw} h` } },
-        datalabels: { display: false },
+        datalabels: CarnetCharts.pieShareLabels(),
       },
     };
   }

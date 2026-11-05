@@ -168,13 +168,13 @@ Le playbook :
 4. build le backend + les 2 fronts (`mvn clean package`, dans un conteneur
    `maven:3.9-eclipse-temurin-25` — pas besoin de Java/Node sur le serveur) ;
 5. build les images Docker (`docker compose build`), dont celle de
-   `docker_pg` (PostGIS + pgBackRest, `docker/postgres/Dockerfile`) ;
+   `docker_postgres` (PostGIS + pgBackRest, `docker/postgres/Dockerfile`) ;
 6. démarre la stack et attend qu'elle soit prête (`docker compose up -d --wait`) ;
 7. attend que le backend ait appliqué les migrations Flyway puis, si la table
    `species` est vide (premier déploiement), charge le référentiel d'espèces
    par défaut (`scripts/species_taxon_seed.sql`). Sur une base qui a déjà des
    espèces, l'étape est sautée ; pour y rejouer le référentiel à la main :
-   `docker compose exec -T -u postgres docker_pg psql -d fishola -v ON_ERROR_STOP=1 < scripts/species_taxon_seed.sql` ;
+   `docker compose exec -T -u postgres docker_postgres psql -d fishola -v ON_ERROR_STOP=1 < scripts/species_taxon_seed.sql` ;
 8. crée la stanza pgBackRest au premier déploiement, puis vérifie le dépôt et
    l'archivage des WAL (`pgbackrest check`) ;
 9. installe les deux tâches cron de sauvegarde dans la crontab de
@@ -219,9 +219,9 @@ Maildev n'est vérifié qu'en recette (`--local`).
   même serveur que la base (voir « À arbitrer »).
 - Rétention (`docker/postgres/pgbackrest.conf`) : complètes conservées
   180 jours, 26 différentielles (environ un mois).
-- pgBackRest est installé dans `docker_pg` (version épinglée dans
+- pgBackRest est installé dans `docker_postgres` (version épinglée dans
   `docker/postgres/Dockerfile`) : toutes les commandes passent par
-  `docker compose exec -T -u postgres docker_pg …`. `-u postgres` est
+  `docker compose exec -T -u postgres docker_postgres …`. `-u postgres` est
   obligatoire (`exec` tourne en root par défaut).
 
 ### Phrase de chiffrement (avant le premier déploiement)
@@ -242,7 +242,7 @@ les sauvegardes déjà faites restent chiffrées avec l'ancienne.
 
 ### Premier déploiement
 
-- `docker_pg` est recréé (nouvelle image, `archive_mode` qui ne s'active qu'au
+- `docker_postgres` est recréé (nouvelle image, `archive_mode` qui ne s'active qu'au
   redémarrage) : courte coupure de la base et du backend, à planifier en
   production.
 - Le playbook crée la stanza `fishola`, remet à zéro les compteurs
@@ -252,13 +252,13 @@ les sauvegardes déjà faites restent chiffrées avec l'ancienne.
   signale `ÉCHEC Sauvegarde` jusque-là. Pour en faire une tout de suite :
 
 ```bash
-docker compose exec -T -u postgres docker_pg pgbackrest --stanza=fishola --type=full backup
+docker compose exec -T -u postgres docker_postgres pgbackrest --stanza=fishola --type=full backup
 ```
 
 ### Consulter
 
 ```bash
-docker compose exec -T -u postgres docker_pg pgbackrest --stanza=fishola info
+docker compose exec -T -u postgres docker_postgres pgbackrest --stanza=fishola info
 tail -n 50 ~/fishola-pgbackrest.log
 ```
 
@@ -268,19 +268,19 @@ La base doit être **arrêtée**. La restauration se lance dans un conteneur
 ponctuel de la même image (mêmes volumes, même phrase de chiffrement) :
 
 ```bash
-docker compose stop fishola-backend docker_pg
+docker compose stop fishola-backend docker_postgres
 
 # a) Dernier état connu (dernière sauvegarde + tous les WAL archivés)
-docker compose run --rm --no-deps -u postgres --entrypoint pgbackrest docker_pg \
+docker compose run --rm --no-deps -u postgres --entrypoint pgbackrest docker_postgres \
   --stanza=fishola --delta restore
 
 # b) ou état à un instant donné (ex. juste avant une suppression accidentelle)
-docker compose run --rm --no-deps -u postgres --entrypoint pgbackrest docker_pg \
+docker compose run --rm --no-deps -u postgres --entrypoint pgbackrest docker_postgres \
   --stanza=fishola --delta --type=time --target="2026-10-16 14:00:00+02" \
   --target-action=promote restore
 
 docker compose up -d --wait
-docker compose exec -T -u postgres docker_pg pgbackrest --stanza=fishola check
+docker compose exec -T -u postgres docker_postgres pgbackrest --stanza=fishola check
 ```
 
 Au redémarrage, PostgreSQL rejoue les WAL jusqu'à la cible puis repart sur
@@ -295,7 +295,7 @@ en production.
 
 ### En cas d'échec
 
-- Diagnostic : `docker compose logs --tail 100 docker_pg` (erreurs
+- Diagnostic : `docker compose logs --tail 100 docker_postgres` (erreurs
   d'`archive-push`), `pgbackrest --stanza=fishola check`, journal cron.
 - **Un archivage bloqué accumule les WAL dans `pg_wal` jusqu'à remplir le
   disque et arrêter la base** : à traiter sans attendre (disque plein, droits
@@ -304,7 +304,7 @@ en production.
   `pgbackrest check` revenu au vert, le remettre à zéro :
 
 ```bash
-docker compose exec -T -u postgres docker_pg psql -c "SELECT pg_stat_reset_shared('archiver')"
+docker compose exec -T -u postgres docker_postgres psql -c "SELECT pg_stat_reset_shared('archiver')"
 ```
 
 ### À arbitrer avec Adventiel (Lot 2)
@@ -316,7 +316,7 @@ docker compose exec -T -u postgres docker_pg psql -c "SELECT pg_stat_reset_share
 - Rétention définitive.
 - Canal d'alerte : `health_check.sh` n'est lancé par aucune tâche planifiée,
   à brancher sur leur supervision.
-- Fenêtre de redémarrage de `docker_pg` en production.
+- Fenêtre de redémarrage de `docker_postgres` en production.
 
 ## Variables d'environnement
 
@@ -340,6 +340,6 @@ service `fishola-backend` de `docker-compose.yml` et dans
 
 ## Chargement des entités hydo:
 
-docker compose exec -T -u postgres docker_pg psql -d fishola -c "SELECT count(*) FROM water_entity;"
+docker compose exec -T -u postgres docker_postgres psql -d fishola -c "SELECT count(*) FROM water_entity;"
 
-PG_CONTAINER=carnet_peche-docker_pg-1 PGPASSWORD="$POSTGRES_PASSWORD"   ./scripts/import_hydro_france.sh ./data 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 2A 2B 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69D 69M 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 971 972 973 974 975 976 977 978
+PG_CONTAINER=carnet_peche-docker_postgres-1 PGPASSWORD="$POSTGRES_PASSWORD"   ./scripts/import_hydro_france.sh ./data 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 2A 2B 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69D 69M 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 971 972 973 974 975 976 977 978

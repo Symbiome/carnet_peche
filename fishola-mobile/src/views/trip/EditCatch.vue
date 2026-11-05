@@ -112,7 +112,7 @@
               </div>
               <div>
                 <FormInput name="quantity" label="Nombre de prises" type="number" :min="1"
-                  placeholder="1" v-model="aCatch.quantity" v-bind:error="quantityError"
+                  placeholder="1" v-model="aCatch.quantity" v-bind:error="quantityError" @badInput="badNumberInputs.quantity = $event"
                   v-bind:readonly="!modifiable" />
               </div>
 
@@ -125,7 +125,7 @@
                 v-bind:readonly="!modifiable" />
 
               <FormInput v-else name="size" :label="sizeLabel" type="number" :min="1"
-                placeholder="Entrez une taille en centimètres" v-model="aCatch.size" v-bind:error="sizeError"
+                placeholder="Entrez une taille en centimètres" v-model="aCatch.size" v-bind:error="sizeError" @badInput="badNumberInputs.size = $event"
                 v-bind:readonly="!modifiable" />
 
               <div class="two-columns-row-on-desktop">
@@ -138,7 +138,7 @@
                 </div>
                 <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)" name="weight"
                   label="Poids en g (optionnel)" type="number" :min="1" placeholder="Entrez un poids en grammes"
-                  v-model="aCatch.weight" v-bind:error="weightError" v-bind:warning="weightWarning"
+                  v-model="aCatch.weight" v-bind:error="weightError" @badInput="badNumberInputs.weight = $event" v-bind:warning="weightWarning"
                   v-bind:readonly="!modifiable" />
                 <FormYesNo name="keep" v-bind:label="tripMode == 'Live'
                   ? 'Conservez-vous ce poisson ?'
@@ -336,6 +336,9 @@ export default class EditCatchView extends Vue {
   sizeError: string = "";
   weightError: string = "";
   quantityError: string = "";
+  // Champs numériques contenant un texte que le navigateur ne sait pas lire : ils
+  // ne sont pas vides, c'est une erreur de saisie et non un champ manquant.
+  badNumberInputs: { [field: string]: boolean } = {};
   lotSizeClassEnabled: boolean = false;
   lotSizeClassError: string = "";
   // Maillage et taille maximale de l'espèce sur le milieu (#196) : bornes des
@@ -659,6 +662,10 @@ export default class EditCatchView extends Vue {
   validateSize(): FieldCheck {
     const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
     this.sizeError = "";
+    if (this.badNumberInputs.size) {
+      this.sizeError = "La taille doit être un nombre entier";
+      return "invalid";
+    }
     if (mandatorySize && !this.aCatch.size) {
       this.sizeError = "Taille obligatoire";
       return "missing";
@@ -906,6 +913,10 @@ export default class EditCatchView extends Vue {
   /** Poids optionnel, entier strictement positif ; sa cohérence n'est qu'un avertissement (#308). */
   validateWeight(): FieldCheck {
     this.weightError = "";
+    if (this.badNumberInputs.weight) {
+      this.weightError = "Le poids doit être un nombre entier";
+      return "invalid";
+    }
     if (!this.aCatch.weight) {
       return null;
     }
@@ -933,6 +944,10 @@ export default class EditCatchView extends Vue {
   }
 
   validateQuantity(): FieldCheck {
+    if (this.badNumberInputs.quantity) {
+      this.quantityError = "Le nombre de prises doit être un nombre entier";
+      return "invalid";
+    }
     if (!this.aCatch.quantity || this.aCatch.quantity < 1) {
       this.aCatch.quantity = 1;
     }

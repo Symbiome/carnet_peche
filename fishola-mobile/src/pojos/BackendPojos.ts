@@ -192,6 +192,12 @@ export interface RegistrationStatus {
     enabled: boolean;
 }
 
+export interface NewsletterSubscriptionRequest {
+    email: string;
+    departmentCode: string;
+    consent: boolean;
+}
+
 export interface KeyFigures {
     tripsCount: number;
     catchsCount: number;
