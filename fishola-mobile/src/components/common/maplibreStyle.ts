@@ -116,6 +116,9 @@ export function createCarnetMap(
         // donc réservé aux cartes créées juste pour une capture ponctuelle,
         // jamais au défaut des cartes interactives affichées à l'écran.
         preserveDrawingBuffer?: boolean;
+        // Capture à taille d'export : fixe la densité de pixels du canvas, sinon
+        // celle de l'écran. À 1, les tuiles raster IGN ne sont pas agrandies.
+        pixelRatio?: number;
     } = {},
 ): MlMap {
     const map = new maplibregl.Map({
@@ -125,6 +128,7 @@ export function createCarnetMap(
         zoom: opts.zoom != null ? opts.zoom : DEFAULT_ZOOM,
         attributionControl: { compact: true },
         preserveDrawingBuffer: opts.preserveDrawingBuffer || false,
+        ...(opts.pixelRatio ? { pixelRatio: opts.pixelRatio } : {}),
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
     // Jamais de proxy réactif Vue 3 sur une carte MapLibre (#284).

@@ -153,16 +153,23 @@ export default class PicturesService extends AbstractCarnetService {
 
   /**
    * Photo d'une capture en data URL (#275, comme l'export PDF #173) : photo locale si
-   * présente, sinon aperçu serveur. Une data URL n'entache pas le canvas de html2canvas.
+   * présente, sinon photo serveur. Une data URL n'entache pas le canvas de html2canvas.
+   * `fullResolution` : photo d'origine plutôt que l'aperçu (570 px de large), pour
+   * une photo posée en fond de l'image partagée de 1080 px.
    */
-  static async getCatchPictureDataUrl(catchId: string, hasPicture: boolean): Promise<string | null> {
+  static async getCatchPictureDataUrl(
+    catchId: string,
+    hasPicture: boolean,
+    fullResolution = false
+  ): Promise<string | null> {
     try {
       const localPics = await PicturesService.getPicturesFromLocalDB(catchId);
       if (localPics.length && localPics[0].content) {
         return localPics[0].content;
       }
       if (hasPicture) {
-        const base64 = await ShareService.getBase64FromUrl(Constants.apiUrl(`/v1/pictures/${catchId}/preview`));
+        const path = fullResolution ? `/v1/pictures/${catchId}` : `/v1/pictures/${catchId}/preview`;
+        const base64 = await ShareService.getBase64FromUrl(Constants.apiUrl(path));
         return `data:image/jpeg;base64,${base64}`;
       }
     } catch (e) {

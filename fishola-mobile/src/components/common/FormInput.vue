@@ -66,7 +66,7 @@ import FormMultiValues from '@/components/common/FormMultiValues.vue'
 import Helpers from '@/services/Helpers';
 
 @Component({
-  emits: ["keyupEnter", "update:modelValue"],
+  emits: ["keyupEnter", "update:modelValue", "badInput"],
   components: {
     FormMultiValues
   }
@@ -111,6 +111,11 @@ export default class FormInput extends Vue {
   }
 
   onInput(input: HTMLInputElement) {
+    if (this.type == 'number') {
+      // Texte non numérique (ex. « 12,5 » sur certains claviers) : le navigateur
+      // renvoie une valeur vide, le parent doit pouvoir le distinguer d'un champ vide.
+      this.$emit('badInput', !!(input.validity && input.validity.badInput));
+    }
     if (this.type != 'time') {
       this.$emit('update:modelValue', input.value);
       return;
@@ -128,6 +133,12 @@ export default class FormInput extends Vue {
       input.value = masked;
     }
     this.$emit('update:modelValue', masked);
+  }
+
+  beforeUnmount() {
+    if (this.type == 'number') {
+      this.$emit('badInput', false);
+    }
   }
 
   onBlur() {

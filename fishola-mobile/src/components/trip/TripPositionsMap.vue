@@ -116,6 +116,8 @@ export default class TripPositionsMap extends Vue {
   @Prop({ default: false }) captureMode: boolean;
   /** #275 : zones approximatives sans marqueur précis (carte souvenir partagée). */
   @Prop({ default: false }) approximate: boolean;
+  /** Densité de pixels imposée au canvas (capture à taille d'export), celle de l'écran sinon. */
+  @Prop() pixelRatio?: number;
 
   private map: MlMap | null = null;
   private beginMarker: Marker | null = null;
@@ -206,6 +208,7 @@ export default class TripPositionsMap extends Vue {
       zoom: this.initialZoom(),
       baseLayer: this.baseLayer,
       preserveDrawingBuffer: this.captureMode,
+      pixelRatio: this.pixelRatio,
     });
     this.detachHydroHover = attachHydroHover(this.map);
     const map = this.map;

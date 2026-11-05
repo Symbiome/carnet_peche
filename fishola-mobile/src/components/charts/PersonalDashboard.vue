@@ -84,6 +84,7 @@
         <span class="card-year">{{ year }}</span>
       </h2>
         <MaillageLegend
+          v-if="maillages.length < 2"
           :selectedLakeId="selectedLakeId"
           :maillages="maillages"
         />
@@ -237,7 +238,7 @@ export default class PersonalDashboard extends Vue {
     super();
   }
 
-  @Watch("dashboardData")
+  @Watch("dashboardData", { immediate: true })
   dashboardDataChanged(): void {
     this.speciesIndex = {};
     this.caughtSpeciesDistribution = [];
