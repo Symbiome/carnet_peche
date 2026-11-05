@@ -67,8 +67,8 @@ postgres_image: postgis/postgis:18-3.6
 # feedback_mail_to: contact@carnet-peche.fr
 smtp_host: ssl0.ovh.net
 smtp_port: 465
-smtp_start_tls: REQUIRED
-smtp_ssl: false
+smtp_start_tls: DISABLED
+smtp_ssl: true
 smtp_username: contact@carnet-peche.fr
 smtp_from: contact@carnet-peche.fr
 # Destinataire des retours pêcheurs : valeur actuelle de l'application,
