@@ -349,6 +349,15 @@ export default class Menu extends Vue {
         onlyUnlogged: true,
       },
       {
+        name: "login",
+        label: "Connexion",
+        iconName: "profile",
+        clickHandler: () => this.goPath("/login"),
+        onlyConnected: false,
+        onlyUnlogged: true,
+        path: "/login",
+      },
+      {
         name: "activity-summary",
         label: "Statistiques",
         iconName: "dashboard",

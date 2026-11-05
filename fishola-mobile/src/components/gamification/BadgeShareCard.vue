@@ -97,7 +97,8 @@
               v-bind:catches="view.mapPoints"
               v-bind:captureMode="true"
               v-bind:approximate="true"
-              v-bind:pixelRatio="1"
+              v-bind:pixelRatio="mapPixelRatio"
+              initialBaseLayer="satellite"
             />
           </div>
 
@@ -146,6 +147,11 @@ import { Component, Vue } from "vue-facing-decorator";
 import EventBus from "@/services/EventBus";
 
 const TARGET_SIZE_PX = 2160;
+// La carte est dessinée sur 540 px (.badge-share-map-renderer) : au zoom
+// plafonné de la carte souvenir, elle couvre alors une cinquantaine de km.
+// La densité ×2 donne une image de 1080 px, la définition d'un écran de
+// téléphone ; ×4 (2160 px) triple le temps de préparation.
+const MAP_PIXEL_RATIO = 2;
 // Garde-fou : une carte qui ne se charge pas ne doit pas bloquer le partage.
 const MAP_CAPTURE_TIMEOUT_MS = 15000;
 
@@ -166,6 +172,7 @@ export default class BadgeShareCard extends Vue {
   photosByCatchId: { [catchId: string]: string } = {};
   mapImage: string | null = null;
   hidePlace = false;
+  mapPixelRatio = MAP_PIXEL_RATIO;
   preparing = false;
   renderingMap = false;
   // Incrémenté à chaque ouverture : un chargement d'une ouverture précédente est ignoré.
@@ -423,7 +430,7 @@ export default class BadgeShareCard extends Vue {
   box-sizing: border-box;
 
   &.badge-card-header-beside-map {
-    max-width: calc(100% - calc(@u * 24) - calc(@u * 92));
+    max-width: calc(100% - calc(@u * 24) - calc(@u * 128));
   }
 
   .badge-card-header-icon {
@@ -436,8 +443,8 @@ export default class BadgeShareCard extends Vue {
   position: absolute;
   top: calc(@u * 12);
   right: calc(@u * 12);
-  width: calc(@u * 84);
-  height: calc(@u * 84);
+  width: calc(@u * 120);
+  height: calc(@u * 120);
   border-radius: calc(@u * 12);
   border: calc(@u * 2) solid @white;
   box-sizing: border-box;
@@ -535,13 +542,11 @@ export default class BadgeShareCard extends Vue {
 }
 
 // Hors écran mais mise en page réelle : MapLibre a besoin d'un conteneur
-// dimensionné pour dessiner la carte à capturer. Dessinée à la taille de
-// l'export (TARGET_SIZE_PX, densité 1) : les tuiles raster restent nettes une
-// fois la carte posée en fond de l'image partagée.
+// dimensionné pour dessiner la carte à capturer, ici à densité MAP_PIXEL_RATIO.
 .badge-share-map-renderer {
   position: fixed;
   top: 0;
   left: -10000px;
-  width: 2160px;
+  width: 540px;
 }
 </style>

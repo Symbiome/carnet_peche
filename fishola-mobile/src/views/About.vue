@@ -90,8 +90,9 @@
       </div>
       <!-- // End Banner Section // -->
 
-      <!-- Inscription à la newsletter tant que l'app est fermée (#313) -->
-      <NewsletterSignup v-if="!wrappedInTab && profileChecked && !connected" />
+      <!-- Inscription à la newsletter tant que l'app est fermée (#313), aussi dans
+           l'onglet « Présentation » de l'accueil hors connexion -->
+      <NewsletterSignup v-if="profileChecked && !connected" />
 
       <!-- \\ Begin Presentation Section \\ -->
       <div class="Presentation_sec" id="presentation">

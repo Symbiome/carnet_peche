@@ -118,6 +118,8 @@ export default class TripPositionsMap extends Vue {
   @Prop({ default: false }) approximate: boolean;
   /** Densité de pixels imposée au canvas (capture à taille d'export), celle de l'écran sinon. */
   @Prop() pixelRatio?: number;
+  /** Fond affiché à l'ouverture (#275 : satellite pour la carte souvenir). */
+  @Prop({ default: 'plan' }) initialBaseLayer: BaseLayer;
 
   private map: MlMap | null = null;
   private beginMarker: Marker | null = null;
@@ -203,6 +205,7 @@ export default class TripPositionsMap extends Vue {
     if (!container || this.map) {
       return;
     }
+    this.baseLayer = this.initialBaseLayer;
     this.map = createCarnetMap(container, {
       center: this.initialCenter(),
       zoom: this.initialZoom(),

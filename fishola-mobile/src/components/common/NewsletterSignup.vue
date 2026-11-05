@@ -38,7 +38,8 @@
 
     <form class="newsletter-card" v-else novalidate v-on:submit.prevent="subscribe">
       <h2 class="newsletter-title">Être prévenu·e de l'ouverture</h2>
-      <p class="newsletter-text">
+      <p class="newsletter-text" v-if="intro">{{ intro }}</p>
+      <p class="newsletter-text" v-else>
         Carnet de pêche est en test. Laissez votre e-mail pour être prévenu·e de l'ouverture des
         inscriptions et recevoir la newsletter.
       </p>
@@ -75,12 +76,13 @@ import NewsletterService, { DepartmentName } from "@/services/NewsletterService"
 import ProfileService from "@/services/ProfileService";
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Vue } from "vue-facing-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 /**
  * Encart de la page d'accueil publique (#313) : tant que l'inscription à l'app
  * est fermée, le visiteur laisse son e-mail (double opt-in) pour être prévenu de
  * l'ouverture ; une fois ouverte, l'encart devient un lien « Créer un compte ».
+ * `intro` remplace le texte de présentation du formulaire (page de connexion).
  */
 @Component({
   components: {
@@ -89,6 +91,7 @@ import { Component, Vue } from "vue-facing-decorator";
   },
 })
 export default class NewsletterSignup extends Vue {
+  @Prop({ default: "" }) intro: string;
   // null tant que l'état de l'inscription n'est pas connu : rien n'est affiché.
   registrationOpen: boolean | null = null;
   email = "";
