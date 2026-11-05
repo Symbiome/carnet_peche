@@ -50,6 +50,27 @@ services:
       retries: 10
     networks: [fishola]
 
+  pgbackrest:
+    image: woblerr/pgbackrest:latest
+    restart: unless-stopped
+    depends_on:
+      docker_postgres:
+        condition: service_healthy
+    environment:
+      PGBACKREST_STANZA: fishola
+      PGDATABASE: ${POSTGRES_DB:-fishola}
+      PGUSER: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
+      PGHOST: docker_postgres
+      PGPORT: 5432
+      CRON_SCHEDULE_FULL: "0 3 * * 0"      # full backup chaque dimanche 3h
+      CRON_SCHEDULE_DIFF: "0 3 * * 1-6"    # diff backup les autres jours
+    volumes:
+      - fishola_pgdata:/var/lib/postgresql/data:ro
+      - fishola_pgbackrest:/var/lib/pgbackrest
+      - ./pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf:ro
+    networks: [fishola]
+
   fishola-backend:
     build:
       context: ./fishola-backend
