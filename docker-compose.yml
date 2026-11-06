@@ -57,6 +57,8 @@ services:
       docker_postgres:
         condition: service_healthy
     environment:
+      BACKREST_UID: 999
+      BACKREST_GID: 999
       PGBACKREST_STANZA: fishola
       PGDATABASE: ${POSTGRES_DB:-fishola}
       PGUSER: postgres
