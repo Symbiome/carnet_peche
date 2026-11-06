@@ -23,10 +23,8 @@ package fr.inrae.fishola.rest.about;
 
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
-import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
-import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.CarnetCache;
 import jakarta.inject.Inject;
@@ -36,16 +34,11 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Path("/api/v1/about")
 @Produces(MediaType.APPLICATION_JSON)
 public class AboutResource extends AbstractCarnetResource {
-    @Inject
-    protected ReferentialDao referentialDao;
     @Inject
     protected TripsDao tripsDao;
     @Inject
@@ -64,17 +57,13 @@ public class AboutResource extends AbstractCarnetResource {
         ImmutableKeyFigures.Builder builder = ImmutableKeyFigures.builder();
         int tripsCount = tripsDao.countTrips();
         int catchsCount = catchsDao.countCatchs();
-        Map<UUID, Integer> countCatchsByWaterEntityId = catchsDao.countCatchsByWaterEntityId();
         int picturesCount = catchsDao.countPictures();
-        List<WaterEntity> waterEntities = referentialDao.listWaterEntities();
         Optional<Editorial> title = editorialAndDocumentationDao.findEditorial("about_title");
         Optional<Editorial> contribute = editorialAndDocumentationDao.findEditorial("about_contribute");
 
         builder.tripsCount(tripsCount)
                 .catchsCount(catchsCount)
                 .picturesCount(picturesCount)
-                .waterEntities(waterEntities)
-                .catchsCountPerWaterEntityId(countCatchsByWaterEntityId)
                 .titleText(title.map(Editorial::getContent).orElse("N/A"))
                 .contributeText(contribute.map(Editorial::getContent).orElse("N/A"))
                 .computedOn(LocalDateTime.now());
