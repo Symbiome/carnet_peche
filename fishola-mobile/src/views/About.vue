@@ -97,9 +97,6 @@
             <div class="kf-label">photos</div>
           </div>
         </div>
-        <div class="map">
-          <MapLibreMarkersMap :markers="mapMarkers" :center="center" :zoom="9" />
-        </div>
       </section>
 
       <section class="communications-section" id="communications" v-if="!wrappedInTab">
@@ -156,12 +153,10 @@ import AboutService from "@/services/AboutService";
 import FeedbackService from "@/services/FeedbackService";
 import { RouterUtils } from "@/router/RouterUtils";
 
-import MapLibreMarkersMap, { MapMarker } from "@/components/common/MapLibreMarkersMap.vue";
-
 import { Component, Prop, Vue } from "vue-facing-decorator";
 import debounce from "lodash/debounce";
 import EventBus from "@/services/EventBus";
-import { WaterEntity as Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
+import { Feedback, NewsBean } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
 import CarnetLogo from "@/components/layout/CarnetLogo.vue";
@@ -171,7 +166,6 @@ import FormTextarea from "@/components/common/FormTextarea.vue";
 
 @Component({
   components: {
-    MapLibreMarkersMap,
     Counter,
     CommunicationsOnAboutPage,
     CarnetLogo,
@@ -182,8 +176,6 @@ import FormTextarea from "@/components/common/FormTextarea.vue";
 })
 export default class AboutView extends Vue {
   @Prop({ default: false }) wrappedInTab: boolean;
-  // Centre par défaut [lng, lat] (recadré sur les marqueurs s'il y en a).
-  center: [number, number] = [5.890511, 46.071623];
 
   tripsCount: number = 0;
   realTripsCount: number = 442;
@@ -191,9 +183,7 @@ export default class AboutView extends Vue {
   realCatchsCount: number = 1726;
   picturesCount: number = 0;
   realPicturesCount: number = 212;
-  lakes: Lake[] = [];
   news: NewsBean[] = [];
-  catchsCountPerLakeId: { [index: string]: number } = {};
 
   contactEmail: string = "";
   contactMessage: string = "";
@@ -224,61 +214,12 @@ export default class AboutView extends Vue {
         this.realTripsCount = kf.tripsCount;
         this.realCatchsCount = kf.catchsCount;
         this.realPicturesCount = kf.picturesCount;
-        kf.lakes.forEach((l) => this.lakes.push(l));
-        this.catchsCountPerLakeId = kf.catchsCountPerLakeId;
       },
-      (_error) => {
-        // On a pas pu récupérer les informations du back, on ajoute quand même les marqueurs sur la carte
-        this.lakes.push({
-          id: "leman",
-          name: "Léman",
-          exportAs: "whatever",
-          latitude: 46.439783,
-          longitude: 6.480641,
-        });
-        this.lakes.push({
-          id: "bourget",
-          name: "Lac du Bourget",
-          exportAs: "whatever",
-          latitude: 45.7249,
-          longitude: 5.8684,
-        });
-        this.lakes.push({
-          id: "annecy",
-          name: "Lac d'Annecy",
-          exportAs: "whatever",
-          latitude: 45.856166,
-          longitude: 6.173468,
-        });
-        this.lakes.push({
-          id: "aiguebelette",
-          name: "Lac dAiguebelette",
-          exportAs: "whatever",
-          latitude: 45.5508,
-          longitude: 5.8015,
-        });
-      }
+      () => undefined
     );
     DocumentationService.getNews().then((zeNews) => {
       this.news = zeNews;
     });
-  }
-
-  get mapMarkers(): MapMarker[] {
-    return (this.lakes || [])
-      .filter((l) => l.latitude != null && l.longitude != null)
-      .map((l) => {
-        const name = this.escapeHtml(l.name);
-        const count = this.catchsCountPerLakeId[l.id];
-        const html = count ? `<div>${name} : ${count} captures</div>` : `<div>${name}</div>`;
-        return { lat: l.latitude, lng: l.longitude, popupHtml: html, title: l.name };
-      });
-  }
-
-  escapeHtml(value: string): string {
-    return (value || "").replace(/[&<>"']/g, (c) => (
-      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string
-    ));
   }
 
   sendContact() {
@@ -642,7 +583,6 @@ export default class AboutView extends Vue {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-bottom: @vertical-margin-medium;
 
   .kf-item {
     display: flex;
@@ -679,19 +619,6 @@ export default class AboutView extends Vue {
   .kf-label {
     font-size: 16px;
     font-weight: 500;
-  }
-}
-
-.map {
-  // avoid the map controls and credits to be above the header
-  position: relative;
-  z-index: 5;
-  height: 420px;
-  border-radius: 13px;
-  overflow: hidden;
-
-  @media screen and (max-width: @mobile-max-width) {
-    height: 300px;
   }
 }
 
