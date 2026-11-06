@@ -68,7 +68,7 @@ services:
     volumes:
       - fishola_pgdata:/var/lib/postgresql/data:ro
       - fishola_pgbackrest:/var/lib/pgbackrest
-      - ./pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf:ro
+      - ./docker/postgres/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf:ro
     networks: [fishola]
 
   fishola-backend:
