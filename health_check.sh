@@ -42,10 +42,10 @@ check() {
   esac
 }
 
-# Commande exécutée dans docker_pg en tant que postgres (propriétaire des
+# Commande exécutée dans docker_postgres en tant que postgres (propriétaire des
 # données et du dépôt pgBackRest).
 pg_exec() {
-  docker compose -f "${SCRIPT_DIR}/docker-compose.yml" exec -T -u postgres docker_pg "$@"
+  docker compose -f "${SCRIPT_DIR}/docker-compose.yml" exec -T -u postgres docker_postgres "$@"
 }
 
 # Âge en secondes de la dernière sauvegarde pgBackRest, vide s'il n'y en a aucune.
@@ -60,7 +60,7 @@ print(int(time.time() - backups[-1]["timestamp"]["stop"]) if backups else "")
 check_last_backup() {
   local age
   if ! age="$(last_backup_age_seconds 2>/dev/null)"; then
-    echo "ÉCHEC Sauvegarde — pgbackrest info a échoué (docker_pg arrêté ?)"
+    echo "ÉCHEC Sauvegarde — pgbackrest info a échoué (docker_postgres arrêté ?)"
     return 1
   fi
   if [ -z "${age}" ]; then

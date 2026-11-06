@@ -40,7 +40,7 @@ export default class ShareService extends AbstractCarnetService {
   /** Carte de partage social (#146) : image déjà générée côté client (canvas/html2canvas), au format `data:image/png;base64,...`. */
   static async shareGeneratedImage(dataUrl: string, fileName: string) {
     const base64 = dataUrl.replace("data:", "").replace(/^.+,/, "");
-    ShareService.shareBase64File(base64, fileName, "application/png");
+    ShareService.shareBase64File(base64, fileName, "image/png");
   }
 
   /** Export PDF d'une sortie (#173) : PDF généré côté client (jsPDF), au format `data:application/pdf;base64,...`. */

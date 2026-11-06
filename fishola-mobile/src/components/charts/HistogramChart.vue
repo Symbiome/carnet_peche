@@ -20,90 +20,8 @@
   -->
 <template>
   <div class="histogram">
-    <div class="bars">
-      <div
-        class="bar"
-        v-for="(m, index) in orderedMonths"
-        v-bind:key="'bar-' + m"
-      >
-        <div v-if="values[m]">
-          <div
-            v-for="sizeType in ['MAILLEE', 'NON_MAILLEE', 'NON_DEFINI']"
-            :key="m + sizeType"
-          >
-            <div
-              v-if="values[m][sizeType]"
-              class="value"
-              :class="{
-                maillee: sizeType != 'NON_MAILLEE',
-                'non-maillee': sizeType == 'NON_MAILLEE',
-                even: index % 2 == 0,
-                odd: index % 2 != 0,
-                'is-active-month': isActiveMonthCondition && isActiveMonthCondition(m)
-              }"
-              :style="
-                ('background-color:red',
-                'height: ' +
-                  Math.min(
-                    108,
-                    ((values[m][sizeType] +
-                      (sizeType != 'NON_MAILLEE'
-                        ? values[m][sizeType] > 65
-                          ? 10
-                          : 6
-                        : -1)) *
-                      100) /
-                      maxValue
-                  ) +
-                  '%')
-              "
-            >
-              {{
-                values[m] && values[m][sizeType]
-                  ? Math.round(values[m][sizeType])
-                  : ""
-              }}
-            </div>
-            <div
-              class="bar-filled"
-              :class="{
-                maillee: sizeType != 'NON_MAILLEE',
-                'non-maillee': sizeType == 'NON_MAILLEE',
-                even: index % 2 == 0,
-                odd: index % 2 != 0,
-               'is-active-month': isActiveMonthCondition && isActiveMonthCondition(m)
-              }"
-              v-if="values[m][sizeType]"
-              v-bind:style="
-                'height: ' + (values[m][sizeType] * 100) / maxValue + '%;'
-              "
-            ></div>
-          </div>
-        </div>
-      </div>
-      <div
-        class="bar-average"
-        v-if="average"
-        v-bind:style="'top: ' + (100 - (average * 100) / maxValue) + '%;'">
-      </div>
-    </div>
-    <div class="labels" >
-      <div
-        class="label-short"
-        :class="{'is-active-month': isActiveMonthCondition && isActiveMonthCondition(m)}"
-        v-for="m in orderedMonths"
-        v-bind:key="'label-short-' + m"
-      >
-        {{ m.substring(0, 1) }}       
-      </div>
-      <div
-        class="label-mid"
-        :class="{'is-active-month': isActiveMonthCondition && isActiveMonthCondition(m)}"
-        v-for="m in orderedMonths"
-        v-bind:key="'label-mid-' + m"
-      >
-        {{ midMonth(m) }}
-      </div>
+    <div class="histogram-chart">
+      <Bar :data="chartData" :options="chartOptions" :plugins="[averageLinePlugin]" />
     </div>
     <div v-if="average" class="average">
       <span class="count">{{ average }} </span> {{ averageLabel }}
@@ -112,13 +30,30 @@
 </template>
 
 <script lang="ts">
+import CarnetCharts from "@/services/CarnetCharts";
+import { CARNET_COLORS } from "@/services/CarnetPalette";
 import Constants from "@/services/Constants";
 
-import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import { Bar } from "vue-chartjs";
 
 import { Month, Maillage } from "@/pojos/BackendPojos";
 
-@Component
+const SERIES: { maillage: Maillage; label: string; color: string }[] = [
+  { maillage: "MAILLEE", label: "Poissons maillés", color: CARNET_COLORS.sky },
+  { maillage: "NON_MAILLEE", label: "Poissons non maillés", color: CARNET_COLORS.orange },
+  { maillage: "NON_DEFINI", label: "Sans distinction de maillage", color: CARNET_COLORS.sky },
+];
+
+/**
+ * Valeurs mensuelles par maillage (prises par mois, taille moyenne), en barres
+ * Chart.js : la légende masque ou réaffiche les poissons maillés ou non maillés,
+ * chaque barre porte sa valeur, le mois en cours est mis en avant et la
+ * moyenne éventuelle est tracée en pointillés.
+ */
+@Component({
+  components: { Bar },
+})
 export default class HistogramChart extends Vue {
   @Prop() orderedMonths: Month[];
   @Prop() values: { [P in Month]?: { [S in Maillage]: any } };
@@ -126,43 +61,79 @@ export default class HistogramChart extends Vue {
   @Prop() average: number;
   @Prop() averageLabel: string;
 
-  maxValue: number = 50;
-
-  mounted() {
-    this.maxValue = this.findMaxValue(this.values);
+  get series() {
+    return SERIES.filter((serie) => this.orderedMonths.some((m) => this.valueOf(m, serie.maillage) > 0));
   }
 
-  midMonth(m: Month) {
-    let index = this.orderedMonths.indexOf(m);
-    let result = Constants.MONTHS[index];
-    return result;
+  get chartData(): any {
+    return {
+      labels: this.orderedMonths.map((m) => this.monthLabel(m)),
+      datasets: this.series.map((serie) => ({
+        label: serie.label,
+        data: this.orderedMonths.map((m) => Math.round(this.valueOf(m, serie.maillage))),
+        backgroundColor: serie.color,
+        borderRadius: 2,
+      })),
+    };
   }
 
-  @Watch("values")
-  onValuesChanged(
-    newValue: { [P in Month]?: {} },
-    _oldValue: { [P in Month]?: {} }
-  ) {
-    this.maxValue = this.findMaxValue(newValue);
+  get chartOptions(): any {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { ...CarnetCharts.toggleableLegend("top"), display: this.series.length > 1 },
+        datalabels: CarnetCharts.barValueLabels(),
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: {
+            autoSkip: false,
+            maxRotation: 0,
+            font: (context: any) => ({ weight: this.isActiveIndex(context.index) ? "bold" : "normal" }),
+            color: (context: any) => (this.isActiveIndex(context.index) ? CARNET_COLORS.orange : undefined),
+          },
+        },
+        y: CarnetCharts.autoHiddenAxis({ beginAtZero: true, ticks: { precision: 0 } }),
+      },
+    };
   }
 
-  findMaxValue(someValues: {
-    [P in Month]?: {};
-  }): number {
-    let newMax: number = 0;
-    Object.keys(someValues).forEach((month) => {
-      // @ts-ignore
-      Object.keys(someValues[month]).forEach((st) => {
-        // @ts-ignore
-        const n = someValues[month][st];
-        if (n && n > newMax) {
-          newMax = n;
+  // Moyenne en pointillés, à la place de l'ancienne ligne CSS.
+  get averageLinePlugin(): any {
+    return {
+      id: "averageLine",
+      afterDatasetsDraw: (chart: any) => {
+        if (!this.average || !chart.scales.y) {
+          return;
         }
-      });
-    });
+        const y = chart.scales.y.getPixelForValue(this.average);
+        const { left, right } = chart.chartArea;
+        const context = chart.ctx;
+        context.save();
+        context.setLineDash([3, 3]);
+        context.strokeStyle = CARNET_COLORS.orange;
+        context.beginPath();
+        context.moveTo(left, y);
+        context.lineTo(right, y);
+        context.stroke();
+        context.restore();
+      },
+    };
+  }
 
-    let result = Math.max(newMax, 50);
-    return result;
+  valueOf(m: Month, maillage: Maillage): number {
+    const monthValues = this.values && this.values[m];
+    return (monthValues && Number(monthValues[maillage])) || 0;
+  }
+
+  monthLabel(m: Month): string {
+    return Constants.MONTHS[this.orderedMonths.indexOf(m)];
+  }
+
+  isActiveIndex(index: number): boolean {
+    return !!this.isActiveMonthCondition && !!this.isActiveMonthCondition(this.orderedMonths[index]);
   }
 }
 </script>
@@ -173,86 +144,12 @@ export default class HistogramChart extends Vue {
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 250px;
 
-  .bars {
+  .histogram-chart {
     position: relative;
-    padding-top: 10px;
-    width: 100%;
-    height: calc(100% - 18px - 25px);
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-
-    .value {
-      position: absolute;
-      bottom: 0px;
-      width: 100%;
-      z-index: 1;
-      font-weight: bold;
-      font-size: @fontsize-smallest-paragraph;
-      text-align: center;
-
-      &.is-active-month {
-        color: @warning-text !important;
-      }
-      &.maillee {
-        color: @accent-text;
-      }
-
-      &.non-maillee {
-        color: white;
-      }
-    }
-
-    .bar {
-      width: 6%;
-      margin-left: 1%;
-      margin-right: 1%;
-      height: 100%;
-      background-color: @solitude;
-      border-radius: 2px;
-
-      position: relative;
-
-      .bar-filled {
-        position: absolute;
-        bottom: 0px;
-        width: 100%;
-        border-radius: 2px;
-
-        &.is-active-month {
-          background: @orange-odd !important;
-        }
-
-        &.maillee {
-          &.even {
-            background: @pelorous;
-          }
-
-          &.odd {
-            background: @summer-sky;
-          }
-        }
-
-        &.non-maillee {
-          &.even {
-            background: @orange-even;
-          }
-
-          &.odd {
-            background: @orange-odd;
-          }
-        }
-      }
-    }
-    .bar-average {
-      position: absolute;
-      width: 100%;
-      border-bottom: 1px dotted @accent-text;
-    }
+    height: 250px;
   }
+
   .average {
     height: @average-header-height;
     line-height: @average-header-height;
@@ -261,7 +158,6 @@ export default class HistogramChart extends Vue {
     color: @accent-text;
     margin: @margin-small auto 0 auto;
     padding-right: @margin-medium;
-
     display: flex;
     flex-direction: row;
 
@@ -271,55 +167,7 @@ export default class HistogramChart extends Vue {
       background-color: @terra-cotta;
       color: @white;
       margin-right: @margin-small;
-    }
-
-    &:hover {
-      cursor: default;
-      background: @terra-cotta;
-      border-radius: 15px;
-      color: white;
-    }
-  }
-  .bars:has(~ .average:hover) {
-    .bar {
-      opacity: 0.2;
-    }
-    .bar-average {
-      border-bottom-width: 2px;
-    }
-  }
-
-  .labels {
-    margin-top: 10px;
-    width: 100%;
-    height: 25px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-
-    .label-short,
-    .label-mid {
-      width: 8%;
-      color: @gunmetal;
       text-align: center;
-
-      &.is-active-month {
-        font-weight: bolder;
-        color: @warning-text;
-      }
-    }
- 
-
-    @media screen and (max-width: 900px) {
-      .label-mid {
-        display: none;
-      }
-    }
-
-    @media screen and (min-width: 901px) {
-      .label-short {
-        display: none;
-      }
     }
   }
 }

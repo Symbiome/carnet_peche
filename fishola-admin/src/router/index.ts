@@ -40,6 +40,7 @@ import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
 import MyReferentials from "@/views/customize/MyReferentials.vue";
 import Admins from "@/views/Admins.vue";
 import Accounts from "@/views/Accounts.vue";
+import NewsletterSubscriptions from "@/views/NewsletterSubscriptions.vue";
 import Operators from "@/views/Operators.vue";
 import OperatorCarnetVolontaireImport from "@/views/operator/CarnetVolontaireImport.vue";
 import OperatorCarnetVolontaireManualEntry from "@/views/operator/CarnetVolontaireManualEntry.vue";
@@ -137,6 +138,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/accounts",
     name: "accounts",
     component: Accounts
+  },
+  {
+    path: "/newsletter-subscriptions",
+    name: "newsletter-subscriptions",
+    component: NewsletterSubscriptions
   },
   {
     path: "/operator/import/carnet-volontaire",

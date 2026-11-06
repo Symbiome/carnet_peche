@@ -90,6 +90,10 @@
       </div>
       <!-- // End Banner Section // -->
 
+      <!-- Inscription à la newsletter tant que l'app est fermée (#313), aussi dans
+           l'onglet « Présentation » de l'accueil hors connexion -->
+      <NewsletterSignup v-if="profileChecked && !connected" />
+
       <!-- \\ Begin Presentation Section \\ -->
       <div class="Presentation_sec" id="presentation">
         <div class="Center">
@@ -255,6 +259,7 @@ import { WaterEntity as Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
 import CarnetLogo from "@/components/layout/CarnetLogo.vue";
+import NewsletterSignup from "@/components/common/NewsletterSignup.vue";
 
 @Component({
   components: {
@@ -262,6 +267,7 @@ import CarnetLogo from "@/components/layout/CarnetLogo.vue";
     Counter,
     CommunicationsOnAboutPage,
     CarnetLogo,
+    NewsletterSignup,
   },
 })
 export default class AboutView extends Vue {
@@ -290,6 +296,7 @@ export default class AboutView extends Vue {
 
   closed: boolean = true;
   connected: boolean = false;
+  profileChecked: boolean = false;
   keyFiguresObserver?: IntersectionObserver;
 
   constructor() {
@@ -297,10 +304,12 @@ export default class AboutView extends Vue {
   }
 
   created() {
-    ProfileService.fetchProfile().then(
-      () => (this.connected = true),
-      () => (this.connected = false)
-    );
+    ProfileService.fetchProfile()
+      .then(
+        () => (this.connected = true),
+        () => (this.connected = false)
+      )
+      .finally(() => (this.profileChecked = true));
     AboutService.getKeyFigures().then(
       (kf) => {
         console.debug("Chiffres clés", kf);

@@ -25,7 +25,7 @@
   « Masquer le lieu »). Les données viennent de l'endpoint « souvenir », appelé
   à l'ouverture ; sans prise associée ou hors ligne, la carte générique
   (icône, nom, description) est conservée. Photos et carte sont converties en
-  data URL avant la capture html2canvas (1080×1080) pour ne pas entacher le canvas.
+  data URL avant la capture html2canvas (2160×2160) pour ne pas entacher le canvas.
   -->
 <template>
   <div
@@ -97,6 +97,8 @@
               v-bind:catches="view.mapPoints"
               v-bind:captureMode="true"
               v-bind:approximate="true"
+              v-bind:pixelRatio="mapPixelRatio"
+              initialBaseLayer="satellite"
             />
           </div>
 
@@ -144,7 +146,12 @@ import html2canvas from "html2canvas";
 import { Component, Vue } from "vue-facing-decorator";
 import EventBus from "@/services/EventBus";
 
-const TARGET_SIZE_PX = 1080;
+const TARGET_SIZE_PX = 2160;
+// La carte est dessinée sur 540 px (.badge-share-map-renderer) : au zoom
+// plafonné de la carte souvenir, elle couvre alors une cinquantaine de km.
+// La densité ×2 donne une image de 1080 px, la définition d'un écran de
+// téléphone ; ×4 (2160 px) triple le temps de préparation.
+const MAP_PIXEL_RATIO = 2;
 // Garde-fou : une carte qui ne se charge pas ne doit pas bloquer le partage.
 const MAP_CAPTURE_TIMEOUT_MS = 15000;
 
@@ -165,6 +172,7 @@ export default class BadgeShareCard extends Vue {
   photosByCatchId: { [catchId: string]: string } = {};
   mapImage: string | null = null;
   hidePlace = false;
+  mapPixelRatio = MAP_PIXEL_RATIO;
   preparing = false;
   renderingMap = false;
   // Incrémenté à chaque ouverture : un chargement d'une ouverture précédente est ignoré.
@@ -268,7 +276,9 @@ export default class BadgeShareCard extends Vue {
     const catches: SouvenirCatchBean[] =
       view.layout === "mosaic" ? view.mosaicCatches : view.heroCatch ? [view.heroCatch] : [];
     const photos = await Promise.all(
-      catches.map((c) => PicturesService.getCatchPictureDataUrl(c.id, c.hasPicture))
+      catches.map((c) =>
+        PicturesService.getCatchPictureDataUrl(c.id, c.hasPicture, view.layout !== "mosaic")
+      )
     );
     if (!this.isCurrent(session)) {
       return;
@@ -322,8 +332,9 @@ export default class BadgeShareCard extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@card-size: 280px;
-@card-padding: 14px;
+// Mise en page dessinée pour une carte de 280 px, agrandie avec l'aperçu :
+// chaque dimension est un multiple de @u, 1/280e de la largeur affichée.
+@u: var(--card-unit);
 @card-shade: rgba(20, 38, 52, 0.92);
 @card-shade-light: rgba(20, 38, 52, 0.55);
 
@@ -347,15 +358,16 @@ export default class BadgeShareCard extends Vue {
   margin: @vertical-margin-medium 0;
 }
 
-// Rendue à taille d'affichage réduite puis capturée par html2canvas avec un
-// `scale` recalculé pour produire un export carré 1080x1080 (#146), quelle que
+// Rendue à taille d'affichage puis capturée par html2canvas avec un
+// `scale` recalculé pour produire un export carré 2160x2160 (#146), quelle que
 // soit la taille d'écran. Les fonds sont des `background-image` (et non des
 // <img> en object-fit, mal rendus par html2canvas).
 .badge-card {
+  --card-unit: ~"calc(min(400px, 100vw - 48px) / 280)";
   position: relative;
-  width: @card-size;
-  height: @card-size;
-  border-radius: 24px;
+  width: calc(@u * 280);
+  height: calc(@u * 280);
+  border-radius: calc(@u * 24);
   overflow: hidden;
   background: linear-gradient(160deg, @pelorous, @cyprus);
   color: @white;
@@ -375,7 +387,7 @@ export default class BadgeShareCard extends Vue {
 
 .badge-card-mosaic {
   display: grid;
-  gap: 2px;
+  gap: calc(@u * 2);
 }
 
 .badge-card-tile {
@@ -383,11 +395,11 @@ export default class BadgeShareCard extends Vue {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 4px;
+  padding: calc(@u * 4);
   background-color: rgba(255, 255, 255, 0.1);
   background-size: cover;
   background-position: center;
-  font-size: 11px;
+  font-size: calc(@u * 11);
   font-weight: bold;
 }
 
@@ -404,37 +416,37 @@ export default class BadgeShareCard extends Vue {
 // ne dessine pas les points de suspension de `text-overflow`.
 .badge-card-header {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  max-width: calc(100% - 24px);
+  top: calc(@u * 12);
+  left: calc(@u * 12);
+  max-width: calc(100% - calc(@u * 24));
   display: flex;
   align-items: center;
-  padding: 4px 10px 4px 6px;
-  border-radius: 12px;
+  padding: calc(@u * 4) calc(@u * 10) calc(@u * 4) calc(@u * 6);
+  border-radius: calc(@u * 12);
   background: @card-shade-light;
-  font-size: 11px;
+  font-size: calc(@u * 11);
   font-weight: bold;
   line-height: 1.2;
   box-sizing: border-box;
 
   &.badge-card-header-beside-map {
-    max-width: calc(100% - 24px - 92px);
+    max-width: calc(100% - calc(@u * 24) - calc(@u * 128));
   }
 
   .badge-card-header-icon {
-    font-size: 16px;
-    margin-right: 4px;
+    font-size: calc(@u * 16);
+    margin-right: calc(@u * 4);
   }
 }
 
 .badge-card-inset-map {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 84px;
-  height: 84px;
-  border-radius: 12px;
-  border: 2px solid @white;
+  top: calc(@u * 12);
+  right: calc(@u * 12);
+  width: calc(@u * 120);
+  height: calc(@u * 120);
+  border-radius: calc(@u * 12);
+  border: calc(@u * 2) solid @white;
   box-sizing: border-box;
   background-size: cover;
   background-position: center;
@@ -445,36 +457,36 @@ export default class BadgeShareCard extends Vue {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: @card-padding;
+  padding: calc(@u * 14);
   display: flex;
   flex-direction: column;
 }
 
 .badge-card-headline {
   font-weight: bold;
-  font-size: 18px;
+  font-size: calc(@u * 18);
   line-height: 1.2;
 }
 
 .badge-card-line {
-  font-size: @fontsize-smallest-paragraph;
+  font-size: calc(@u * 12);
   opacity: 0.9;
-  margin-top: 2px;
+  margin-top: calc(@u * 2);
 }
 
 .badge-card-signature {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 10px;
+  margin-top: calc(@u * 10);
 
   .badge-card-pseudo {
-    font-size: @fontsize-smallest-paragraph;
+    font-size: calc(@u * 12);
     opacity: 0.85;
   }
 
   .badge-card-logo {
-    width: 80px;
+    width: calc(@u * 80);
     margin-left: auto;
   }
 }
@@ -485,33 +497,33 @@ export default class BadgeShareCard extends Vue {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: @vertical-margin-medium;
+  padding: calc(@u * 20);
 
   .badge-card-icon {
-    font-size: 4rem;
+    font-size: calc(@u * 64);
     line-height: 1;
-    margin-bottom: @vertical-margin-small;
+    margin-bottom: calc(@u * 10);
   }
 
   .badge-card-name {
     font-weight: bold;
-    font-size: @fontsize-header-title-small;
-    margin-bottom: @vertical-margin-x-small;
+    font-size: calc(@u * 20);
+    margin-bottom: calc(@u * 6);
   }
 
   .badge-card-headline {
     font-weight: normal;
-    font-size: @fontsize-small-paragraph;
+    font-size: calc(@u * 14);
     opacity: 0.9;
   }
 
   .badge-card-signature {
     flex-direction: column;
-    margin-top: @vertical-margin-small;
+    margin-top: calc(@u * 10);
 
     .badge-card-logo {
-      width: 96px;
-      margin: @vertical-margin-small 0 0;
+      width: calc(@u * 96);
+      margin: calc(@u * 10) 0 0;
     }
   }
 }
@@ -530,11 +542,11 @@ export default class BadgeShareCard extends Vue {
 }
 
 // Hors écran mais mise en page réelle : MapLibre a besoin d'un conteneur
-// dimensionné pour dessiner la carte à capturer (2× la carte affichée).
+// dimensionné pour dessiner la carte à capturer, ici à densité MAP_PIXEL_RATIO.
 .badge-share-map-renderer {
   position: fixed;
   top: 0;
   left: -10000px;
-  width: 2 * @card-size;
+  width: 540px;
 }
 </style>

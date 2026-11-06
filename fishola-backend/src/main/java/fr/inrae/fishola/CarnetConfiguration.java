@@ -201,6 +201,13 @@ public interface CarnetConfiguration {
     boolean betaTestersMode();
 
     /**
+     * Inscription à la newsletter (#313) : nombre de demandes acceptées par
+     * adresse IP et par heure, contre le spam du formulaire public.
+     */
+    @WithDefault("5")
+    int newsletterSubscriptionsPerIpPerHour();
+
+    /**
      * Administrateurs nationaux créés au démarrage s'ils n'existent pas encore,
      * au format « email:motdepasse », séparés par des virgules (#192). Un compte
      * existant n'est jamais modifié. Variable d'environnement :

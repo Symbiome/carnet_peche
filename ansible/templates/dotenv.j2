@@ -9,22 +9,21 @@ API_DOMAIN={{ api_domain }}
 ADMIN_DOMAIN={{ admin_domain }}
 
 POSTGRES_DB={{ postgres_db }}
-POSTGRES_PASSWORD={{ vault_postgres_password }}
+POSTGRES_PASSWORD='{{ vault_postgres_password }}'
 POSTGRES_IMAGE={{ postgres_image }}
-PGBACKREST_REPO1_CIPHER_PASS={{ vault_pgbackrest_cipher_pass }}
 
-FISHOLA_JWT_SECRET={{ vault_fishola_jwt_secret }}
-FISHOLA_ADMIN_PASSWORD={{ vault_fishola_admin_password }}
+FISHOLA_JWT_SECRET='{{ vault_fishola_jwt_secret }}'
+FISHOLA_ADMIN_PASSWORD='{{ vault_fishola_admin_password }}'
 
 BETA_TESTERS_MODE={{ beta_testers_mode | lower }}
-DEFAULT_NATIONAL_ADMINS={% for email in default_national_admins %}{{ email }}:{{ vault_default_national_admin_passwords[email] }}{{ '' if loop.last else ',' }}{% endfor %}
+DEFAULT_NATIONAL_ADMINS='{% for email in default_national_admins %}{{ email }}:{{ vault_default_national_admin_passwords[email] }}{{ '' if loop.last else ',' }}{% endfor %}'
 
 SMTP_HOST={{ smtp_host }}
 SMTP_PORT={{ smtp_port }}
 SMTP_START_TLS={{ smtp_start_tls }}
 SMTP_SSL={{ smtp_ssl | lower }}
 SMTP_USERNAME={{ smtp_username }}
-SMTP_PASSWORD={{ vault_smtp_password | default('') }}
+SMTP_PASSWORD='{{ vault_smtp_password | default('') }}'
 SMTP_FROM={{ smtp_from }}
 FEEDBACK_MAIL_TO={{ feedback_mail_to }}
 
