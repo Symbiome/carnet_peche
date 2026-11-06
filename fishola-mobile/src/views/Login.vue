@@ -22,7 +22,7 @@
   <div class="login page-with-header full-background">
     <CarnetHeader v-bind:title="false" v-bind:avatar="false" v-bind:menu="true" />
     <div class="page login-page">
-      <div class="login-pane">
+      <div class="login-pane" :class="{ 'with-newsletter': showNewsletter }">
         <span @click="goHome" class="icon-home home hide-on-mobile">
           <span style="padding-left: 10px">Accueil</span></span>
         <div class="login-title keyboardSensitive">
@@ -55,6 +55,9 @@
             class="hide-on-desktop" />
         </div>
         </form>
+        <!-- Inscription fermée : le visiteur sans compte testeur s'inscrit à la newsletter (#313). -->
+        <NewsletterSignup v-if="showNewsletter"
+          intro="Pas de compte testeur ? Inscrivez-vous à la newsletter pour être prévenu de l'ouverture." />
       </div>
     </div>
   </div>
@@ -66,6 +69,7 @@ import ProfileService from "@/services/ProfileService";
 import FormInput from "@/components/common/FormInput.vue";
 import ForgottenPassword from "@/components/common/ForgottenPassword.vue";
 import CarnetHeader from "@/components/layout/CarnetHeader.vue";
+import NewsletterSignup from "@/components/common/NewsletterSignup.vue";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { Component, Vue } from "vue-facing-decorator";
@@ -77,6 +81,7 @@ import EventBus from "@/services/EventBus";
     CarnetHeader,
     FormInput,
     ForgottenPassword,
+    NewsletterSignup,
   },
 })
 export default class LoginView extends Vue {
@@ -86,13 +91,20 @@ export default class LoginView extends Vue {
   passwordError = "";
   // Fermée tant que le backend n'a pas confirmé l'ouverture (#192).
   registrationEnabled: boolean = false;
+  registrationChecked: boolean = false;
 
   constructor() {
     super();
   }
 
+  get showNewsletter(): boolean {
+    return this.registrationChecked && !this.registrationEnabled;
+  }
+
   mounted() {
-    ProfileService.isRegistrationEnabled().then((enabled) => (this.registrationEnabled = enabled));
+    ProfileService.isRegistrationEnabled()
+      .then((enabled) => (this.registrationEnabled = enabled))
+      .finally(() => (this.registrationChecked = true));
     this.email = "";
     this.emailError = "";
     this.password = "";
@@ -189,6 +201,17 @@ export default class LoginView extends Vue {
 .login-pane {
   height: 100%;
   width: 100%;
+  // L'encart newsletter allonge la page : elle défile au lieu de tasser les blocs,
+  // et le lien « Accueil » (absolu) défile avec elle.
+  position: relative;
+  overflow-y: auto;
+
+  .login-title,
+  .login-form,
+  .login-buttons,
+  .newsletter-signup {
+    flex-shrink: 0;
+  }
 
   display: flex;
   flex-direction: column;
@@ -352,6 +375,13 @@ export default class LoginView extends Vue {
     width: 640px;
     background-color: @white-smoke;
     justify-content: space-evenly;
+
+    // Contenu plus haut que l'écran : space-evenly le centrerait et couperait le haut.
+    &.with-newsletter {
+      justify-content: flex-start;
+      gap: @vertical-margin-medium;
+      padding-top: @margin-large;
+    }
 
     .login-title {
       color: @accent-text;

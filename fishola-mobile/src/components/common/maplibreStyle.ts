@@ -48,17 +48,21 @@ export const DEFAULT_ZOOM = 10;
 
 export type BaseLayer = 'plan' | 'satellite';
 
-/** Style MapLibre autoportant (aucune URL externe) : IGN + réseau hydro. */
-export function buildCarnetStyle(baseLayer: BaseLayer = 'plan'): StyleSpecification {
+/**
+ * Style MapLibre autoportant (aucune URL externe) : IGN + réseau hydro.
+ * `rasterTileSize` sous 256 fait charger des tuiles IGN plus détaillées que le
+ * zoom affiché : à densité de pixels imposée, elles restent nettes.
+ */
+export function buildCarnetStyle(baseLayer: BaseLayer = 'plan', rasterTileSize = 256): StyleSpecification {
     return {
         version: 8,
         sources: {
             'ign-plan': {
-                type: 'raster', tiles: [TileCacheService.cachedUrl(IGN_PLAN_URL)], tileSize: 256, maxzoom: 19,
+                type: 'raster', tiles: [TileCacheService.cachedUrl(IGN_PLAN_URL)], tileSize: rasterTileSize, maxzoom: 19,
                 attribution: IGN_ATTRIBUTION,
             },
             'ign-ortho': {
-                type: 'raster', tiles: [TileCacheService.cachedUrl(IGN_ORTHO_URL)], tileSize: 256, maxzoom: 19,
+                type: 'raster', tiles: [TileCacheService.cachedUrl(IGN_ORTHO_URL)], tileSize: rasterTileSize, maxzoom: 19,
                 attribution: IGN_ATTRIBUTION,
             },
             hydro: {
@@ -117,13 +121,14 @@ export function createCarnetMap(
         // jamais au défaut des cartes interactives affichées à l'écran.
         preserveDrawingBuffer?: boolean;
         // Capture à taille d'export : fixe la densité de pixels du canvas, sinon
-        // celle de l'écran. À 1, les tuiles raster IGN ne sont pas agrandies.
+        // celle de l'écran. Les tuiles IGN sont alors chargées à la même densité
+        // (tuiles plus détaillées) pour ne pas être agrandies.
         pixelRatio?: number;
     } = {},
 ): MlMap {
     const map = new maplibregl.Map({
         container,
-        style: buildCarnetStyle(opts.baseLayer || 'plan'),
+        style: buildCarnetStyle(opts.baseLayer || 'plan', opts.pixelRatio ? 256 / opts.pixelRatio : 256),
         center: opts.center || DEFAULT_CENTER,
         zoom: opts.zoom != null ? opts.zoom : DEFAULT_ZOOM,
         attributionControl: { compact: true },
