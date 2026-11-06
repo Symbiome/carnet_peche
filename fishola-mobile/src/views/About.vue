@@ -61,10 +61,6 @@
                 <a href="#/about" @click.prevent="scrollToSection('communications'); closed = !closed">Communications</a>
                 <span class="menu-item-bg"></span>
               </li>
-              <li v-bind:class="activeSection == 'contribute' ? 'active' : ''">
-                <a href="#/about" @click.prevent="scrollToSection('contribute'); closed = !closed">Comment participer ?</a>
-                <span class="menu-item-bg"></span>
-              </li>
               <li v-bind:class="activeSection == 'contact' ? 'active' : ''">
                 <a href="#/about" @click.prevent="scrollToSection('contact'); closed = !closed">Contact</a>
                 <span class="menu-item-bg"></span>
@@ -148,21 +144,6 @@
             <h3>Communications</h3>
           </div>
           <CommunicationsOnAboutPage :news="news" />
-        </div>
-        <!-- // End Contribute Section // -->
-
-        <!-- \\ Begin Contribute Section \\ -->
-        <div class="Contribute_sec" id="contribute">
-          <div class="Center">
-            <h2>Comment participer ?</h2>
-            <div class="contribute-editable" v-html="contributeText"></div>
-            <div class="consult-faq">
-              Pour plus d'informations
-              <div class="consult-faq-button" @click="goFaq">
-                Consulter la FAQ
-              </div>
-            </div>
-          </div>
         </div>
         <!-- // End Contribute Section // -->
 
@@ -275,8 +256,6 @@ export default class AboutView extends Vue {
   // Centre par défaut [lng, lat] (recadré sur les marqueurs s'il y en a).
   center: [number, number] = [5.890511, 46.071623];
 
-  contributeText: string =
-    "<p>Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.</p>";
   tripsCount: number = 0;
   realTripsCount: number = 442;
   catchsCount: number = 0;
@@ -316,7 +295,6 @@ export default class AboutView extends Vue {
         this.realTripsCount = kf.tripsCount;
         this.realCatchsCount = kf.catchsCount;
         this.realPicturesCount = kf.picturesCount;
-        this.contributeText = kf.contributeText;
         kf.lakes.forEach((l) => this.lakes.push(l));
         this.catchsCountPerLakeId = kf.catchsCountPerLakeId;
       },
@@ -413,7 +391,6 @@ export default class AboutView extends Vue {
   sectionIds: string[] = [
     "presentation",
     "communications",
-    "contribute",
     "contact",
   ];
   activeSection: string = "";
@@ -485,10 +462,6 @@ export default class AboutView extends Vue {
 
   closeMenu() {
     this.closed = true;
-  }
-
-  goFaq() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/faq");
   }
 }
 </script>
@@ -785,17 +758,11 @@ export default class AboutView extends Vue {
   }
 }
 
-.Contribute_sec {
-  background: url(img/about-background.jpg) top center no-repeat;
-  background-size: cover;
-}
-
 .Get_sec {
   background: url(img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 
-.Contribute_sec p,
 .Contact_sec p {
   font-size: 18px;
 }
@@ -955,85 +922,8 @@ export default class AboutView extends Vue {
   }
 }
 
-.contribute-editable {
-  margin-top: 50px;
-
-  /** :deep() permet de contourner le scoped qui empêche le code injecté de bénéficier du style */
-  :deep(.cards) {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 100%;
-
-    .card {
-      height: fit-content;
-      max-width: 350px;
-      width: 80%;
-      margin: 15px;
-      padding: 30px;
-      min-height: 300px;
-      background-color: @white-smoke-alpha-20;
-      border: 1px solid @accent-text;
-
-      h4 {
-        margin: 5px;
-      }
-
-      p {
-        text-align: left;
-      }
-
-      &:hover {
-        background-color: @white-smoke;
-        color: @gunmetal;
-        // cursor: pointer;
-      }
-    }
-
-    @media only screen and (max-width: 1300px) {
-      flex-direction: column;
-      align-items: center;
-
-      .card {
-        height: fit-content;
-        width: 80%;
-        padding: 20px;
-
-        p {
-          margin-top: 5px;
-          margin-bottom: 5px;
-        }
-      }
-    }
-  }
-}
-
 footer {
   background: @carnet-navy;
-}
-
-.consult-faq {
-  padding-top: 25px;
-  display: flex;
-  gap: 10px;
-  flex-direction: column;
-  align-items: center;
-
-  .consult-faq-button {
-    background-color: white;
-    color: @accent-text;
-    border: 1px solid @accent-text;
-    width: 200px;
-    font-weight: bolder;
-    padding: 10px;
-    cursor: pointer;
-
-    &:hover {
-      color: white;
-      background-color: @carnet-blue;
-      border: 1px solid white;
-    }
-  }
 }
 
 .close {
