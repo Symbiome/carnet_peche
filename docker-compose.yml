@@ -36,6 +36,7 @@ services:
       - wal_level=replica
       - -c
       - archive_command=pgbackrest --stanza=fishola archive-push %p
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-fishola}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
