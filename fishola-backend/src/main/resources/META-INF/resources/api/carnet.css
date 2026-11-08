@@ -1,0 +1,200 @@
+/*-
+ * #%L
+ * Carnet de pêche :: Backend
+ * %%
+ * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+
+/* Charte « Carnet de pêche » (maquettes Figma MASTER FILE), reprise de
+   fishola-mobile/src/less/_colors.less, main.less et _font.less. */
+
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('fonts/Poppins-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('fonts/Poppins-Bold.ttf');
+}
+
+:root {
+    --carnet-blue: #0000E0;
+    --carnet-ink: #00004C;
+    --carnet-navy: #142634;
+    --carnet-sand: #F9F4F2;
+    --carnet-white: #FFFFFF;
+    --carnet-heading: var(--carnet-ink);
+    --carnet-text: var(--carnet-navy);
+    --carnet-panel: var(--carnet-sand);
+    --carnet-success-box: #CFF5E1;
+    --carnet-success-text: #067A3E;
+    --carnet-error-box: rgba(202, 33, 52, 0.1);
+    --carnet-error-text: #CA2134;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --carnet-heading: #FFFFFF;
+        --carnet-text: #FFFFFF;
+        --carnet-panel: var(--carnet-ink);
+        --carnet-success-box: rgba(12, 206, 107, 0.2);
+        --carnet-success-text: #6EE7A8;
+        --carnet-error-box: rgba(202, 33, 52, 0.25);
+        --carnet-error-text: #FF8A97;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background-color: var(--carnet-blue);
+    background-image: url("background_transparent.png");
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: center;
+    color: var(--carnet-white);
+    font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: -0.04em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.carnet-page {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    text-align: center;
+}
+
+.carnet-title {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 48px 16px;
+}
+
+.carnet-welcome {
+    font-size: 28px;
+    line-height: 1.3;
+}
+
+.carnet-logo-tile {
+    padding: 10px 20px;
+    border-radius: 16px;
+    background-color: var(--carnet-white);
+}
+
+.carnet-logo-tile img {
+    display: block;
+    width: 180px;
+    max-width: 70vw;
+    height: auto;
+}
+
+.carnet-panel {
+    width: 100%;
+    max-width: 560px;
+    padding: 32px 24px calc(40px + env(safe-area-inset-bottom));
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+    background-color: var(--carnet-panel);
+    color: var(--carnet-text);
+}
+
+.carnet-status {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carnet-status svg {
+    width: 28px;
+    height: 28px;
+}
+
+.carnet-status.success {
+    background-color: var(--carnet-success-box);
+    color: var(--carnet-success-text);
+}
+
+.carnet-status.failed {
+    background-color: var(--carnet-error-box);
+    color: var(--carnet-error-text);
+}
+
+.carnet-heading {
+    margin: 0 0 12px;
+    color: var(--carnet-heading);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.carnet-panel p {
+    margin: 0 0 8px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+@media (min-width: 769px) {
+    .carnet-page {
+        justify-content: center;
+    }
+
+    .carnet-title {
+        flex-grow: 0;
+    }
+
+    .carnet-panel {
+        border-radius: 30px;
+        margin-bottom: 48px;
+    }
+}
+
+@media (max-height: 579px) {
+    .carnet-title {
+        padding: 24px 16px;
+    }
+
+    .carnet-welcome {
+        font-size: 22px;
+    }
+}
