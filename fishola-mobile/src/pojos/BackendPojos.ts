@@ -202,8 +202,6 @@ export interface KeyFigures {
     tripsCount: number;
     catchsCount: number;
     picturesCount: number;
-    waterEntities: WaterEntity[];
-    catchsCountPerWaterEntityId: { [index: string]: number };
     titleText: string;
     contributeText: string;
     computedOn: Date;

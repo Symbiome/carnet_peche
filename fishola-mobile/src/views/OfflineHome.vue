@@ -25,21 +25,13 @@
       <div class="pane pane-only">
         <div class="pane-content rounded">
           <h1 class="hide-on-mobile">Accueil</h1>
-          <div class="trips-and-news-tab">
-            <div
-              class="trips-or-news"
-              :class="showNews ? '' : 'selected'"
-              @click="goPresentation"
-            >
+          <div class="home-tabs" role="group" aria-label="Contenu de l'accueil">
+            <button :class="{ active: !showNews }" :aria-pressed="!showNews" @click="goPresentation">
               Présentation
-            </div>
-            <div
-              class="trips-or-news"
-              :class="showNews ? 'selected' : ''"
-              @click="goNews"
-            >
-              <span> Communications </span>
-            </div>
+            </button>
+            <button :class="{ active: showNews }" :aria-pressed="showNews" @click="goNews">
+              Communications
+            </button>
           </div>
           <div class="about-container" v-if="!showNews">
             <About :wrappedInTab="true" />
@@ -99,42 +91,45 @@ export default class OfflineHome extends Vue {
   }
 
   goPresentation() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/offline-home/presentation");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/about");
   }
 }
 </script>
 
 <style scoped lang="less">
-.trips-and-news-tab {
-  width: 100%;
+.home-tabs {
   display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  margin-top: -30px;
+  gap: 2px;
+  max-width: 400px;
+  margin: 0 auto @vertical-margin-medium auto;
+  padding: 6px;
+  border-radius: 10px;
+  background-color: @surface;
 
-  .trips-or-news {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    gap: 5px;
+  button {
+    flex: 1;
+    height: 38px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
     color: @pale-sky;
-    padding-bottom: 5px;
-    padding-left: 20px;
-    padding-right: 20px;
+    font-family: @font-family;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: @letter-spacing;
     cursor: pointer;
 
-    &.selected {
-      color: @gunmetal;
-      border-bottom: 2px solid @accent-text;
+    &.active {
+      background-color: @carnet-blue;
+      color: @white;
+      font-weight: 600;
     }
   }
 }
 
-@media screen and (max-width: 760px) {
-  .trips-and-news-tab {
-    padding-top: 20px;
-    margin-top: 0px;
+@media screen and (max-width: @mobile-max-width) {
+  .home-tabs {
+    margin-top: @vertical-margin-medium;
   }
 }
 

@@ -19,86 +19,59 @@
   #L%
   -->
 <template>
-  <div class="DesignHolder force-light-theme" v-on:scroll="scrolled" id="about-scroll-container">
-    <!-- \\ Begin Holder \\ -->
-    <!-- Page vitrine : reste en thème clair (#208), ses styles sont figés. -->
-    <!-- \\ Begin Frame \\ -->
-    <div class="LayoutFrame" id="top">
-      <!-- \\ Begin Header \\ -->
-      <header class="smaller" v-if="!wrappedInTab">
-        <div class="site-logo site-logo-smartphone">
-          <h1>
-            <a href="#/about" @click.prevent="scrollToSection('top')"><CarnetLogo class="about-logo" /></a>
-          </h1>
-        </div>
+  <div class="about-page force-light-theme" v-on:scroll="scrolled" id="about-scroll-container">
+    <!-- Page vitrine : reste en thème clair (#208). -->
+    <div class="about-frame" id="top">
+      <header class="about-header" v-if="!wrappedInTab">
+        <a class="about-logo-link logo-smartphone" href="#/about" @click.prevent="scrollToSection('top')">
+          <CarnetLogo class="about-logo" />
+        </a>
 
         <button class="back-to-app" v-if="connected && closed" v-on:click="goToLogin">
           <i class="icon-arrow icon-back" />
           Retour à l'application
         </button>
 
-        <div class="burger" v-if="closed" @click="closed = !closed">
+        <button class="burger" v-if="closed" aria-label="Ouvrir le menu" @click="closed = !closed">
           <i class="icon-menu"></i>
-        </div>
+        </button>
 
         <div class="menu" :class="{ closed: closed }">
-          <div class="site-logo site-logo-desktop">
-            <h1>
-              <a href="#/about" @click.prevent="scrollToSection('top'); closed = true"><CarnetLogo class="about-logo" /></a>
-            </h1>
-          </div>
+          <a class="about-logo-link logo-desktop" href="#/about"
+            @click.prevent="scrollToSection('top'); closed = true">
+            <CarnetLogo class="about-logo" />
+          </a>
 
-          <nav class="Navigation">
-            <ul>
-              <li class="close hide-on-desktop">
-                <div class="plus" v-on:click="closeMenu">+</div>
-              </li>
-              <li v-bind:class="activeSection == 'presentation' ? 'active' : ''">
-                <a href="#/about" @click.prevent="scrollToSection('presentation'); closed = !closed">Présentation</a>
-                <span class="menu-item-bg"></span>
-              </li>
-              <li v-bind:class="activeSection == 'communications' ? 'active' : ''">
-                <a href="#/about" @click.prevent="scrollToSection('communications'); closed = !closed">Communications</a>
-                <span class="menu-item-bg"></span>
-              </li>
-              <li v-bind:class="activeSection == 'contribute' ? 'active' : ''">
-                <a href="#/about" @click.prevent="scrollToSection('contribute'); closed = !closed">Comment participer ?</a>
-                <span class="menu-item-bg"></span>
-              </li>
-              <li v-bind:class="activeSection == 'contact' ? 'active' : ''">
-                <a href="#/about" @click.prevent="scrollToSection('contact'); closed = !closed">Contact</a>
-                <span class="menu-item-bg"></span>
-              </li>
-            </ul>
+          <nav class="about-nav">
+            <button class="close-menu hide-on-desktop" aria-label="Fermer le menu" v-on:click="closeMenu">+</button>
+            <a href="#/about" :class="{ active: activeSection == 'presentation' }"
+              @click.prevent="scrollToSection('presentation'); closed = !closed">Présentation</a>
+            <a href="#/about" :class="{ active: activeSection == 'communications' }"
+              @click.prevent="scrollToSection('communications'); closed = !closed">Communications</a>
+            <a href="#/about" :class="{ active: activeSection == 'contact' }"
+              @click.prevent="scrollToSection('contact'); closed = !closed">Contact</a>
           </nav>
-          <div class="authentication">
+          <div class="button button-primary authentication">
             <button v-on:click="goToLogin">{{ connected ? "Retour à l'application" : "Connexion" }}</button>
           </div>
         </div>
       </header>
-      <!-- // End Header // -->
 
-      <!-- \\ Begin Banner Section \\ -->
-      <div class="Title_sec" id="title" v-if="!wrappedInTab">
-        <!--  \\ Begin banner Side -->
-        <div class="title-banner">
-          <div class="main-title">Sentinelles des cours d'eau</div>
-          <div class="sub-title">
-            Avec Carnet de pêche, chaque sortie aide à préserver les rivières
-          </div>
+      <div class="title-banner" id="title" v-if="!wrappedInTab">
+        <div class="title-overlay">
+          <h1 class="main-title">Sentinelles des cours d'eau</h1>
+          <p class="sub-title">Avec Carnet de pêche, chaque sortie aide à préserver les rivières</p>
         </div>
       </div>
-      <!-- // End Banner Section // -->
 
       <!-- Inscription à la newsletter tant que l'app est fermée (#313), aussi dans
            l'onglet « Présentation » de l'accueil hors connexion -->
       <NewsletterSignup v-if="profileChecked && !connected" />
 
-      <!-- \\ Begin Presentation Section \\ -->
-      <div class="Presentation_sec" id="presentation">
-        <div class="Center">
-          <h3><span>Carnet de pêche</span></h3>
-          <h2>Un projet de science citoyenne</h2>
+      <section class="about-section" id="presentation">
+        <div class="about-card presentation-card">
+          <div class="eyebrow">Carnet de pêche</div>
+          <h2 class="section-title">Un projet de science citoyenne</h2>
           <p>
             Les données anonymisées de vos prises et de vos parties de pêche servent à prendre des
             mesures de préservation des cours d'eau, pour une pêche en rivière durable et abondante.
@@ -107,139 +80,69 @@
             Le pêcheur qui utilise l'application est une véritable sentinelle des cours d'eau.
           </p>
         </div>
-      </div>
-      <!-- // End Presentation Section // -->
+      </section>
 
-      <!-- \\ Begin Container \\ -->
-      <div id="Container">
-        <!-- \\ Begin About Section \\ -->
-        <div class="About_sec" id="about">
-          <div class="Center">
-            <div class="key-figures" ref="keyFigures">
-              <div class="kf-item">
-                <div class="kf-number">
-                  <Counter :n="tripsCount"></Counter>
-                </div>
-                <div class="kf-label">sorties</div>
-              </div>
-              <div class="kf-item">
-                <div class="kf-number">
-                  <Counter :n="catchsCount"></Counter>
-                </div>
-                <div class="kf-label">captures</div>
-              </div>
-              <div class="kf-item">
-                <div class="kf-number">
-                  <Counter :n="picturesCount"></Counter>
-                </div>
-                <div class="kf-label">photos</div>
-              </div>
-            </div>
-            <div class="map">
-              <MapLibreMarkersMap :markers="mapMarkers" :center="center" :zoom="9" />
-            </div>
-            <!-- // End Tab Side // -->
+      <section class="about-section" id="about">
+        <div class="key-figures" ref="keyFigures">
+          <div class="kf-item kf-trips">
+            <div class="kf-number"><Counter :n="tripsCount"></Counter></div>
+            <div class="kf-label">sorties</div>
+          </div>
+          <div class="kf-item kf-catches">
+            <div class="kf-number"><Counter :n="catchsCount"></Counter></div>
+            <div class="kf-label">captures</div>
+          </div>
+          <div class="kf-item kf-pictures">
+            <div class="kf-number"><Counter :n="picturesCount"></Counter></div>
+            <div class="kf-label">photos</div>
           </div>
         </div>
-        <!-- // End About Section // -->
-        <!-- \\ Begin Communications Section \\ -->
-        <div class="Communications_sec" id="communications" v-if="!wrappedInTab">
-          <div class="Center">
-            <h3>Communications</h3>
-          </div>
-          <CommunicationsOnAboutPage :news="news" />
-        </div>
-        <!-- // End Contribute Section // -->
+      </section>
 
-        <!-- \\ Begin Contribute Section \\ -->
-        <div class="Contribute_sec" id="contribute">
-          <div class="Center">
-            <h2>Comment participer ?</h2>
-            <div class="contribute-editable" v-html="contributeText"></div>
-            <div class="consult-faq">
-              Pour plus d'informations
-              <div class="consult-faq-button" @click="goFaq">
-                Consulter la FAQ
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- // End Contribute Section // -->
+      <section class="communications-section" id="communications" v-if="!wrappedInTab">
+        <h2 class="section-title">Communications</h2>
+        <CommunicationsOnAboutPage :news="news" />
+      </section>
 
-        <!-- \\ Begin Contact Section \\ -->
-        <div class="Contact_sec" id="contact">
-          <div class="Contactside"></div>
-          <!-- \\ Begin Get Section \\ -->
-          <div class="Get_sec">
-            <div class="Center">
-              <h2>Nous contacter</h2>
-              <p>
-                Une suggestion, une question sur l'application ? Écrivez-nous
-                par l'intermédiaire du formulaire ci-dessous.
-              </p>
-              <div class="Line"></div>
-            </div>
-            <div class="Mid">
-              <!-- \\ Begin Left Side \\ -->
-              <div class="Leftside">
-                <form action="#">
-                  <fieldset>
-                    <legend style="display:none">Formulaire de contact</legend>
-                    <p>
-                      <input type="email" v-model="contactEmail" placeholder="Votre e-mail" class="field noshadow" />
-                    </p>
-                    <p>
-                      <textarea cols="2" rows="4" v-model="contactMessage" placeholder="Votre message"
-                        class="noshadow"></textarea>
-                    </p>
-                    <p>
-                      <input type="button" value="Envoyer" class="button noshadow send-button"
-                        v-on:click="sendContact" />
-                    </p>
-                  </fieldset>
-                </form>
-              </div>
-              <!-- // End Left Side // -->
-            </div>
+      <section class="about-section" id="contact">
+        <form class="about-card contact-card" novalidate v-on:submit.prevent="sendContact">
+          <h2 class="section-title">Nous contacter</h2>
+          <p>
+            Une suggestion, une question sur l'application ? Écrivez-nous
+            par l'intermédiaire du formulaire ci-dessous.
+          </p>
+          <FormInput name="contact-email" type="email" label="E-mail" placeholder="Votre e-mail"
+            autocomplete="email" v-model="contactEmail" />
+          <FormTextarea name="contact-message" label="Message" placeholder="Votre message"
+            v-model="contactMessage" />
+          <div class="button button-primary send-button">
+            <button type="submit">Envoyer</button>
           </div>
-          <!-- // End Get Section // -->
-        </div>
-        <!-- // End Contact Section // -->
+        </form>
+      </section>
 
-        <!-- \\ Begin Producted_by Section \\ -->
-        <div class="Producted_by_sec" id="producted_by">
-          <div class="producers">
-            <h3>Porteur du projet</h3>
+      <section class="about-section" id="producted_by">
+        <div class="about-card producers-card">
+          <div class="producer">
+            <h3 class="producer-title">Porteur du projet</h3>
             <p>Carnet de pêche est produit par l'Union des Bassins Rhône-Méditerranée-Corse (UFBRMC).</p>
-            <div class="credits-logos">
-              <a href="https://www.peche-auvergne-rhonealpes.fr/actualite/3754/1913-union-des-bassins-rhone-mediterranee-corse.htm"
-                target="_blank" rel="noopener"><img class="logo-ufbrmc" src="/img/logo/ufbrmc.jpg"
-                  alt="Union des Bassins Rhône-Méditerranée-Corse" /></a>
-            </div>
+            <a href="https://www.peche-auvergne-rhonealpes.fr/actualite/3754/1913-union-des-bassins-rhone-mediterranee-corse.htm"
+              target="_blank" rel="noopener"><img class="logo-ufbrmc" src="/img/logo/ufbrmc.jpg"
+                alt="Union des Bassins Rhône-Méditerranée-Corse" /></a>
           </div>
-          <div class="Line"></div>
-          <div class="producers">
-            <h3>Développement</h3>
+          <div class="producer">
+            <h3 class="producer-title">Développement</h3>
             <p>Application développée par Symbiome.</p>
-            <div class="credits-logos">
-              <a href="https://symbiome.eu" target="_blank" rel="noopener"><img class="logo-symbiome"
-                  src="/img/logo/symbiome.png" alt="Symbiome" /></a>
-            </div>
+            <a href="https://symbiome.eu" target="_blank" rel="noopener"><img class="logo-symbiome"
+                src="/img/logo/symbiome.png" alt="Symbiome" /></a>
           </div>
         </div>
-        <!-- // End Producted_by Section // -->
+      </section>
 
-        <!-- \\ Begin Footer \\-->
-        <footer>
-          <div class="Cntr">
-            <p>© Union des Bassins Rhône-Méditerranée-Corse · Application développée par Symbiome</p>
-          </div>
-        </footer>
-        <!-- // End Footer // -->
-      </div>
-      <!-- // End Container // -->
+      <footer class="about-footer">
+        <p>© Union des Bassins Rhône-Méditerranée-Corse · Application développée par Symbiome</p>
+      </footer>
     </div>
-    <!-- // End Layout Frame // -->
   </div>
 </template>
 
@@ -250,42 +153,37 @@ import AboutService from "@/services/AboutService";
 import FeedbackService from "@/services/FeedbackService";
 import { RouterUtils } from "@/router/RouterUtils";
 
-import MapLibreMarkersMap, { MapMarker } from "@/components/common/MapLibreMarkersMap.vue";
-
 import { Component, Prop, Vue } from "vue-facing-decorator";
 import debounce from "lodash/debounce";
 import EventBus from "@/services/EventBus";
-import { WaterEntity as Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
+import { Feedback, NewsBean } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
 import CarnetLogo from "@/components/layout/CarnetLogo.vue";
 import NewsletterSignup from "@/components/common/NewsletterSignup.vue";
+import FormInput from "@/components/common/FormInput.vue";
+import FormTextarea from "@/components/common/FormTextarea.vue";
 
 @Component({
   components: {
-    MapLibreMarkersMap,
     Counter,
     CommunicationsOnAboutPage,
     CarnetLogo,
     NewsletterSignup,
+    FormInput,
+    FormTextarea,
   },
 })
 export default class AboutView extends Vue {
   @Prop({ default: false }) wrappedInTab: boolean;
-  // Centre par défaut [lng, lat] (recadré sur les marqueurs s'il y en a).
-  center: [number, number] = [5.890511, 46.071623];
 
-  contributeText: string =
-    "<p>Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.</p>";
   tripsCount: number = 0;
   realTripsCount: number = 442;
   catchsCount: number = 0;
   realCatchsCount: number = 1726;
   picturesCount: number = 0;
   realPicturesCount: number = 212;
-  lakes: Lake[] = [];
   news: NewsBean[] = [];
-  catchsCountPerLakeId: { [index: string]: number } = {};
 
   contactEmail: string = "";
   contactMessage: string = "";
@@ -316,62 +214,12 @@ export default class AboutView extends Vue {
         this.realTripsCount = kf.tripsCount;
         this.realCatchsCount = kf.catchsCount;
         this.realPicturesCount = kf.picturesCount;
-        this.contributeText = kf.contributeText;
-        kf.lakes.forEach((l) => this.lakes.push(l));
-        this.catchsCountPerLakeId = kf.catchsCountPerLakeId;
       },
-      (_error) => {
-        // On a pas pu récupérer les informations du back, on ajoute quand même les marqueurs sur la carte
-        this.lakes.push({
-          id: "leman",
-          name: "Léman",
-          exportAs: "whatever",
-          latitude: 46.439783,
-          longitude: 6.480641,
-        });
-        this.lakes.push({
-          id: "bourget",
-          name: "Lac du Bourget",
-          exportAs: "whatever",
-          latitude: 45.7249,
-          longitude: 5.8684,
-        });
-        this.lakes.push({
-          id: "annecy",
-          name: "Lac d'Annecy",
-          exportAs: "whatever",
-          latitude: 45.856166,
-          longitude: 6.173468,
-        });
-        this.lakes.push({
-          id: "aiguebelette",
-          name: "Lac dAiguebelette",
-          exportAs: "whatever",
-          latitude: 45.5508,
-          longitude: 5.8015,
-        });
-      }
+      () => undefined
     );
     DocumentationService.getNews().then((zeNews) => {
       this.news = zeNews;
     });
-  }
-
-  get mapMarkers(): MapMarker[] {
-    return (this.lakes || [])
-      .filter((l) => l.latitude != null && l.longitude != null)
-      .map((l) => {
-        const name = this.escapeHtml(l.name);
-        const count = this.catchsCountPerLakeId[l.id];
-        const html = count ? `<div>${name} : ${count} captures</div>` : `<div>${name}</div>`;
-        return { lat: l.latitude, lng: l.longitude, popupHtml: html, title: l.name };
-      });
-  }
-
-  escapeHtml(value: string): string {
-    return (value || "").replace(/[&<>"']/g, (c) => (
-      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string
-    ));
   }
 
   sendContact() {
@@ -413,7 +261,6 @@ export default class AboutView extends Vue {
   sectionIds: string[] = [
     "presentation",
     "communications",
-    "contribute",
     "contact",
   ];
   activeSection: string = "";
@@ -486,585 +333,363 @@ export default class AboutView extends Vue {
   closeMenu() {
     this.closed = true;
   }
-
-  goFaq() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/faq");
-  }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
+
 <style scoped lang="less">
-@import "../less/libs/473-november";
-@import "../less/libs/473-november-media";
-@import "../less/_colors";
-@import "../less/_responsive";
+@about-header-height: 73px;
+@about-content-width: 760px;
 
-.about-logo {
-  width: 150px;
-}
-
-#about-scroll-container {
-  overflow: auto;
+.about-page {
   height: 100%;
+  overflow: auto;
   overflow-x: hidden;
+  background-color: @white-smoke;
+  color: @gunmetal;
+  font-family: @font-family;
+  letter-spacing: @letter-spacing;
 }
 
-.DesignHolder {
-  background-color: @white-smoke !important;
-}
-
-.LayoutFrame header {
+.about-header {
+  position: sticky;
+  top: 0;
   z-index: 998; // Juste en dessous du toaster
-  background: @white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: @about-header-height;
+  padding: 0 @margin-medium;
+  background-color: @surface;
+  border-bottom: 1px solid @divider;
 
-  padding-left: 20px;
-  padding-right: 20px;
+  .about-logo {
+    width: 150px;
+  }
 
-  &.smaller {
-    width: 100%;
-    height: 73px;
+  .logo-smartphone {
+    @media screen and (min-width: 900px) {
+      display: none;
+    }
+  }
 
+  // Retour visible sans ouvrir le menu, pour le pêcheur connecté.
+  .back-to-app {
     display: flex;
-    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    margin-right: @margin-small;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 10px;
+    background-color: @carnet-blue;
+    color: @white;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: @letter-spacing;
+    white-space: nowrap;
+    cursor: pointer;
+
+    @media screen and (min-width: 900px) {
+      display: none;
+    }
+  }
+
+  .burger {
+    padding: 0;
+    border: none;
+    background: none;
+    color: @heading;
+    font-size: 22px;
+    cursor: pointer;
+
+    @media screen and (min-width: 900px) {
+      display: none;
+    }
+  }
+
+  .menu {
+    display: flex;
+    flex: 1;
+    align-items: center;
     justify-content: space-between;
+    height: 100%;
 
-    .site-logo-smartphone {
-      @media only screen and (min-width: 900px) {
+    .logo-desktop {
+      @media screen and (max-width: 899px) {
         display: none;
       }
     }
 
-    // Retour visible sans ouvrir le menu, pour le pêcheur connecté.
-    .back-to-app {
-      align-self: center;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-left: auto;
-      margin-right: 16px;
-      padding: 8px 14px;
-      border: none;
-      border-radius: 20px;
-      background-color: @carnet-blue;
-      color: @white;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 600;
-      white-space: nowrap;
-      cursor: pointer;
-
-      @media only screen and (min-width: 900px) {
-        display: none;
-      }
-    }
-
-    .burger {
-      color: @gunmetal;
-      display: flex;
+    @media screen and (max-width: 899px) {
+      position: fixed;
+      top: 0;
+      right: 0;
       flex-direction: column;
-      justify-content: center;
-      cursor: pointer;
-      font-weight: 300;
-
-      @media only screen and (min-width: 900px) {
-        display: none;
-      }
-    }
-
-    .menu {
-      width: 100%;
-      height: 73px;
-
-      display: flex;
-      flex-direction: row;
+      align-items: stretch;
       justify-content: space-between;
+      width: 260px;
+      height: 100vh;
+      height: 100dvh; /* Good height for mobile screens, with navigation bar, if supported */
+      padding: @margin-medium;
+      background-color: @surface;
+      box-shadow: -4px 0 16px @black-alpha-50;
 
-      .site-logo-desktop {
-        @media only screen and (max-width: 899px) {
-          display: none;
-        }
-
-        @media only screen and (min-width: 900px) and (max-width: 999px) {
-          width: 140px;
-          padding-top: 20px;
-        }
-      }
-
-      .Navigation {
-        width: unset;
-        float: initial;
-
-        li {
-          height: 73px;
-        }
-
-        li a {
-          padding: 22px 30px;
-
-          @media only screen and (min-width: 1124px) and (max-width: 1200px) {
-            padding: 22px 20px;
-          }
-
-          @media only screen and (min-width: 800px) and (max-width: 1323px) {
-            padding: 22px 10px;
-            font-size: 14px;
-          }
-        }
-      }
-
-      .authentication {
-        height: 100%;
-
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-
-        button {
-          height: 41px;
-          border-radius: 20px;
-
-          font-style: normal;
-          font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
-
-          color: @white;
-          background-color: @terra-cotta;
-
-          border: 0px;
-          padding-left: @margin-medium;
-          padding-right: @margin-medium;
-
-          @media only screen and (max-width: 1023px) {
-            height: 31px;
-            font-size: 14px;
-          }
-        }
-      }
-
-      @media only screen and (max-width: 899px) {
-        position: absolute;
-        z-index: 2;
-        top: 0;
-        right: 0;
-        width: 250px;
-        height: 100vh;
-        height: 100dvh; /* Good height for mobile screens, with navigation bar, if supported */
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: right;
-        background-color: @white-smoke;
-
-        &.closed {
-          display: none;
-        }
-
-        .Navigation {
-          li {
-            width: 100%;
-            text-align: right;
-          }
-        }
-
-        .authentication {
-          height: 81px;
-
-          padding: 20px;
-        }
+      &.closed {
+        display: none;
       }
     }
   }
-}
-.Navigation li a {
-  color: @gunmetal;
+
+  .about-nav {
+    display: flex;
+    gap: 4px;
+
+    a {
+      padding: 10px 16px;
+      border-radius: 10px;
+      color: @gunmetal;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+
+      &:hover,
+      &.active {
+        background-color: @blue-box;
+        color: @accent-text;
+      }
+    }
+
+    @media screen and (max-width: 899px) {
+      flex-direction: column;
+      text-align: right;
+    }
+  }
+
+  .close-menu {
+    align-self: flex-end;
+    padding: 0 @margin-small;
+    border: none;
+    background: none;
+    color: @heading;
+    font-size: 36px;
+    line-height: 1;
+    transform: rotate(45deg);
+    cursor: pointer;
+  }
+
+  .authentication {
+    width: auto;
+    height: 41px;
+    margin: 0;
+
+    button {
+      padding: 0 @margin-medium;
+      font-size: 15px;
+      font-weight: 600;
+    }
+  }
 }
 
-.Navigation li span {
-  background: @pelorous;
-}
-
-.Navigation li:hover span,
-.Navigation li.active span {
-  opacity: 1;
-}
-
-.Navigation li:hover a,
-.Navigation li.active a {
-  color: @white;
-}
-
-.Title_sec {
-  width: 100%;
+.title-banner {
+  height: 520px;
   background: url(img/about-coregones5.jpg) top center no-repeat;
-  height: 680px;
-  position: relative;
   background-size: cover;
 
-  .title-banner {
-    background: #020a3058;
-    color: @white;
-    width: 100%;
-    height: 100%;
+  @media screen and (max-width: @mobile-max-width) {
+    height: 380px;
+  }
+
+  .title-overlay {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    height: 100%;
+    padding: 0 @margin-medium;
+    background: fade(@carnet-ink, 45%);
+    color: @white;
+    text-align: center;
+  }
 
-    .main-title {
-      font-weight: bold;
-      font-size: 64px;
-      line-height: 87px;
-      margin: 20px;
+  .main-title {
+    margin: 0 0 @vertical-margin-small 0;
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1.1;
+
+    @media screen and (max-width: @mobile-max-width) {
+      font-size: 34px;
     }
+  }
 
-    .sub-title {
-      font-size: 26px;
-      line-height: 30px;
-      margin: 20px;
+  .sub-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.3;
+
+    @media screen and (max-width: @mobile-max-width) {
+      font-size: 17px;
     }
   }
 }
 
-.About_sec {
-  padding-top: 40px;
-
-  .key-figures {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 30px;
-    padding-bottom: 30px;
-
-    @media only screen and (max-width: 530px) {
-      flex-direction: column;
-    }
-
-    .kf-item {
-      width: 33%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      margin-left: 50px;
-      margin-right: 50px;
-
-      .kf-number {
-        color: @accent-text;
-        font-size: 50px;
-        font-weight: 530;
-        height: 59px;
-      }
-
-      .kf-label {
-        color: @gunmetal;
-        font-size: 22px;
-        font-weight: 400;
-      }
-    }
-  }
-
-  .map {
-    // avoid the map controls and credits to be above the header
-    position: relative;
-    z-index: 5;
-
-    margin-top: 30px;
-    height: 600px;
-
-    @media only screen and (min-width: 600px) and (max-width: 899px) {
-      height: 400px;
-    }
-
-    @media only screen and (max-width: 599px) {
-      height: 300px;
-    }
-  }
-}
-
-.Contribute_sec {
-  background: url(img/about-background.jpg) top center no-repeat;
-  background-size: cover;
-}
-
-.Get_sec {
-  background: url(img/about-background.jpg) top center no-repeat;
-  background-size: cover;
-}
-
-.Contribute_sec p,
-.Contact_sec p {
-  font-size: 18px;
-}
-
-.About_sec h3 {
-  color: @gunmetal;
-}
-
-.Communications_sec {
-  background-color: @solitude;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding-top: 30px;
-  padding-bottom: 30px;
-
-  .Center {
-    h3 {
-      color: @accent-text;
-      font-size: 57px;
-      font-family: @font-family;
-      font-weight: 700;
-      margin: 0px;
-      text-transform: uppercase;
-      line-height: 60px;
-      padding-bottom: 50px;
-
-      @media only screen and (max-width: 1023px) {
-        padding-bottom: 20px;
-        font-size: 42px;
-      }
-    }
-  }
-}
-
-.Get_sec .Leftside textarea,
-.Get_sec .Leftside input.field {
-  color: @gunmetal;
-}
-
-.Get_sec .Leftside textarea {
-  height: 205px;
-}
-
-.Get_sec .Leftside {
-  float: none;
-  width: 100%;
-  max-width: 640px;
+.about-section {
+  max-width: @about-content-width;
   margin: 0 auto;
+  padding: 0 @margin-medium @vertical-margin-large;
 }
 
-.Presentation_sec {
-  background: @white-smoke;
-  padding: 70px 20px;
-  text-align: center;
+#presentation {
+  padding-top: @vertical-margin-large;
+}
 
-  .Center {
-    max-width: 760px;
-    margin: 0 auto;
-  }
+.about-card {
+  padding: @margin-large;
+  border-radius: 16px;
+  background-color: @surface;
+  text-align: left;
 
-  h3 span {
-    color: @accent-text;
-    font-size: 42px;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-
-  h2 {
-    color: @gunmetal;
-    font-size: 30px;
-    margin: 24px 0 16px;
+  @media screen and (max-width: @mobile-max-width) {
+    padding: @margin-medium;
   }
 
   p {
-    color: @gunmetal;
-    font-size: 20px;
-    line-height: 30px;
-    margin: 0 0 16px;
-  }
-
-  @media only screen and (max-width: 630px) {
-    padding: 40px 16px;
-
-    h3 span {
-      font-size: 30px;
-    }
-
-    h2 {
-      font-size: 24px;
-    }
-
-    p {
-      font-size: 17px;
-      line-height: 26px;
-    }
+    margin: 0 0 @vertical-margin-small 0;
+    font-size: 15px;
+    line-height: 1.5;
   }
 }
 
-.Producted_by_sec {
-  background-color: @solitude;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding-top: 30px;
-  padding-bottom: 30px;
-
-  .producers {
-    h3 {
-      text-align: center;
-      font-weight: lighter;
-      color: @accent-text;
-    }
-
-    .credits-logos {
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-
-      img {
-        margin-left: 20px;
-        margin-right: 20px;
-      }
-    }
-  }
-
-  .producers {
-    h3 {
-      font-size: 24px;
-    }
-
-    p {
-      text-align: center;
-      color: @gunmetal;
-      margin: 0 20px 20px;
-    }
-
-    .logo-ufbrmc {
-      height: 140px;
-    }
-
-    .logo-symbiome {
-      height: 60px;
-      max-width: 80vw;
-    }
-  }
-
-  .Line {
-    border: solid 1px @accent-text;
-    height: 2px;
-    width: 252px;
-    margin: 30px;
-  }
+.eyebrow {
+  margin-bottom: @vertical-margin-xx-small;
+  color: @accent-text;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.contribute-editable {
-  margin-top: 50px;
+.section-title {
+  margin: 0 0 @vertical-margin-small 0;
+  color: @heading;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
 
-  /** :deep() permet de contourner le scoped qui empêche le code injecté de bénéficier du style */
-  :deep(.cards) {
+.key-figures {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  .kf-item {
     display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 100%;
+    flex-direction: column;
+    padding: 14px 12px;
+    border-radius: 13px;
+    line-height: 1.2;
+  }
 
-    .card {
-      height: fit-content;
-      max-width: 350px;
-      width: 80%;
-      margin: 15px;
-      padding: 30px;
-      min-height: 300px;
-      background-color: @white-smoke-alpha-20;
-      border: 1px solid @accent-text;
+  .kf-trips {
+    background-color: @sky-box;
+    color: @sky-text;
+  }
 
-      h4 {
-        margin: 5px;
-      }
+  .kf-catches {
+    background-color: @green-box;
+    color: @green-text;
+  }
 
-      p {
-        text-align: left;
-      }
+  .kf-pictures {
+    background-color: @yellow-box;
+    color: @yellow-text;
+  }
 
-      &:hover {
-        background-color: @white-smoke;
-        color: @gunmetal;
-        // cursor: pointer;
-      }
+  .kf-number {
+    font-size: 34px;
+    font-weight: 700;
+
+    @media screen and (max-width: 400px) {
+      font-size: 26px;
     }
+  }
 
-    @media only screen and (max-width: 1300px) {
-      flex-direction: column;
-      align-items: center;
-
-      .card {
-        height: fit-content;
-        width: 80%;
-        padding: 20px;
-
-        p {
-          margin-top: 5px;
-          margin-bottom: 5px;
-        }
-      }
-    }
+  .kf-label {
+    font-size: 16px;
+    font-weight: 500;
   }
 }
 
-footer {
-  background: @carnet-navy;
-}
-
-.consult-faq {
-  padding-top: 25px;
+.communications-section {
   display: flex;
-  gap: 10px;
   flex-direction: column;
   align-items: center;
+  padding: @vertical-margin-large 0;
 
-  .consult-faq-button {
-    background-color: white;
-    color: @accent-text;
-    border: 1px solid @accent-text;
-    width: 200px;
-    font-weight: bolder;
-    padding: 10px;
-    cursor: pointer;
+  .section-title {
+    width: 100%;
+    max-width: @about-content-width;
+    padding: 0 @margin-medium;
+  }
+}
 
-    &:hover {
-      color: white;
-      background-color: @carnet-blue;
-      border: 1px solid white;
+.contact-card {
+  .send-button {
+    margin: @vertical-margin-medium 0 0 0;
+
+    @media screen and (max-width: @mobile-max-width) {
+      width: 100%;
     }
   }
 }
 
-.close {
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  padding: 22px 30px;
+.producers-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: @margin-large;
+  text-align: center;
 
-  height: @pastille-size;
-  margin: @vertical-margin-small;
-  width: 100%;
-  color: @gunmetal;
+  @media screen and (max-width: @mobile-max-width) {
+    grid-template-columns: 1fr;
+  }
 
-  div.plus {
-    font-size: @pastille-size;
-    width: fit-content;
-    transform: rotate(45deg);
+  .producer + .producer {
+    @media screen and (max-width: @mobile-max-width) {
+      padding-top: @margin-large;
+      border-top: 1px solid @divider;
+    }
+  }
+
+  .producer-title {
+    margin: 0 0 @vertical-margin-xx-small 0;
+    color: @accent-text;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .logo-ufbrmc {
+    height: 120px;
+  }
+
+  .logo-symbiome {
+    height: 50px;
+    max-width: 100%;
+    margin-top: @vertical-margin-small;
   }
 }
 
-.noshadow {
-  box-shadow: none !important;
-}
+.about-footer {
+  padding: @vertical-margin-medium @margin-medium;
+  background-color: @carnet-navy;
+  text-align: center;
 
-.send-button {
-  margin-left: 0px;
-}
-
-// Bouton du gabarit « November » : orange d'origine, blanc illisible dessus.
-.Get_sec .Leftside .button.send-button {
-  background: @carnet-blue;
-  color: @white;
+  p {
+    margin: 0;
+    color: @white;
+    font-size: 13px;
+    opacity: 0.8;
+  }
 }
 </style>

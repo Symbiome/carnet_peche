@@ -23,12 +23,8 @@ package fr.inrae.fishola.rest.about;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.ImmutableObject;
-import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @ImmutableObject
 @JsonSerialize(as = ImmutableKeyFigures.class)
@@ -39,10 +35,6 @@ public interface KeyFigures {
     int catchsCount();
 
     int picturesCount();
-
-    List<WaterEntity> waterEntities();
-
-    Map<UUID, Integer> catchsCountPerWaterEntityId();
 
     String titleText();
 

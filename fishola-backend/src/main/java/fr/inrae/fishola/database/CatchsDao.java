@@ -22,7 +22,6 @@ package fr.inrae.fishola.database;
  */
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
@@ -30,7 +29,6 @@ import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.enums.IdentificationCertainty;
 import fr.inrae.fishola.entities.enums.Maillage;
-import fr.inrae.fishola.entities.tables.WaterEntity;
 import fr.inrae.fishola.entities.tables.daos.CatchDao;
 import fr.inrae.fishola.entities.tables.daos.CatchMeasurementPictureDao;
 import fr.inrae.fishola.entities.tables.daos.CatchPictureDao;
@@ -57,7 +55,6 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -431,27 +428,6 @@ public class CatchsDao extends AbstractCarnetDao {
             int countNoUser = context.fetchCount(selectNoUser);
 
             return countFromNonExcludedUsers + countNoUser;
-        });
-        return result;
-    }
-
-    public Map<UUID, Integer> countCatchsByWaterEntityId() {
-        Map<UUID, Integer> result = withContext(context -> {
-            // Statistiques publiques (#87) : cf. findMonthly0.
-            Condition validatedOrCertain = Tables.CATCH.CERTAINTY.eq(IdentificationCertainty.CERTAIN)
-                    .or(Tables.CATCH.VALIDATED_AT.isNotNull());
-            Result<Record2<UUID, BigDecimal>> fetched =
-                    context.select(WaterEntity.WATER_ENTITY.ID, DSL.sum(Tables.CATCH.QUANTITY))
-                    .from(Tables.CATCH)
-                    .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
-                    .innerJoin(Tables.WATER_ENTITY).on(Tables.WATER_ENTITY.ID.eq(Tables.TRIP.WATER_ENTITY_ID))
-                    .where(validatedOrCertain)
-                    .groupBy(WaterEntity.WATER_ENTITY.ID)
-                    .fetch();
-            ImmutableMap.Builder<UUID, Integer> builder = ImmutableMap.builder();
-            fetched.forEach(tuple -> builder.put(tuple.value1(), tuple.value2().intValue()));
-            ImmutableMap<UUID, Integer> map = builder.build();
-            return map;
         });
         return result;
     }

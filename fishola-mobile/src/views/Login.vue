@@ -48,6 +48,10 @@
           <div class="login-button signin keyboardSensitive">
             <button type="submit">Connexion</button>
           </div>
+          <button type="button" class="newsletter-link keyboardSensitive" v-if="showNewsletter"
+            v-on:click="scrollToNewsletter">
+            Prévenez-moi de l'ouverture
+          </button>
           <div class="login-button signup keyboardSensitive" v-if="registrationEnabled">
             <button type="button" v-on:click="signUp">Créer un compte</button>
           </div>
@@ -56,7 +60,7 @@
         </div>
         </form>
         <!-- Inscription fermée : le visiteur sans compte testeur s'inscrit à la newsletter (#313). -->
-        <NewsletterSignup v-if="showNewsletter"
+        <NewsletterSignup v-if="showNewsletter" ref="newsletterSignup"
           intro="Pas de compte testeur ? Inscrivez-vous à la newsletter pour être prévenu de l'ouverture." />
       </div>
     </div>
@@ -168,6 +172,12 @@ export default class LoginView extends Vue {
   goHome() {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/");
   }
+
+  /** Fait défiler la page jusqu'au formulaire d'inscription à la newsletter (#313). */
+  scrollToNewsletter() {
+    const newsletterSignup = this.$refs.newsletterSignup as Vue | undefined;
+    newsletterSignup?.$el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 </script>
 
@@ -211,6 +221,25 @@ export default class LoginView extends Vue {
   .login-buttons,
   .newsletter-signup {
     flex-shrink: 0;
+  }
+
+  // Lien sous « Connexion » vers le formulaire newsletter (#313).
+  .newsletter-link {
+    display: block;
+    margin: @margin-small auto 0;
+    padding: @margin-small;
+    border: 0;
+    background: none;
+    color: @accent-text;
+    font-family: inherit;
+    font-size: @fontsize-button;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &.keyboardShowing {
+      display: none;
+    }
   }
 
   display: flex;

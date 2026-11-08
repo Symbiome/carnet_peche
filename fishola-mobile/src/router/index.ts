@@ -100,6 +100,10 @@ const routes: RouteRecordRaw[] = [
     component: About,
   },
   {
+    path: "/offline-home/presentation",
+    redirect: "/about",
+  },
+  {
     path: "/offline-home/:defaultTab",
     name: "offline-home",
     component: OfflineHome,

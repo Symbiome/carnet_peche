@@ -237,10 +237,7 @@ export default class Menu extends Vue {
         }
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(
-        this.$router,
-        "/offline-home/presentation"
-      );
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/about");
     }
   }
 
