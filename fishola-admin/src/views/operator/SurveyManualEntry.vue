@@ -37,7 +37,7 @@
       <div class="box session-recap">
         <div>
           <strong>Session en cours</strong> — {{ frenchDate(session.day) }}, début {{ session.startTime }} ·
-          {{ session.waterEntityName }} · opérateur : {{ session.operatorName }}
+          {{ session.waterEntityName }} · technicien : {{ session.operatorName }}
           <br />
           <small>{{ session.sortiesCount }} sortie(s), {{ session.anglersCount }} pêcheur(s) interrogé(s)</small>
         </div>

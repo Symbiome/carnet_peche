@@ -77,7 +77,7 @@
           Administrateurs
         </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'operators' }" v-if="loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
-          Opérateurs
+          Techniciens
         </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'accounts' }" v-if="loggedAdmin.isNationalAdmin && loggedAdmin.betaTestersMode">
           Inscriptions et import de comptes
@@ -215,7 +215,7 @@ const departments: Ref<{ code: string; name: string }[]> = ref([]);
 const roleLabel = computed(() => {
   const a = loggedAdmin.value as any;
   if (a.isNationalAdmin) return "Administrateur national";
-  if (a.isOperator) return "Opérateur";
+  if (a.isOperator) return "Technicien";
   return "Administrateur régional";
 });
 

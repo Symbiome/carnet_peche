@@ -192,7 +192,7 @@
             <b-field label="Certitude d'identification (pêcheur)">
               {{ certaintyLabel(aCatch.certainty) }}
             </b-field>
-            <b-field label="Validée par un opérateur">
+            <b-field label="Validée par un technicien">
               <span v-if="aCatch.validatedAt">Oui, le {{ formatDate(aCatch.validatedAt) }}</span>
               <span v-else>Non</span>
             </b-field>
@@ -253,7 +253,7 @@
       Enregistrer marque cette prise comme validée.
     </p>
     <p v-if="aCatch.id && !canEdit" class="validation-notice">
-      Consultation seule : un opérateur ne peut corriger qu'une prise à valider.
+      Consultation seule : un technicien ne peut corriger qu'une prise à valider.
     </p>
     <div class="buttons">
       <button

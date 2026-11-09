@@ -60,12 +60,11 @@
               </div>
 
               <div class="credits-logos">
-                <a href="https://www.inrae.fr" target="_blank" rel="noopener"><img src='/img/credits/inrae.svg'
-                    alt="INRAE" /></a>
-                <a href="https://ofb.gouv.fr/" target="_blank" rel="noopener"><img src='/img/credits/ofb.png'
-                    alt="OFB" /></a>
-                <a href="https://www.codelutin.com" target="_blank" rel="noopener"><img
-                    src='/img/credits/code-lutin.svg' alt="Code Lutin" /></a>
+                <a href="https://www.peche-auvergne-rhonealpes.fr/actualite/3754/1913-union-des-bassins-rhone-mediterranee-corse.htm"
+                  target="_blank" rel="noopener"><img class="logo-ufbrmc" src="img/logo/ufbrmc.jpg"
+                    alt="Union des Bassins Rhône-Méditerranée-Corse (UFBRMC)" /></a>
+                <a href="https://symbiome.eu" target="_blank" rel="noopener"><img class="logo-symbiome"
+                    src="img/logo/symbiome.png" alt="Symbiome" /></a>
               </div>
             </div>
 
@@ -289,10 +288,19 @@ export default class DocumentationView extends Vue {
       text-align: center;
       display: flex;
       flex-direction: column;
+      align-items: center;
 
       img {
-        width: 200px;
-        margin-bottom: @vertical-margin-small;
+        margin-bottom: @vertical-margin-large;
+      }
+
+      .logo-ufbrmc {
+        height: 120px;
+      }
+
+      .logo-symbiome {
+        height: 50px;
+        max-width: 100%;
       }
     }
 
@@ -318,10 +326,6 @@ export default class DocumentationView extends Vue {
 
       .credits-logos {
         margin-top: @vertical-margin-xx-large;
-
-        img {
-          width: 240px;
-        }
       }
     }
   }
