@@ -20,41 +20,42 @@
   #L%
   -->
 
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#1E9BC4">
+    <meta name="theme-color" content="#0000E0">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#1E9BC4">
+    <meta name="msapplication-navbutton-color" content="#0000E0">
     <!-- iOS Safari -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="#1E9BC4">
-    <link rel="stylesheet" href="backend.css">
-    <title>Bienvenue sur Carnet de pêche</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="#0000E0">
+    <link rel="stylesheet" href="carnet.css">
+    <title>Inscription confirmée - Carnet de pêche</title>
 </head>
 
 <body>
-    <noscript>
-        <strong>We're sorry but Carnet de pêche doesn't work properly without JavaScript enabled. Please enable it to
-            continue.</strong>
-    </noscript>
-    <div id="app" class="full-background">
-        <div class="verified-page">
-            <div class="welcome-title">
-                <div class="welcome">Bienvenue sur</div>
-                <img class="logo" src="logo-carnet.svg" alt="Carnet de pêche" />
+    <main class="carnet-page">
+        <div class="carnet-title">
+            <div class="carnet-welcome">Bienvenue sur</div>
+            <div class="carnet-logo-tile">
+                <img src="logo-carnet-light.svg" alt="Carnet de pêche" />
             </div>
-            <div class="message success">
-                <p>Votre inscription à la newsletter Carnet de pêche est confirmée.</p>
-                <p>Nous vous préviendrons dès l'ouverture de l'application.</p>
-            </div>
-
         </div>
-    </div>
+        <section class="carnet-panel">
+            <div class="carnet-status success" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                </svg>
+            </div>
+            <h1 class="carnet-heading">Inscription confirmée</h1>
+            <p>Votre inscription à la newsletter Carnet de pêche est confirmée.</p>
+            <p>Nous vous préviendrons dès l'ouverture de l'application.</p>
+        </section>
+    </main>
 </body>
 
 </html>
