@@ -85,6 +85,9 @@
         <b-navbar-item tag="router-link" :to="{ name: 'newsletter-subscriptions' }" v-if="!loggedAdmin.isOperator">
           Inscrits à la newsletter
         </b-navbar-item>
+        <b-navbar-item tag="router-link" :to="{ name: 'user-feedbacks' }" v-if="loggedAdmin.isNationalAdmin">
+          Retours utilisateurs
+        </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-item tag="router-link" :to="{ name: 'audit-log' }" v-if="loggedAdmin.isNationalAdmin">
         Journal d'audit

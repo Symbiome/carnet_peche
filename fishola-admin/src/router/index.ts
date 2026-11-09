@@ -41,6 +41,7 @@ import MyReferentials from "@/views/customize/MyReferentials.vue";
 import Admins from "@/views/Admins.vue";
 import Accounts from "@/views/Accounts.vue";
 import NewsletterSubscriptions from "@/views/NewsletterSubscriptions.vue";
+import UserFeedbacks from "@/views/UserFeedbacks.vue";
 import Operators from "@/views/Operators.vue";
 import OperatorCarnetVolontaireImport from "@/views/operator/CarnetVolontaireImport.vue";
 import OperatorCarnetVolontaireManualEntry from "@/views/operator/CarnetVolontaireManualEntry.vue";
@@ -143,6 +144,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/newsletter-subscriptions",
     name: "newsletter-subscriptions",
     component: NewsletterSubscriptions
+  },
+  {
+    path: "/user-feedbacks",
+    name: "user-feedbacks",
+    component: UserFeedbacks
   },
   {
     path: "/operator/import/carnet-volontaire",

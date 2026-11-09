@@ -21,6 +21,7 @@ package fr.inrae.fishola.rest.feedback;
  * #L%
  */
 
+import fr.inrae.fishola.database.UserFeedbackDao;
 import fr.inrae.fishola.exceptions.CarnetTechnicalException;
 import fr.inrae.fishola.mails.CarnetMail;
 import fr.inrae.fishola.mails.CarnetMailAttachment;
@@ -49,6 +50,9 @@ public class FeedbackResource extends AbstractCarnetResource {
 
     @Inject
     protected MailService mailService;
+
+    @Inject
+    protected UserFeedbackDao userFeedbackDao;
 
     @PUT
     @Path("/")
@@ -84,6 +88,8 @@ public class FeedbackResource extends AbstractCarnetResource {
                 .fromInstance(bean)
                 .backendVersion(config.getFullVersion())
                 .build();
+
+        userFeedbackDao.insert(feedback, screenshotBytes);
 
         CarnetMail carnetMail = toCarnetMail(feedback, screenshotBytes);
         mailService.sendMail(carnetMail);
