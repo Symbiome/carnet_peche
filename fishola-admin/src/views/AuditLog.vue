@@ -29,7 +29,7 @@
       <b-field label="Type d'acteur" horizontal>
         <b-select v-model="actorType" @input="reload">
           <option value="">Tous</option>
-          <option value="admin">Administrateur / opérateur</option>
+          <option value="admin">Administrateur / technicien</option>
           <option value="user">Pêcheur</option>
           <option value="system">Système</option>
         </b-select>

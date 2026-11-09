@@ -24,7 +24,7 @@
     <b-message type="is-info">
       Prises dont le pêcheur a indiqué une certitude d'identification
       « Probable » ou « Incertain », et qui n'ont pas encore été revues par un
-      opérateur. Cliquez sur une ligne pour corriger l'espèce si besoin et la
+      technicien. Cliquez sur une ligne pour corriger l'espèce si besoin et la
       marquer comme validée.
     </b-message>
     <b-table

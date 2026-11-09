@@ -21,7 +21,7 @@
 <template>
   <Referential
     v-if="loaded"
-    name="Opérateurs"
+    name="Techniciens"
     url="/v1/admin/operators"
     @elements-loaded="computeDepartmentNames"
     :columns="operatorColumns"
@@ -88,7 +88,7 @@ async function loadDepartments() {
       // #164 : un admin régional ne choisit pas les départements, il n'a donc que ce
       // champ de lecture (le multi-select ci-dessous est réservé au national admin).
       showItemIfFunction: () => !isNationalAdmin.value,
-      helpMessage: "Rattachement automatique à vos départements : un administrateur régional ne peut pas choisir les départements d'un opérateur.",
+      helpMessage: "Rattachement automatique à vos départements : un administrateur régional ne peut pas choisir les départements d'un technicien.",
     },
     {
       field: "password",
@@ -132,7 +132,7 @@ function computeDepartmentNames(operators: any[]) {
 
 function createOperator(): any {
   return {
-    name: "Nouvel opérateur",
+    name: "Nouveau technicien",
     email: "",
     password: "",
     departmentCodes: [],

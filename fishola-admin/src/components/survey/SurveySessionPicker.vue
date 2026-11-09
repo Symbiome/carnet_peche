@@ -26,7 +26,7 @@
         <b-table-column v-slot="{ row }" label="Date">{{ frenchDate(row.day) }}</b-table-column>
         <b-table-column v-slot="{ row }" label="Début">{{ row.startTime }}</b-table-column>
         <b-table-column v-slot="{ row }" label="Secteur">{{ row.waterEntityName }}</b-table-column>
-        <b-table-column v-slot="{ row }" label="Opérateur">{{ row.operatorName }}</b-table-column>
+        <b-table-column v-slot="{ row }" label="Technicien">{{ row.operatorName }}</b-table-column>
         <b-table-column v-slot="{ row }" label="Sorties">{{ row.sortiesCount }}</b-table-column>
         <b-table-column v-slot="{ row }">
           <b-button type="is-primary" size="is-small" outlined icon-left="play" @click="emit('selected', row)">
@@ -45,7 +45,7 @@
       <b-field label="Secteur" class="column is-4">
         <WaterEntitySearchSelect v-model="session.waterEntityId" with-favorites />
       </b-field>
-      <b-field label="Nom de l'opérateur" class="column is-4">
+      <b-field label="Nom du technicien" class="column is-4">
         <b-input v-model="session.operatorName"></b-input>
       </b-field>
     </div>

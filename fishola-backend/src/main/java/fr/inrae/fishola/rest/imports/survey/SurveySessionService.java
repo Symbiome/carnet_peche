@@ -80,7 +80,7 @@ public class SurveySessionService {
             errors.add(new ManualError(null, "startTime", "heure de début de session obligatoire"));
         }
         if (StringUtils.isBlank(bean.operatorName)) {
-            errors.add(new ManualError(null, "operatorName", "nom de l'opérateur obligatoire"));
+            errors.add(new ManualError(null, "operatorName", "nom du technicien obligatoire"));
         }
         UUID waterEntityId = bean.waterEntityId != null && importDao.existsWaterEntity(bean.waterEntityId)
                 ? bean.waterEntityId : importDao.resolveWaterEntity(bean.secteur, null);

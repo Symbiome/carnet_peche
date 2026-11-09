@@ -22,7 +22,7 @@
   <div class="home">
     <!-- Opérateur : accès direct à ses deux actions. -->
     <div v-if="loggedAdmin.isOperator" class="operator-home">
-      <h1 class="title">Espace opérateur</h1>
+      <h1 class="title">Espace technicien</h1>
       <p class="subtitle is-6" v-if="perimeterNames.length">
         Périmètre : <strong>{{ perimeterNames.join(', ') }}</strong>
       </p>
