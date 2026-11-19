@@ -12,7 +12,7 @@ seules les variables Ansible changent (`ansible/inventories/<env>/`).
 | Branche déployée | `develop` | `main` |
 | Inventaire | `-i inventories/recette` | `-i inventories/production` |
 | Mot de passe du vault | `ansible/.vault_pass_recette` (`--vault-id recette@…`) | `ansible/.vault_pass_prod` (`--vault-id prod@…`) |
-| Domaines | `*-recette.carnet-peche.fr` | `carnet-peche.fr` (app pêcheur) ; `api-peche`, `admin-peche`, `dashboard-peche` `.carnet-peche.fr` |
+| Domaines | `*-recette.carnet-peche.fr` | `www.carnet-peche.fr` (app pêcheur, `carnet-peche.fr` y redirige) ; `api-peche`, `admin-peche`, `dashboard-peche` `.carnet-peche.fr` |
 | Mention dans l'app (`VITE__ENV_NAME`) | `recette` | aucune |
 | Mails | Maildev (profil compose `recette`), aucun mail réel | vrai SMTP, mot de passe dans le vault |
 | Secrets (DB, JWT, admin, pgBackRest) | propres à la recette | propres à la production |
