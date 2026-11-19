@@ -23,6 +23,7 @@ package fr.inrae.fishola.rest.feedback;
 
 import fr.inrae.fishola.database.UserFeedbackDao;
 import fr.inrae.fishola.exceptions.CarnetTechnicalException;
+import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import fr.inrae.fishola.mails.CarnetMail;
 import fr.inrae.fishola.mails.CarnetMailAttachment;
 import fr.inrae.fishola.mails.ImmutableCarnetMail;
@@ -44,9 +45,12 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Path("/api/v1/feedback")
 public class FeedbackResource extends AbstractCarnetResource {
+
+    private static final String ANONYMOUS_CONTACT_CATEGORY = "CONTACT";
 
     @Inject
     protected MailService mailService;
@@ -59,6 +63,8 @@ public class FeedbackResource extends AbstractCarnetResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public void newFeedback(Feedback bean) {
+
+        checkFeedbackAllowed(bean);
 
         log.infof("Réception d'un feedback %s", bean);
 
@@ -94,6 +100,53 @@ public class FeedbackResource extends AbstractCarnetResource {
         CarnetMail carnetMail = toCarnetMail(feedback, screenshotBytes);
         mailService.sendMail(carnetMail);
 
+    }
+
+    /**
+     * Réserve le feedback aux pêcheurs connectés et aux comptes staff. Sans authentification,
+     * seul le formulaire de contact public (catégorie CONTACT, sans capture d'écran) passe :
+     * aucune donnée Base64 anonyme n'atteint ainsi le décodeur (CVE-2026-114938).
+     *
+     * @param bean le feedback reçu
+     * @throws NotAuthenticatedException si l'appelant n'est pas authentifié et que le feedback
+     *                                   n'est pas un simple message de contact
+     */
+    protected void checkFeedbackAllowed(Feedback bean) throws NotAuthenticatedException {
+        boolean isAnonymousContact = ANONYMOUS_CONTACT_CATEGORY.equals(bean.category())
+                && bean.screenshot().isEmpty();
+        if (!isAnonymousContact && !isAuthenticatedAnglerOrStaff()) {
+            throw new NotAuthenticatedException("Il faut d'abord s'authentifier pour envoyer un retour");
+        }
+    }
+
+    /**
+     * Indique si la requête porte un token pêcheur valide (app mobile) ou un token staff valide
+     * (back-office).
+     *
+     * @return true si l'un des deux cookies d'authentification est valide
+     */
+    protected boolean isAuthenticatedAnglerOrStaff() {
+        return isValidCredential(userToken, this::getUserIdOrRenew)
+                || isValidCredential(adminToken, this::checkIsStaff);
+    }
+
+    /**
+     * Exécute une vérification d'authentification sans propager son échec.
+     *
+     * @param token               le token du cookie concerné, éventuellement absent
+     * @param authenticationCheck la vérification à exécuter sur ce token
+     * @return true si le token est présent et que la vérification réussit
+     */
+    private static boolean isValidCredential(String token, Supplier<?> authenticationCheck) {
+        if (token == null) {
+            return false;
+        }
+        try {
+            authenticationCheck.get();
+            return true;
+        } catch (RuntimeException invalidCredential) {
+            return false;
+        }
     }
 
     protected CarnetMail toCarnetMail(Feedback feedback, Optional<byte[]> screenshotBytes) {

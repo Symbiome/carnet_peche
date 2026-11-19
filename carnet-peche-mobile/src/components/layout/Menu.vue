@@ -436,7 +436,7 @@ export default class Menu extends Vue {
         label: "Des retours ?",
         iconName: "faq",
         clickHandler: this.openFeedback,
-        onlyConnected: false,
+        onlyConnected: true,
         onlyUnlogged: false,
       },
       {

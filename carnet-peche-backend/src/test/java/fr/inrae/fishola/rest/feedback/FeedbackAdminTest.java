@@ -184,7 +184,8 @@ class FeedbackAdminTest {
         if (source != null) {
             body.put("source", source);
         }
-        given().contentType(MediaType.APPLICATION_JSON).body(body)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
+                .contentType(MediaType.APPLICATION_JSON).body(body)
                 .when().put("/api/v1/feedback")
                 .then().statusCode(204);
     }

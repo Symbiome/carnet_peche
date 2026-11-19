@@ -154,6 +154,15 @@
           mvn -B -DskipTests {{ '-U' if force_rebuild | default(false) else '' }} clean package
       changed_when: true
 
+    - name: Construire l'image backend sur une image de base à jour (correctifs JVM)
+      # --pull limité au backend : sans lui, le serveur garde indéfiniment l'image
+      # de base tirée au premier build (JVM vulnérable, cf. CVE-2026-114938), et
+      # l'étendre à tous les services reconstruirait aussi Postgres.
+      ansible.builtin.command:
+        cmd: "docker compose build --pull {{ '--no-cache' if force_rebuild | default(false) else '' }} fishola-backend"
+        chdir: "{{ project_dir }}"
+      changed_when: true
+
     - name: Construire les images Docker applicatives
       ansible.builtin.command:
         cmd: "docker compose build {{ '--no-cache' if force_rebuild | default(false) else '' }}"
