@@ -9,13 +9,13 @@
 # ansible/playbooks/deploy.yml — voir DEPLOYMENT.md.
 #
 # Toujours précédé d'un `mvn clean package` à la racine (produit
-# fishola-backend/target/quarkus-app, fishola-mobile/target/dist-demo et
-# fishola-admin/target/dist-demo, que les Dockerfile.demo se contentent de
+# carnet-peche-backend/target/quarkus-app, carnet-peche-mobile/target/dist-demo et
+# carnet-peche-admin/target/dist-demo, que les Dockerfile.demo se contentent de
 # copier). Sans ce build, `docker compose build` échoue sur ces 3 services.
 
 services:
   # Nommé docker_postgres pour matcher l'hôte JDBC déjà codé en dur dans les profils
-  # %dev/%demo de fishola-backend/src/main/resources/application.properties —
+  # %dev/%demo de carnet-peche-backend/src/main/resources/application.properties —
   # évite de surcharger QUARKUS_DATASOURCE_JDBC_URL.
   #
   # Sauvegardes (#279) : image PostGIS + pgBackRest (docker/postgres), WAL

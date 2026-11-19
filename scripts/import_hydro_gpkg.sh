@@ -27,7 +27,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DATA_DIR="$(cd "${1:-${SCRIPT_DIR}/../data/hydro_74}" && pwd)"
 
-# Conteneur PostgreSQL (démarré par fishola-backend/start_db.sh) et image GDAL.
+# Conteneur PostgreSQL (démarré par carnet-peche-backend/start_db.sh) et image GDAL.
 # Surchargeables via l'environnement. L'image GDAL "alpine-normal" embarque le
 # driver PostgreSQL/PostGIS (contrairement à "alpine-small") et est multi-arch.
 PG_CONTAINER=${PG_CONTAINER:-postgres-18-fishola}
@@ -44,7 +44,7 @@ CONN="host=127.0.0.1 port=5432 dbname=${PGDATABASE} user=${PGUSER} password=${PG
 # Le conteneur PostgreSQL doit tourner.
 if [ -z "$(docker ps -q -f name=^/${PG_CONTAINER}$)" ]; then
   echo "Conteneur ${PG_CONTAINER} introuvable ou arrêté." >&2
-  echo "Démarrez d'abord la base : fishola-backend/start_db.sh" >&2
+  echo "Démarrez d'abord la base : carnet-peche-backend/start_db.sh" >&2
   exit 1
 fi
 

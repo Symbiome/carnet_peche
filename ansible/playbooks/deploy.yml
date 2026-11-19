@@ -110,13 +110,13 @@
     - name: Générer l'override Vite du front pêcheur (URL API publique)
       ansible.builtin.template:
         src: "{{ playbook_dir }}/../templates/mobile-env-demo.local.j2"
-        dest: "{{ project_dir }}/fishola-mobile/.env.demo.local"
+        dest: "{{ project_dir }}/carnet-peche-mobile/.env.demo.local"
         mode: "0644"
 
     - name: Générer l'override Vite du front admin (URL API publique)
       ansible.builtin.template:
         src: "{{ playbook_dir }}/../templates/admin-env-demo.local.j2"
-        dest: "{{ project_dir }}/fishola-admin/.env.demo.local"
+        dest: "{{ project_dir }}/carnet-peche-admin/.env.demo.local"
         mode: "0644"
 
     - name: Déterminer le socket Docker de l'hôte (rootless ou non)
@@ -133,7 +133,7 @@
       # éphémère via Testcontainers pour introspecter le schéma — une vraie
       # étape de build (generate-sources), pas un test, donc -DskipTests ne la
       # saute pas. Sans le socket Docker monté ici, Testcontainers ne trouve
-      # aucun environnement Docker et le module fishola-backend échoue direct.
+      # aucun environnement Docker et le module carnet-peche-backend échoue direct.
       # Le socket hôte (rootless ou non) est toujours monté sur le même
       # chemin interne fixe, et DOCKER_HOST pointé dessus explicitement : la
       # détection ci-dessus reste la seule chose à connaître de l'hôte.

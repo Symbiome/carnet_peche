@@ -8,7 +8,7 @@ département ou à l'échelle nationale.
 
 ```bash
 # Prérequis : la base doit tourner
-fishola-backend/start_db.sh
+carnet-peche-backend/start_db.sh
 
 # Charger la Savoie, la Haute-Savoie et la Loire
 ./scripts/import_hydro_france.sh ./data 73 74 42
@@ -221,7 +221,7 @@ quelques secondes par département.
 ## Diagnostic
 
 **L'import s'arrête sur « Conteneur postgres-18-fishola introuvable ou arrêté ».**
-La base n'est pas démarrée : `fishola-backend/start_db.sh`.
+La base n'est pas démarrée : `carnet-peche-backend/start_db.sh`.
 
 **Un département est systématiquement sauté.** Son marqueur existe dans
 `.hydro_import_state/`. Le supprimer, ou passer `--download=force`.

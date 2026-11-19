@@ -41,7 +41,7 @@ stats.html
 /**/.attach_pid*
 
 # Fichier de conf local
-fishola-backend/.env
+carnet-peche-backend/.env
 
 # Secrets du déploiement docker-compose (recette ou production) — généré par
 # ansible/playbooks/deploy.yml depuis ansible/inventories/<env>/group_vars/all/{vars,vault}.yml
@@ -67,5 +67,5 @@ fishola-backend/.env
 
 
 # Cypress screenshots
-fishola-mobile/cypress/screenshots
-fishola-mobile/tests/cypress/reports
+carnet-peche-mobile/cypress/screenshots
+carnet-peche-mobile/tests/cypress/reports

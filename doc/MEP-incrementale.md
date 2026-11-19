@@ -13,9 +13,9 @@ Exécuter les commandes suivantes :
 ```bash
 export VERSION=1.2.2
 mkdir fishola-${VERSION}
-mv fishola-backend/target/quarkus-app fishola-${VERSION}/fishola-backend-${VERSION}
-mv fishola-mobile/target/dist-web fishola-${VERSION}/fishola-web-${VERSION}
-mv fishola-admin/target/dist-production fishola-${VERSION}/fishola-web-${VERSION}/admin
+mv carnet-peche-backend/target/quarkus-app fishola-${VERSION}/fishola-backend-${VERSION}
+mv carnet-peche-mobile/target/dist-web fishola-${VERSION}/fishola-web-${VERSION}
+mv carnet-peche-admin/target/dist-production fishola-${VERSION}/fishola-web-${VERSION}/admin
 zip -rq fishola-${VERSION}.zip fishola-${VERSION}
 ```
 
@@ -68,7 +68,7 @@ Télécharger les artefacts
 
 Décompresser le zip et ouvrir un terminal dedans.
 
-Copier le contenu du dossier fishola-admin/target/dist-production 
+Copier le contenu du dossier carnet-peche-admin/target/dist-production 
 dans demo4:/var/local/demo4/inrae/fishola-production/assets/fishola-admin-production (n'hésitez pas à faire un backup avant ^^)
 depuis le dossier ~/demo4/inrae/fishola-production
 docker-compose down

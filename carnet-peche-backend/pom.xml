@@ -455,7 +455,7 @@
                     <outputFileType>implementationFile</outputFileType>
                     <!--          <mapClasses>asClasses</mapClasses>-->
                     <!--          <optionalProperties>all</optionalProperties>-->
-                    <outputFile>${project.basedir}/../fishola-mobile/src/pojos/BackendPojos.ts</outputFile>
+                    <outputFile>${project.basedir}/../carnet-peche-mobile/src/pojos/BackendPojos.ts</outputFile>
                     <noFileComment>true</noFileComment>
                 </configuration>
             </plugin>

@@ -23,7 +23,7 @@ if [ -n "$(docker ps -q -f name="^${DB_CONTAINER}$")" ]; then
 elif [ -n "$(docker ps -aq -f name="^${DB_CONTAINER}$")" ]; then
   docker start "${DB_CONTAINER}"
 else
-  (cd fishola-backend && ./start_db.sh)
+  (cd carnet-peche-backend && ./start_db.sh)
 fi
 
 echo "==> Waiting for PostgreSQL to accept connections..."
@@ -32,12 +32,12 @@ until docker exec "${DB_CONTAINER}" pg_isready -U postgres >/dev/null 2>&1; do
 done
 
 echo "==> Starting backend (Quarkus dev) on :8080..."
-(cd fishola-backend && mvn clean compile quarkus:dev) &
+(cd carnet-peche-backend && mvn clean compile quarkus:dev) &
 PIDS+=($!)
 
 echo "==> Starting mobile front (Vue) on :8081..."
 (
-  cd fishola-mobile
+  cd carnet-peche-mobile
   # Toujours lancé (pas juste si node_modules absent) : sinon un node_modules
   # existant mais périmé (nouvelle dépendance ajoutée par un collègue) passe
   # inaperçu. npm install est rapide et sans effet si rien n'a changé.
@@ -48,7 +48,7 @@ PIDS+=($!)
 
 echo "==> Starting admin front (Vue) on :8082..."
 (
-  cd fishola-admin
+  cd carnet-peche-admin
   npm install
   npm run serve
 ) &

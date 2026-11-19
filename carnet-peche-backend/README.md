@@ -41,7 +41,7 @@ Les variables attendues par l'application pour joindre la bade de données sont 
 
 `%dev` signifie que ces valeurs sont valables uniquement pour le mode `dev`.
 
-Le meilleur moyen de saisir ces variables est de créer un fichier `.env` à la racine du module `fishola-backend` et y ajouter les lignes suivantes :
+Le meilleur moyen de saisir ces variables est de créer un fichier `.env` à la racine du module `carnet-peche-backend` et y ajouter les lignes suivantes :
 
 ```properties
 _DEV_QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://192.168.1.86:5432/fishola

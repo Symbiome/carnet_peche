@@ -183,7 +183,7 @@ if (props.withFavorites) {
 // rendu en une fois ici : au-delà d'un plan d'eau déjà sélectionné (v-for sur un
 // <select> exhaustif), Vue met plusieurs secondes à monter les options et gèle
 // l'onglet. La recherche passe donc exclusivement par le endpoint serveur
-// (mêmes principes que fishola-mobile/LakeSelection.vue), débouncée pour ne pas
+// (mêmes principes que carnet-peche-mobile/LakeSelection.vue), débouncée pour ne pas
 // spammer la BDD à chaque frappe.
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 let searchSeq = 0;

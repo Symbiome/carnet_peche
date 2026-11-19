@@ -87,9 +87,9 @@
     </prerequisites>
 
     <modules>
-        <module>fishola-backend</module>
-        <module>fishola-mobile</module>
-        <module>fishola-admin</module>
+        <module>carnet-peche-backend</module>
+        <module>carnet-peche-mobile</module>
+        <module>carnet-peche-admin</module>
     </modules>
 
     <dependencyManagement>

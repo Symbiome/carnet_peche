@@ -29,15 +29,15 @@ run_mobile() {
   echo ""
   echo "==> Mobile — front pêcheur (contrôle de types puis vitest)"
   (
-    cd fishola-mobile
+    cd carnet-peche-mobile
     [ -d node_modules ] || npm install
   )
   # Deux étapes enregistrées séparément : enchaînées dans un même sous-shell,
   # un tsc rouge serait masqué par des tests verts (le code retour d'un
   # sous-shell est celui de sa dernière commande).
-  ( cd fishola-mobile && npm run type-check )
+  ( cd carnet-peche-mobile && npm run type-check )
   record "Mobile (contrôle de types)" $?
-  ( cd fishola-mobile && npm run tests )
+  ( cd carnet-peche-mobile && npm run tests )
   record "Mobile (vitest)" $?
 }
 
@@ -45,7 +45,7 @@ run_backend() {
   echo ""
   echo "==> Backend — Quarkus (mvn ; Testcontainers -> Docker + JDK >= 25)"
   (
-    cd fishola-backend
+    cd carnet-peche-backend
     mvn clean test
   )
   record "Backend (Quarkus)" $?
@@ -58,7 +58,7 @@ run_e2e() {
   echo "        Les scénarios gardés par liveBackend=true demandent la stack complète"
   echo "        (./start_all.sh) ; sans elle ils sont ignorés, pas en échec."
   (
-    cd fishola-mobile
+    cd carnet-peche-mobile
     [ -d node_modules ] || npm install
     # cypress:run => specPattern tests/cypress/e2e/** (parcours fonctionnels).
     npm run cypress:run

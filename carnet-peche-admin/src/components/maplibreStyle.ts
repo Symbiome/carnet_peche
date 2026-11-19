@@ -20,7 +20,7 @@
  */
 
 // Fond de carte des saisies manuelles staff (#189) : même rendu que la carte de
-// l'app pêcheur (fishola-mobile/src/components/common/maplibreStyle.ts) — IGN
+// l'app pêcheur (carnet-peche-mobile/src/components/common/maplibreStyle.ts) — IGN
 // Plan/Satellite + réseau hydro vectoriel servi par le backend.
 
 import { StyleSpecification } from "maplibre-gl";

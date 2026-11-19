@@ -107,7 +107,7 @@ PGPASSWORD=${PGPASSWORD:-whatever}
 # de télécharger des gigaoctets si la base n'est pas joignable.
 if [ -z "$(docker ps -q -f name=^/${PG_CONTAINER}$)" ]; then
   echo "Conteneur ${PG_CONTAINER} introuvable ou arrêté." >&2
-  echo "Démarrez d'abord la base : fishola-backend/start_db.sh" >&2
+  echo "Démarrez d'abord la base : carnet-peche-backend/start_db.sh" >&2
   exit 1
 fi
 

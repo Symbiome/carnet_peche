@@ -1,7 +1,7 @@
 # Transactions
 
 Tous les services REST héritent de 
-[AbstractCarnetResource](/fishola-backend/src/main/java/fr/inrae/fishola/rest/AbstractCarnetResource.java) qui a une
+[AbstractCarnetResource](/carnet-peche-backend/src/main/java/fr/inrae/fishola/rest/AbstractCarnetResource.java) qui a une
 annotation `@Transactional(REQUIRED)` ce qui correspond à :
 
     If called outside a transaction context, the interceptor must begin a new
@@ -15,7 +15,7 @@ Donc pour chaque appel entrant à un service REST une transaction est crée. Pou
 est conservée.
 
 Chaque DAO "métier" (par opposition aux DAOs "techniques" générés par JOOQ) hérite de
-[AbstractCarnetDao](/fishola-backend/src/main/java/fr/inrae/fishola/database/AbstractCarnetDao.java) qui a une
+[AbstractCarnetDao](/carnet-peche-backend/src/main/java/fr/inrae/fishola/database/AbstractCarnetDao.java) qui a une
 annotation `@Transactional(MANDATORY)` ce qui correspond à :
 
     If called outside a transaction context, a TransactionalException with a
@@ -27,7 +27,7 @@ Donc pour tout appel entrant sur un DAO, la transaction est propagée depuis le 
 transaction n'est jamais créée spécifiquement pour le DAO.
 
 Le test `testTransaction` dans
-[TripResourceTest](/fishola-backend/src/test/java/fr/inrae/fishola/rest/trips/TripResourceTest.java) vérifie le bon
+[TripResourceTest](/carnet-peche-backend/src/test/java/fr/inrae/fishola/rest/trips/TripResourceTest.java) vérifie le bon
 fonctionnement du mécanisme transactionnel :
 
     Le test se base sur le fait que la création d'une sortie et de ses captures se fait en 2 temps : d'abord la
