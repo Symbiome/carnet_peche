@@ -35,7 +35,7 @@ mvn -version
 
 ## 4. Node.js 24 (LTS) + npm
 
-Le build pin `nodeVersion v24.18.0` / `npmVersion 11.16.0` (voir `fishola-mobile/pom.xml` et `fishola-admin/pom.xml`) — Node 24 est la ligne **Active LTS**. On installe Node via `nvm` pour matcher cette version précisément.
+Le build pin `nodeVersion v24.18.0` / `npmVersion 11.16.0` (voir `carnet-peche-mobile/pom.xml` et `carnet-peche-admin/pom.xml`) — Node 24 est la ligne **Active LTS**. On installe Node via `nvm` pour matcher cette version précisément.
 
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
@@ -65,7 +65,7 @@ mvn clean install
 ## 7. Démarrer la base de données PostgreSQL
 
 ```bash
-cd fishola-backend
+cd carnet-peche-backend
 ./start_db.sh
 ```
 
@@ -79,7 +79,7 @@ psql postgresql://postgres:whatever@localhost:15432/fishola
 
 ## 8. Configurer et démarrer le backend
 
-Créer le fichier `.env` à la racine de `fishola-backend` (non versionné) :
+Créer le fichier `.env` à la racine de `carnet-peche-backend` (non versionné) :
 
 ```bash
 cat > .env <<'EOF'
@@ -114,7 +114,7 @@ L'IHM du mailcatcher est accessible sur [http://localhost:41080](http://localhos
 Dans un nouveau terminal :
 
 ```bash
-cd outil_capture/fishola-mobile
+cd outil_capture/carnet-peche-mobile
 npm install
 npm run serve
 ```
@@ -126,7 +126,7 @@ Application accessible sur [http://localhost:8081](http://localhost:8081).
 Dans un nouveau terminal :
 
 ```bash
-cd outil_capture/fishola-admin
+cd outil_capture/carnet-peche-admin
 npm install
 npm run serve
 ```
@@ -145,7 +145,7 @@ Application accessible sur [http://localhost:8082](http://localhost:8082).
 ## Notes
 
 - **Tout lancer / tout arrêter d'un coup** : depuis la racine, `./start_all.sh` démarre l'ensemble de la stack (base, backend, fronts, maildev) ; `./down_all.sh` arrête tout (serveurs de dev + conteneurs Docker, données PostgreSQL conservées). Voir le [README racine](../README.md#tout-lancer--tout-arrêter-raccourci).
-- Si le port `8080` est déjà utilisé, changer `quarkus.http.port` dans `fishola-backend/src/main/resources/application.properties`, puis reporter ce nouveau port dans le `.env` du front (`VITE__API_DEFAULT_PORT`).
-- Les fichiers `.env`, `.env.web`, `.env.demo`, `.env.mobile` sont déjà présents dans `fishola-mobile/` et `fishola-admin/` avec des valeurs par défaut pour le mode dev — inutile de les recréer.
-- Les migrations Flyway (`fishola-backend/src/main/resources/db/migration/`) s'appliquent automatiquement au démarrage de Quarkus en mode dev.
+- Si le port `8080` est déjà utilisé, changer `quarkus.http.port` dans `carnet-peche-backend/src/main/resources/application.properties`, puis reporter ce nouveau port dans le `.env` du front (`VITE__API_DEFAULT_PORT`).
+- Les fichiers `.env`, `.env.web`, `.env.demo`, `.env.mobile` sont déjà présents dans `carnet-peche-mobile/` et `carnet-peche-admin/` avec des valeurs par défaut pour le mode dev — inutile de les recréer.
+- Les migrations Flyway (`carnet-peche-backend/src/main/resources/db/migration/`) s'appliquent automatiquement au démarrage de Quarkus en mode dev.
 - **Charger les données hydrographiques** (plans d'eau et cours d'eau, source BD TOPO IGN) : voir [import-donnees-hydro.md](import-donnees-hydro.md). Une base fraîche démarre sans référentiel hydro, les écrans carto sont donc vides tant qu'aucun département n'a été importé.

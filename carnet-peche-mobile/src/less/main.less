@@ -1,0 +1,506 @@
+@import "_icons";
+
+/* ========== Thème clair / sombre (#208) ========== */
+// Valeurs des neutres de _colors.less. Le thème est porté par
+// <html data-theme="light|dark"> (ThemeService) ; un conteneur peut forcer le
+// thème clair avec la classe .force-light-theme (visuels exportés, page vitrine).
+:root,
+.force-light-theme {
+  --carnet-gunmetal: @carnet-navy;
+  --carnet-pale-sky: #526170;
+  --carnet-very-light-grey: #D5D9DC;
+  --carnet-link-water: #D2DAE2;
+  --carnet-white-smoke: @carnet-sand;
+  --carnet-gainsboro: #ECE6E3;
+  --carnet-zircon: #F3EEEB;
+  --carnet-solitude: #E8EAEC;
+  --carnet-surface: #FFFFFF;
+  --carnet-surface-overlay: rgba(255, 255, 255, 0.92);
+  --carnet-text-strong: @carnet-navy;
+  --carnet-divider: rgba(20, 38, 52, 0.1);
+  --carnet-accent-text: @carnet-blue;
+  --carnet-heading: @carnet-ink;
+  --carnet-body-text: fade(@carnet-ink, 70%);
+  --carnet-blue-text: @carnet-ink;
+  --carnet-blue-box: #CCCCF9;
+  --carnet-sky-text: @carnet-deep-blue;
+  --carnet-sky-box: #CCE8FE;
+  --carnet-green-text: @carnet-dark-green;
+  --carnet-green-box: #CFF5E1;
+  --carnet-yellow-text: @carnet-dark-yellow;
+  --carnet-yellow-box: #FFF2CD;
+  --carnet-warning-text: #A65200;
+  color-scheme: light;
+}
+
+// Mode sombre : fond bleu nuit de la maquette (#00004C) ; les déclinaisons
+// texte passent à des teintes claires (contraste AA sur leur boîte).
+:root[data-theme="dark"] {
+  --carnet-gunmetal: #FFFFFF;
+  --carnet-pale-sky: #B4B4D9;
+  --carnet-very-light-grey: #2E2E85;
+  --carnet-link-water: #26267A;
+  --carnet-white-smoke: @carnet-ink;
+  --carnet-gainsboro: #1C1C6E;
+  --carnet-zircon: #101058;
+  --carnet-solitude: #1C1C6E;
+  --carnet-surface: #15155E;
+  --carnet-surface-overlay: rgba(0, 0, 76, 0.92);
+  --carnet-text-strong: #FFFFFF;
+  --carnet-divider: rgba(255, 255, 255, 0.1);
+  --carnet-accent-text: #8F8FFF;
+  --carnet-heading: #FFFFFF;
+  --carnet-body-text: rgba(255, 255, 255, 0.8);
+  --carnet-blue-text: #B3B3FF;
+  --carnet-blue-box: rgba(0, 0, 224, 0.2);
+  --carnet-sky-text: #7CC4FF;
+  --carnet-sky-box: rgba(0, 139, 248, 0.2);
+  --carnet-green-text: #6EE7A8;
+  --carnet-green-box: rgba(12, 206, 107, 0.2);
+  --carnet-yellow-text: #FFD966;
+  --carnet-yellow-box: rgba(255, 191, 0, 0.2);
+  --carnet-warning-text: @carnet-orange;
+  color-scheme: dark;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: @font-family;
+}
+
+button {
+  cursor: pointer;
+}
+
+// Listes déroulantes natives (#288) : le menu d'options garde un fond clair sur
+// certains navigateurs alors que le texte hérité devient blanc en mode sombre.
+select option {
+  background-color: @surface;
+  color: @gunmetal;
+}
+
+.icon-arrow.icon-back {
+  transform: rotate(180deg);
+}
+
+.icon-chevron.icon-chevron-up {
+  transform: rotate(180deg);
+  position: relative;
+  top: -3px;
+}
+
+/* ========== Pastilles ========== */
+.pastille {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 0px solid;
+  line-height: calc(@fontsize-header-paragraph + @line-height-padding-small);
+  font-size: @fontsize-header-paragraph;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.pastille.filled {
+  color: @white;
+  background: @pelorous;
+}
+.pastille.unfilled {
+  color: @accent-text;
+  background: transparent;
+}
+
+
+
+/* ========== Checkboxes ========== */
+.pelorous-checkbox {
+  display: none;
+}
+.pelorous-checkbox + label {
+  background-color: transparent;
+  border: 1px solid @accent-text;
+  // box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+  // padding: 9px;
+  border-radius: 1px;
+  display: inline-block;
+  position: relative;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+// .pelorous-checkbox + label:active,
+// .pelorous-checkbox:checked + label:active {
+//   box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+// }
+.pelorous-checkbox:checked + label {
+  background-color: @pelorous;
+  border: 1px solid @accent-text;
+  border-radius: 1px;
+  // color: @white;
+}
+.pelorous-checkbox:checked + label:after {
+  content: '\f102';
+  font-family: 'Carnet-Icons';
+  font-size: 10px;
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  color: @white;
+}
+
+
+/* ========== Checkboxes ========== */
+.pelorous-radio {
+  display: none;
+}
+.pelorous-radio + label {
+  background-color: transparent;
+  border: 1px solid @accent-text;
+  // box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+  // padding: 9px;
+  border-radius: 8px;
+  display: inline-block;
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+// .pelorous-radio + label:active,
+// .pelorous-radio:checked + label:active {
+//   box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+// }
+.pelorous-radio:checked + label {
+  background-color: @pelorous;
+  border: 1px solid @accent-text;
+  border-radius: 8px;
+  // color: @white;
+}
+.pelorous-radio:checked + label:after {
+  content: '\f102';
+  font-family: 'Carnet-Icons';
+  font-size: 10px;
+  position: absolute;
+  top: -1px;
+  left: 3px;
+  color: @white;
+}
+
+
+
+/*========== Retour haptique ============ */
+
+@gradient-white: @white;
+@gradient-opposite: @terra-cotta;
+
+@keyframes gradient {
+  0% {
+    background: radial-gradient(circle at center, rgba( 255, 125 , 125, 0 ) 0%, @gradient-white 0%, @gradient-white 100%);
+  }
+  25% {
+    background: radial-gradient(circle at center, rgba( 255, 125, 125, 0.3 ) 24%, @gradient-white 25%, @gradient-white 100%);
+  }
+  50% {
+    background: radial-gradient(circle at center, rgba( 255, 125, 125, 0.5 ) 49%, @gradient-white 50%, @gradient-white 100%);
+  }
+  75% {
+    background: radial-gradient(circle at center, rgba( 255, 125, 125, 0.8 ) 74%, @gradient-white 75%, @gradient-white 100%);
+  }
+  100% {
+    color: @gradient-white;
+    background: radial-gradient(circle at center, @gradient-opposite 99%, @gradient-white 100%, @gradient-white 100%);
+  }
+}
+
+button:active {
+  animation: gradient 100ms;
+  background: @gradient-opposite;
+  color: @gradient-white;
+}
+
+.pastille:active {
+  animation: gradient 100ms;
+  background: @gradient-opposite;
+  color: @gradient-white;
+}
+
+
+
+/*========== Divers ============ */
+
+.bottom-page-spacer {
+  height: 30px;
+  min-height: 30px;
+
+  &.keyboardShowing {
+    height: 50px;
+    min-height: 50px;
+  }
+}
+
+.loader {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background:
+    radial-gradient(farthest-side,@pelorous 94%,#0000) top/8px 8px no-repeat,
+    conic-gradient(#0000 30%,@pelorous);
+  -webkit-mask: radial-gradient(farthest-side,#0000 calc(100% - 8px),#000 0);
+  animation:s3 1s infinite linear;
+}
+
+@keyframes s3{
+  100%{transform: rotate(1turn)}
+}
+
+/*========= MapLibre popup override ============ */
+.maplibregl-popup {
+  max-width: 80vw !important;
+  .maplibregl-popup-content {
+    background-color: @white-smoke;
+    color: @gunmetal;
+    button {
+      width: auto;
+    }
+  }
+
+  &.maplibregl-popup-anchor-top,
+  &.maplibregl-popup-anchor-top-left,
+  &.maplibregl-popup-anchor-top-right {
+    .maplibregl-popup-tip {
+      border-bottom-color: @white-smoke;
+    }
+  }
+
+  &.maplibregl-popup-anchor-bottom,
+  &.maplibregl-popup-anchor-bottom-left,
+  &.maplibregl-popup-anchor-bottom-right {
+    .maplibregl-popup-tip {
+      border-top-color: @white-smoke;
+    }
+  }
+
+  &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+    border-right-color: @white-smoke;
+  }
+
+  &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+    border-left-color: @white-smoke;
+  }
+}
+
+/*========= iOS-specific ============ */
+// Required on iPhone to avoid app to overlapp status bar and other protected zones*/
+.header {
+  margin-top: env(safe-area-inset-top);
+}
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/*========= Keyboard specific ======== */
+// Applied when keyboard is showing to all elements
+// with hiddenWhenKeyboardShows or hiddenWhenKeyboardShows_SmallScreensOnly class
+.hidden {
+  display: none !important;
+}
+
+.hide-on-desktop {
+  @media screen and (min-width: @desktop-min-width) {
+    display: none !important;
+  }
+}
+
+.hide-on-mobile {
+  @media screen and (max-width: @mobile-max-width) {
+    display: none !important;
+  }
+}
+
+/*========== Buttons ============ */
+
+.buttons-bar {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: @margin-xx-large;
+}
+
+.button {
+  height: 45px;
+  width: @desktop-button-width;
+  margin-left: @margin-small;
+  margin-right: @margin-small;
+
+  button {
+    height: 100%;
+    width: 100%;
+    border-radius: 10px;
+
+    font-family: @font-family;
+    letter-spacing: @letter-spacing;
+    font-style: normal;
+    font-weight: 600;
+    font-size: @fontsize-button;
+    line-height: calc(@fontsize-button + @line-height-padding-x-large);
+
+    border: 0px;
+    padding-left: @margin-medium;
+    padding-right: @margin-medium;
+
+  }
+
+  &.button-primary {
+    button {
+      background-color: @terra-cotta;
+      color: @white;
+    }
+  }
+
+  &.button-secondary {
+    button {
+      background-color: transparent;
+      color: @accent-text;
+      border: 1px solid @accent-text;
+    }
+  }
+
+  &.button-secondary-no-outline {
+    button {
+      background-color : @pelorous;
+      color: white;
+    }
+  }
+
+  &.button-danger {
+    button {
+      background-color: @cardinal;
+      color: @white;
+    }
+  }
+
+}
+
+@media screen and (min-width: @desktop-min-width) {
+  .two-columns-row-on-desktop {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    >:nth-child(1),
+    >:nth-child(2) {
+      width: calc(50% - @margin-medium);
+    }
+  }
+}
+
+#_capacitor-camera-input {
+  display: none;
+}
+/* Infobulle de survol des entités hydro (nom + type), partagée par toutes les
+   cartes MapLibre. Rendue par MapLibre hors du DOM scopé des composants → doit
+   être globale. `pointer-events: none` pour ne jamais capter le clic sous le
+   curseur. Comportement branché par attachHydroHover (components/common/maplibreStyle). */
+.hydro-hover-popup {
+  pointer-events: none;
+
+  .maplibregl-popup-content {
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px #0003;
+  }
+  .hydro-tip {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+
+    strong {
+      color: @gunmetal;
+      font-size: 0.9rem;
+      overflow-wrap: anywhere;
+    }
+    span {
+      color: @pale-sky;
+      font-size: 0.75rem;
+    }
+  }
+}
+
+/* ========== Visite guidée intro.js (#194) ========== */
+// La bulle est ajoutée au <body>, hors de #app : couleurs explicites, tirées
+// des propriétés du thème, pour rester lisible en clair comme en sombre.
+.introjs-tooltip.carnet-tour {
+  --introjs-arrow-color: var(--carnet-surface);
+  border-radius: 13px;
+  background-color: @surface;
+  color: @gunmetal;
+  font-family: @font-family;
+
+  .introjs-tooltip-title {
+    color: @heading;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .introjs-tooltiptext {
+    color: @gunmetal;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .introjs-skipbutton {
+    width: auto;
+    padding: 0 6px;
+    color: @accent-text;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .introjs-bullets ul li a {
+    background-color: @pale-sky;
+    opacity: 0.45;
+
+    &.active {
+      background-color: @accent-text;
+      opacity: 1;
+    }
+  }
+
+  .introjs-button {
+    border: 2px solid @accent-text;
+    border-radius: 18px;
+    background: transparent;
+    color: @accent-text;
+    font-family: @font-family;
+    font-weight: 600;
+    text-shadow: none;
+
+    &:focus,
+    &:hover {
+      box-shadow: none;
+    }
+  }
+
+  .introjs-nextbutton {
+    border-color: @carnet-blue;
+    background-color: @carnet-blue;
+    color: @white;
+  }
+
+  .introjs-disabled {
+    opacity: 0.4;
+  }
+}
+
+// Case à cocher avec libellé (inscription, profil, carte de partage).
+.form-checkbox {
+  width: 100%;
+
+  .real-label {
+    margin-left: @margin-small;
+  }
+}

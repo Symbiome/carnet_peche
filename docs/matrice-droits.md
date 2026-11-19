@@ -148,7 +148,7 @@ La colonne « L » renvoie au numéro de ligne de la v1.1 MO.
 
 ## Couverture de tests
 
-Tests dans `fishola-backend/src/test/java/fr/inrae/fishola/rest/security/` — un endpoint
+Tests dans `carnet-peche-backend/src/test/java/fr/inrae/fishola/rest/security/` — un endpoint
 représentatif par domaine et par rôle, limité aux lignes **conformes** (les écarts seront
 couverts par leurs tickets de correction).
 

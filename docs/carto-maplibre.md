@@ -2,7 +2,7 @@
 
 ## Décision : on reste en 4.x, version épinglée `4.7.1`
 
-`fishola-mobile/package.json` déclare `"maplibre-gl": "4.7.1"` — **sans caret**.
+`carnet-peche-mobile/package.json` déclare `"maplibre-gl": "4.7.1"` — **sans caret**.
 Le fichier de verrouillage fixait déjà 4.7.1, mais le `^` laissait un
 `npm install` dériver dans la branche 4.x sans que personne ne l'ait décidé.
 L'épinglage rend l'intention lisible dans le fichier que les gens lisent.
@@ -55,6 +55,6 @@ sont pas cochées, on ne monte pas.
 
 ## Voir aussi
 
-- Parc navigateur visé : `fishola-mobile/.browserslistrc`. C'est lui qui décide
+- Parc navigateur visé : `carnet-peche-mobile/.browserslistrc`. C'est lui qui décide
   du niveau de moteur qu'on prétend supporter, donc de la pertinence de la
   première case ci-dessus.

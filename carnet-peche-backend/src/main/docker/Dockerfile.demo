@@ -1,0 +1,43 @@
+####
+# This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
+#
+# Before building the docker image run:
+#
+# mvn package
+#
+# Then, build the image with:
+#
+# docker build -f src/main/docker/Dockerfile.demo -t inrae/fishola-backend:demo .
+#
+# Then run the container using:
+#
+# docker run -i --rm -p 8080:8080 --name fishola-backend inrae/fishola-backend:demo
+#
+###
+# JRE Ubuntu plutôt qu'eclipse-temurin:25-jre-alpine : Temurin n'avait pas encore publié
+# le correctif de CVE-2026-114938 (« Java4Shell »), Ubuntu si. Le build échoue si le
+# paquet installé est antérieur au correctif ; fontconfig/DejaVu servent aux exports Excel.
+FROM ubuntu:26.04
+ARG MIN_PATCHED_JRE_VERSION=25.0.5.1+2-1~26.04.1
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openjdk-25-jre-headless fontconfig fonts-dejavu-core \
+    && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' openjdk-25-jre-headless)" ge "$MIN_PATCHED_JRE_VERSION" \
+    && rm -rf /var/lib/apt/lists/*
+ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV AB_ENABLED=jmx_exporter
+
+# legacy-jar
+#COPY --chown=1001 target/lib/* /deployments/lib/
+#COPY --chown=1001 target/*-runner.jar /deployments/app.jar
+
+# fast-jar
+COPY --chown=1001 target/quarkus-app/lib/ /deployments/lib/
+COPY --chown=1001 target/quarkus-app/*.jar /deployments/app.jar
+COPY --chown=1001 target/quarkus-app/app/ /deployments/app/
+COPY --chown=1001 target/quarkus-app/quarkus/ /deployments/quarkus/
+
+WORKDIR /deployments
+EXPOSE 8080
+USER 1001
+
+CMD ["java", "-Dquarkus.profile=demo", "-jar", "app.jar"]

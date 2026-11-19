@@ -27,9 +27,9 @@ mvn clean install
 ```
 
 Ensuite il faut démarrer :
-* [le backend (avec sa base de données)](/fishola-backend/README.md)
-* [le front](/fishola-mobile/README.md)
-* [l'interface d'administration](/fishola-admin/README.md)
+* [le backend (avec sa base de données)](/carnet-peche-backend/README.md)
+* [le front](/carnet-peche-mobile/README.md)
+* [l'interface d'administration](/carnet-peche-admin/README.md)
 
 #### Tout lancer / tout arrêter (raccourci)
 
@@ -120,7 +120,7 @@ L'application FISHOLA est sous licence [GNU Affero General Public License v3](/L
 
 ### Schéma de données
 
-Le DDL généré à partir des migrations est disponible ici : `fishola-backend/target/init-fishola-database.sql`.
+Le DDL généré à partir des migrations est disponible ici : `carnet-peche-backend/target/init-fishola-database.sql`.
 
 
 ### Data
@@ -151,7 +151,7 @@ psql postgresql://postgres:whatever@localhost:15432/fishola
 #### Lancer les migrations
 
 ```bash
-cd fishola-backend && mvn flyway:migrate
+cd carnet-peche-backend && mvn flyway:migrate
 ```
 
 #### Créer un utilisateur de test

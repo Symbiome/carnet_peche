@@ -27,7 +27,7 @@ Pour **chaque** admin national, poser un mot de passe nominatif (l'« ancien » 
 de passe partagé tant qu'aucun nominatif n'a été posé). Deux voies équivalentes :
 
 - **Back-office** : l'écran « Changer mon mot de passe »
-  (`fishola-admin/src/views/account/ChangePassword.vue`, menu compte) appelle l'endpoint.
+  (`carnet-peche-admin/src/views/account/ChangePassword.vue`, menu compte) appelle l'endpoint.
 - **cURL** (une fois connecté, cookie de session admin) :
 
 ```bash

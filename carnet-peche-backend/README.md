@@ -1,0 +1,77 @@
+# Module back de Fishola
+
+## Démarrer la base de données 
+
+Il suffit de lancer le script `start_db.sh` :
+
+```bash
+./start_db.sh
+```
+
+Il est ensuite possible de se connecter à la base de données avec `psql` (si installée sur l'OS) :
+
+```bash
+./psql.sh
+```
+
+ou bien par la commande `psql` via Docker : 
+
+```bash
+./psql-by-docker.sh
+```
+
+La base démarrée est une base PostgreSQL 12 dont le volume est monté dans `/home/postgres-12` sous Linux.
+Sous macOS (où `/home` est réservé à l'automonteur), le script utilise à la place un volume Docker nommé `fishola-pgdata`.
+
+Pour connaître l'IP de la base de données :
+
+```bash
+./.get_db_ip.sh
+```
+
+## Démarrer le backend en mode dev
+
+Les variables attendues par l'application pour joindre la bade de données sont :
+
+```properties
+%dev.quarkus.datasource.jdbc.url=jdbc:postgresql://192.168.1.86:5432/fishola
+%dev.quarkus.datasource.username=postgres
+%dev.quarkus.datasource.password=whatever
+```
+
+`%dev` signifie que ces valeurs sont valables uniquement pour le mode `dev`.
+
+Le meilleur moyen de saisir ces variables est de créer un fichier `.env` à la racine du module `carnet-peche-backend` et y ajouter les lignes suivantes :
+
+```properties
+_DEV_QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://192.168.1.86:5432/fishola
+_DEV_QUARKUS_DATASOURCE_USERNAME=postgres
+_DEV_QUARKUS_DATASOURCE_PASSWORD=whatever
+```
+
+Ce fichier n'est pas ajouté au repo Git, chacun est donc libre d'y surcharger les propriétés qu'il souhaite.
+
+Ensuite on démarre Quarkus en mode dev :
+
+```bash
+mvn clean compile quarkus:dev
+```
+
+Quarkus tourne sur le port `8080`, on peut vérifier que tout va bien grâce au [endpoint status](http://localhost:8080/api/v1/status).
+
+Si une application tourne déjà sur 8080, vous pouvez indiquer un port alternatif dans le fichier application.properties :
+quarkus.http.port=8082
+Notez que si vous modifiez ce port, il faudra également modifier le port dans le .env de fishola_mobile
+
+Pour lancer un serveur mail localement, vous pouvez utiliser un mailcatcher : 
+* `docker run -p 41080:80 -p 41025:25 -d --name maildev --rm djfarrelly/maildev`
+* Editez l'addresse smtp du serveur (dans application.properties)
+```properties
+quarkus.mailer.start-tls=DISABLED
+quarkus.mailer.host=localhost
+quarkus.mailer.port=41025
+quarkus.mailer.from=fishola@codelutin.com
+quarkus.mailer.mock=false
+```
+L'ihm de mail est accessible sur localhost:41080
+
