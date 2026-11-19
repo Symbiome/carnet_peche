@@ -12,7 +12,7 @@ seules les variables Ansible changent (`ansible/inventories/<env>/`).
 | Branche déployée | `develop` | `main` |
 | Inventaire | `-i inventories/recette` | `-i inventories/production` |
 | Mot de passe du vault | `ansible/.vault_pass_recette` (`--vault-id recette@…`) | `ansible/.vault_pass_prod` (`--vault-id prod@…`) |
-| Domaines | `*-recette.carnet-peche.fr` | `peche`, `api-peche`, `admin-peche`, `dashboard-peche` `.carnet-peche.fr` |
+| Domaines | `*-recette.carnet-peche.fr` | `carnet-peche.fr` (app pêcheur) ; `api-peche`, `admin-peche`, `dashboard-peche` `.carnet-peche.fr` |
 | Mention dans l'app (`VITE__ENV_NAME`) | `recette` | aucune |
 | Mails | Maildev (profil compose `recette`), aucun mail réel | vrai SMTP, mot de passe dans le vault |
 | Secrets (DB, JWT, admin, pgBackRest) | propres à la recette | propres à la production |
@@ -160,8 +160,8 @@ Le playbook :
 2. génère `.env` à partir de `inventories/<env>/group_vars/all/vars.yml` +
    `vault.yml` (jamais édité à la main, régénéré à chaque run), dont
    `COMPOSE_PROFILES` (`recette` démarre Maildev, vide en production) ;
-3. régénère les overrides Vite (`fishola-mobile/.env.demo.local`,
-   `fishola-admin/.env.demo.local`) avec l'URL d'API publique et la mention
+3. régénère les overrides Vite (`carnet-peche-mobile/.env.demo.local`,
+   `carnet-peche-admin/.env.demo.local`) avec l'URL d'API publique et la mention
    d'environnement. Vite inscrit ces valeurs dans le JavaScript compilé :
    chaque serveur compile sa propre version, une image de recette ne peut pas
    être promue telle quelle en production ;

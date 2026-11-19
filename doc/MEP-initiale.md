@@ -7,7 +7,7 @@ Nous recommandons d'utiliser la dernière version disponible (12) toutefois l'ap
 Pour la mise en prod, il suffit de créer la base de données.
 Il n'est pas nécessaire d'initialiser le schéma de base de données, c'est l'application qui va s'en charger.
 
-Pour information, les scripts d'initialisation de la base qui seront automatiquement appliqués au démarrage de l'application sont contenus dans le [dossier migration](/fishola-backend/src/main/resources/db/migration).
+Pour information, les scripts d'initialisation de la base qui seront automatiquement appliqués au démarrage de l'application sont contenus dans le [dossier migration](/carnet-peche-backend/src/main/resources/db/migration).
 
 ## Backend
 

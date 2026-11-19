@@ -21,17 +21,17 @@ build:compile:
   artifacts:
     name: "fishola-$CI_COMMIT_SHORT_SHA"
     paths:
-      - fishola-backend/target/quarkus-app
-      - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-mobile
-      - fishola-mobile/target/dist-web
-      - fishola-admin/target/dist-demo
-      - fishola-admin/target/dist-production
+      - carnet-peche-backend/target/quarkus-app
+      - carnet-peche-mobile/target/dist-demo
+      - carnet-peche-mobile/target/dist-mobile
+      - carnet-peche-mobile/target/dist-web
+      - carnet-peche-admin/target/dist-demo
+      - carnet-peche-admin/target/dist-production
     expire_in: 2 weeks
   cache:
     paths:
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
+      - carnet-peche-mobile/node
+      - carnet-peche-mobile/node_modules
   script:
     - mvn clean package
   rules:
@@ -49,9 +49,9 @@ package:docker-demo:
       when: always
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build --file fishola-backend/src/main/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:backend-demo fishola-backend
-    - docker build --file fishola-mobile/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:web-demo fishola-mobile
-    - docker build --file fishola-admin/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:admin-demo fishola-admin
+    - docker build --file carnet-peche-backend/src/main/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:backend-demo carnet-peche-backend
+    - docker build --file carnet-peche-mobile/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:web-demo carnet-peche-mobile
+    - docker build --file carnet-peche-admin/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:admin-demo carnet-peche-admin
     - docker push $CI_REGISTRY_IMAGE:backend-demo
     - docker push $CI_REGISTRY_IMAGE:web-demo
     - docker push $CI_REGISTRY_IMAGE:admin-demo
@@ -67,9 +67,9 @@ package:docker-demo-feature:
       when: manual
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build --file fishola-backend/src/main/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:backend-demo-${CI_COMMIT_REF_NAME#feature/} fishola-backend
-    - docker build --file fishola-mobile/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:web-demo-${CI_COMMIT_REF_NAME#feature/} fishola-mobile
-    - docker build --file fishola-admin/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:admin-demo-${CI_COMMIT_REF_NAME#feature/} fishola-admin
+    - docker build --file carnet-peche-backend/src/main/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:backend-demo-${CI_COMMIT_REF_NAME#feature/} carnet-peche-backend
+    - docker build --file carnet-peche-mobile/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:web-demo-${CI_COMMIT_REF_NAME#feature/} carnet-peche-mobile
+    - docker build --file carnet-peche-admin/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:admin-demo-${CI_COMMIT_REF_NAME#feature/} carnet-peche-admin
     - docker push $CI_REGISTRY_IMAGE:backend-demo-${CI_COMMIT_REF_NAME#feature/}
     - docker push $CI_REGISTRY_IMAGE:web-demo-${CI_COMMIT_REF_NAME#feature/}
     - docker push $CI_REGISTRY_IMAGE:admin-demo-${CI_COMMIT_REF_NAME#feature/}
@@ -101,7 +101,7 @@ package:android-demo:
   image: eclipse-temurin:21-noble
   stage: package_mobile
   before_script:
-    - cd fishola-mobile
+    - cd carnet-peche-mobile
     - echo "en_US UTF-8" > /etc/locale.gen
     - locale-gen en_US.UTF-8
     - export LANG=en_US.UTF-8
@@ -154,7 +154,7 @@ package:android-production:
   when: manual
   stage: package_mobile
   before_script:
-    - cd fishola-mobile
+    - cd carnet-peche-mobile
     - echo "en_US UTF-8" > /etc/locale.gen
     - locale-gen en_US.UTF-8
     - export LANG=en_US.UTF-8
@@ -206,7 +206,7 @@ deploy:android-deploy-beta:
   stage: deploy
   when: manual
   before_script:
-    - cd fishola-mobile
+    - cd carnet-peche-mobile
     - echo "en_US UTF-8" > /etc/locale.gen
     - locale-gen en_US.UTF-8
     - export LANG=en_US.UTF-8
@@ -266,7 +266,7 @@ deploy:ios-deploy-testflight:
     - export LANG=en_US.UTF-8
     - export LANGUAGE=en_US:en
     - export LC_ALL=en_US.UTF-8
-    - cd fishola-mobile
+    - cd carnet-peche-mobile
     - npm ci
     - cp -r target/dist-mobile target/dist
     - npx cap sync

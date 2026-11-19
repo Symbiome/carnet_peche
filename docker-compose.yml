@@ -9,13 +9,13 @@
 # ansible/playbooks/deploy.yml — voir DEPLOYMENT.md.
 #
 # Toujours précédé d'un `mvn clean package` à la racine (produit
-# fishola-backend/target/quarkus-app, fishola-mobile/target/dist-demo et
-# fishola-admin/target/dist-demo, que les Dockerfile.demo se contentent de
+# carnet-peche-backend/target/quarkus-app, carnet-peche-mobile/target/dist-demo et
+# carnet-peche-admin/target/dist-demo, que les Dockerfile.demo se contentent de
 # copier). Sans ce build, `docker compose build` échoue sur ces 3 services.
 
 services:
   # Nommé docker_postgres pour matcher l'hôte JDBC déjà codé en dur dans les profils
-  # %dev/%demo de fishola-backend/src/main/resources/application.properties —
+  # %dev/%demo de carnet-peche-backend/src/main/resources/application.properties —
   # évite de surcharger QUARKUS_DATASOURCE_JDBC_URL.
   #
   # Sauvegardes (#279) : image PostGIS + pgBackRest (docker/postgres), WAL
@@ -75,7 +75,7 @@ services:
 
   fishola-backend:
     build:
-      context: ./fishola-backend
+      context: ./carnet-peche-backend
       dockerfile: src/main/docker/Dockerfile.demo
     restart: unless-stopped
     depends_on:
@@ -110,7 +110,7 @@ services:
 
   fishola-mobile:
     build:
-      context: ./fishola-mobile
+      context: ./carnet-peche-mobile
       dockerfile: docker/Dockerfile.demo
     restart: unless-stopped
     depends_on: [fishola-backend]
@@ -120,13 +120,54 @@ services:
 
   fishola-admin:
     build:
-      context: ./fishola-admin
+      context: ./carnet-peche-admin
       dockerfile: docker/Dockerfile.demo
     restart: unless-stopped
     depends_on: [fishola-backend]
     ports:
       - "0.0.0.0:${ADMIN_PORT:-8082}:80"
     networks: [fishola]
+
+  # ===========================================================================
+  # Superset - Apache Superset BI dashboard
+  # Metadata lives in the superset database on the host PostgreSQL.
+  # network_mode: host so the container reaches Postgres via localhost
+  # already used by chartdb.
+  # ===========================================================================
+  superset:
+    image: apache/superset:latest
+    container_name: symbiome_superset
+    restart: unless-stopped
+    network_mode: host
+
+    environment:
+      - SUPERSET_SECRET_KEY=${SUPERSET_SECRET_KEY}
+      - SUPERSET_PORT=${SUPERSET_PORT:-8089}
+      - SUPERSET_LOAD_EXAMPLES=no
+
+      - DATABASE_DIALECT=postgresql
+      - DATABASE_HOST=localhost
+      - DATABASE_PORT=${POSTGRES_PORT:-5432}
+      - DATABASE_DB=${POSTGRES_DB_SUPERSET:-superset}
+      - DATABASE_USER=${POSTGRES_USER_SUPERSET:-superset}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD_SUPERSET}
+
+      - ADMIN_USERNAME=${SUPERSET_ADMIN_USERNAME:-admin}
+      - ADMIN_EMAIL=${SUPERSET_ADMIN_EMAIL:-arthur@symbiome.eu}
+      - ADMIN_PASSWORD=${SUPERSET_ADMIN_PASSWORD}
+      - ADMIN_FIRSTNAME=Admin
+      - ADMIN_LASTNAME=User
+
+    volumes:
+      - /opt/symbiome/superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+      - superset_home:/app/superset_home
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${SUPERSET_PORT:-8089}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Recette uniquement : COMPOSE_PROFILES=recette dans le .env. Absent en
   # production, où les mails partent par le vrai SMTP.

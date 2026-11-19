@@ -448,13 +448,13 @@ suffit pas à forcer un format 24h de façon fiable sur tous les
 navigateurs/OS (notamment iOS Safari, qui suit toujours la région de
 l'appareil).
 Le champ est utilisé à plusieurs endroits :
-- `fishola-mobile/src/components/common/FormInput.vue` — composant
+- `carnet-peche-mobile/src/components/common/FormInput.vue` — composant
   générique utilisé avec `type="time"` par :
-  - `fishola-mobile/src/components/trip/SomeTripSummary.vue`
+  - `carnet-peche-mobile/src/components/trip/SomeTripSummary.vue`
     (heure de début / heure de fin de sortie)
-  - `fishola-mobile/src/views/trip/TripMeta.vue` (idem, saisie a posteriori)
-  - `fishola-mobile/src/views/trip/EditCatch.vue` (heure de capture)
-- `fishola-admin/src/views/operator/ManualEntry.vue` — `<input type="time">`
+  - `carnet-peche-mobile/src/views/trip/TripMeta.vue` (idem, saisie a posteriori)
+  - `carnet-peche-mobile/src/views/trip/EditCatch.vue` (heure de capture)
+- `carnet-peche-admin/src/views/operator/ManualEntry.vue` — `<input type="time">`
   natif, saisi directement sans passer par `FormInput` (heure de début /
   heure de fin lors de la saisie manuelle opérateur)
 
@@ -533,13 +533,13 @@ rester disponibles et appliquer **les mêmes règles de
 validation**.
 
 Le socle d'import CSV opérateur existe déjà **côté Quarkus**
-(`fishola-backend/.../rest/imports/` — `ImportSchema`,
+(`carnet-peche-backend/.../rest/imports/` — `ImportSchema`,
 `ImportService`, `ImportDao`, issue #71 ; pipeline structurel →
 référentiel → métier, idempotence, rapport ligne à ligne
 `import_row_error`, `collection_method` déjà porté sur `trip`),
 ainsi que l'écran de saisie manuelle générique
 (`ManualEntryResource`/`ManualTripBean`, issue #72,
-`fishola-admin/src/views/operator/ManualEntry.vue`). Ce socle ne
+`carnet-peche-admin/src/views/operator/ManualEntry.vue`). Ce socle ne
 couvre aujourd'hui qu'un **format générique unique** à 28
 colonnes — pas encore le format « carnet volontaire » tel que
 transmis par le client. Cette issue **étend ce socle** au format
@@ -686,7 +686,7 @@ capture.
 - Le formulaire de saisie unitaire construit en mémoire la même
   structure de ligne (+ lignes capture) que le parseur de fichier,
   puis appelle les mêmes validations référentiel/métier que
-  l'import (`ImportService`, `fishola-backend/.../rest/imports/`)
+  l'import (`ImportService`, `carnet-peche-backend/.../rest/imports/`)
   avant écriture (`ImportDao`) — un seul chemin de
   validation/persistance pour les deux modes, le formulaire
   n'ajoute qu'une saisie côté UI en amont du parseur
@@ -921,7 +921,7 @@ pêcheur` seul, plus :
   qu'un lot de lignes — même logique que le formulaire de #11
   vis-à-vis du pipeline d'import
 - S'appuyer sur le socle Quarkus existant
-  (`fishola-backend/.../rest/imports/`, issue #71) mais dans un
+  (`carnet-peche-backend/.../rest/imports/`, issue #71) mais dans un
   module dédié `rest/imports/survey/` : le format relationnel ne
   rentre pas dans le pipeline « une ligne = une capture » du
   format générique actuel. Cadrage initial : #32 (« esquisse du
@@ -1030,7 +1030,7 @@ des deux imports.
       est conservé pour l'analyse
 
 ### Critères d'acceptance
-- [ ] Migration Flyway `fishola-backend/src/main/resources/db/migration/`
+- [ ] Migration Flyway `carnet-peche-backend/src/main/resources/db/migration/`
       (prochaine version après `V1.7.0`) créant les colonnes et
       tables ci-dessus, toutes **NULLables** — aucun impact sur
       les données existantes
@@ -1038,7 +1038,7 @@ des deux imports.
       du fichier `20260824_Formats de données et infos
       pecheurs v2.xlsx`
 - [ ] `ImportDao`/`ManualEntryService` (Quarkus,
-      `fishola-backend/.../rest/imports/`) exposent les nouveaux
+      `carnet-peche-backend/.../rest/imports/`) exposent les nouveaux
       champs
 - [ ] `DATABASE.md` mis à jour
 - [ ] Les imports #11 et #12 persistent alors la totalité des
@@ -1143,7 +1143,7 @@ déjà rendue dans `LakeSelection.vue` (`.suggestion-commune`).
       suffixés retrouvent leur nom nu après ré-import
 
 ### Notes techniques
-- Migration Flyway `fishola-backend/src/main/resources/db/migration/`
+- Migration Flyway `carnet-peche-backend/src/main/resources/db/migration/`
   (prochaine version) :
   ```sql
   ALTER TABLE water_entity DROP CONSTRAINT water_entity_name_key;
@@ -1190,9 +1190,9 @@ niveaux de zoom, y compris carte complètement dézoomée**, afin de
 garder une vue d'ensemble de tous les lieux où j'ai pêché.
 
 ### Contexte
-Composant `fishola-mobile/src/components/my-trips/MyTripsMap.vue`
+Composant `carnet-peche-mobile/src/components/my-trips/MyTripsMap.vue`
 (carte MapLibre, #33), affiché par
-`fishola-mobile/src/views/TripsListAndMap.vue` (onglet « Carte »).
+`carnet-peche-mobile/src/views/TripsListAndMap.vue` (onglet « Carte »).
 Les sorties sont rendues via une source GeoJSON `catches` avec
 clustering natif (`clusterRadius: 50`, `clusterMaxZoom: 14`),
 au-dessus du fond IGN + réseau hydro (`buildCarnetStyle`).
@@ -1378,7 +1378,7 @@ d'origine). Avec l'extension multi-milieux RM&C (rivières, tronçons, canaux �
 cf. #134), la table compte aujourd'hui **181 649 lignes** en local (échelle
 qui grandira encore avec le chargement national, cf. #51).
 
-`fishola-admin/src/views/customize/AuthorizedSamples.vue` continue de
+`carnet-peche-admin/src/views/customize/AuthorizedSamples.vue` continue de
 raisonner « une colonne = une entité hydrographique » : au chargement, le
 composant récupère **la totalité** de `GET /v1/referential/waterEntities` et
 `GET /v1/referential/species-per-waterEntity`, puis construit une matrice
