@@ -91,6 +91,16 @@ export default class AccountView extends Vue {
         ],
       },
       {
+        title: "Le projet",
+        items: [
+          {
+            label: "Pourquoi carnet de pêche ?",
+            icon: "img/carnet/account-why.svg",
+            action: () => this.go("/pourquoi-carnet-de-peche"),
+          },
+        ],
+      },
+      {
         title: "Aide",
         items: [
           { label: "Contact", icon: "img/carnet/account-contact.svg", action: this.openFeedback },

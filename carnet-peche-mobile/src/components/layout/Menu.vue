@@ -57,7 +57,13 @@
           {{ i.label }}
         </span>
         <div class="pastille">
-          <i :class="'icon-' + i.iconName" />
+          <div
+            v-if="i.desktopIcon && i.desktopIconTinted"
+            class="desktop-icon tinted hide-on-mobile"
+            :style="{ maskImage: `url(${i.desktopIcon})`, webkitMaskImage: `url(${i.desktopIcon})` }"
+          />
+          <img v-else-if="i.desktopIcon" class="desktop-icon hide-on-mobile" :src="i.desktopIcon" alt="" />
+          <i :class="['icon-' + i.iconName, { 'hide-on-desktop': i.desktopIcon }]" />
         </div>
         <div class="active-marker"></div>
       </div>
@@ -90,7 +96,11 @@ export class MenuItem {
     public onlyConnected: boolean,
     public onlyUnlogged: boolean,
     public path?: string,
-    public hideOnDesktop?: boolean
+    public hideOnDesktop?: boolean,
+    /** Picto SVG de l'app mobile, affiché à la place de `iconName` sur écran large. */
+    public desktopIcon?: string,
+    /** Picto blanc de la barre du bas : teinté en couleur d'accent par un masque CSS. */
+    public desktopIconTinted?: boolean
   ) {}
 }
 
@@ -312,6 +322,8 @@ export default class Menu extends Vue {
       },
       {
         name: "home",
+        desktopIcon: "img/carnet/nav-home.svg",
+        desktopIconTinted: true,
         label: "Accueil",
         iconName: "home",
         clickHandler: () => this.goPath("/home"),
@@ -321,6 +333,8 @@ export default class Menu extends Vue {
       },
       {
         name: "map",
+        desktopIcon: "img/carnet/nav-map.svg",
+        desktopIconTinted: true,
         label: "Carte",
         iconName: "map",
         clickHandler: () => this.goPath("/map"),
@@ -330,6 +344,8 @@ export default class Menu extends Vue {
       },
       {
         name: "trips",
+        desktopIcon: "img/carnet/nav-fish.svg",
+        desktopIconTinted: true,
         label: "Mes prises",
         iconName: "fish",
         clickHandler: () => this.goPath("/trips"),
@@ -339,6 +355,8 @@ export default class Menu extends Vue {
       },
       {
         name: "offline-home",
+        desktopIcon: "img/carnet/nav-home.svg",
+        desktopIconTinted: true,
         label: homeShouldBeNameMyTrips ? "Mes sorties" : "Accueil",
         iconName: "home",
         clickHandler: this.goTrips,
@@ -347,6 +365,8 @@ export default class Menu extends Vue {
       },
       {
         name: "login",
+        desktopIcon: "img/carnet/nav-user.svg",
+        desktopIconTinted: true,
         label: "Connexion",
         iconName: "profile",
         clickHandler: () => this.goPath("/login"),
@@ -356,6 +376,7 @@ export default class Menu extends Vue {
       },
       {
         name: "activity-summary",
+        desktopIcon: "img/carnet/account-activity.svg",
         label: "Statistiques",
         iconName: "dashboard",
         clickHandler: this.goActivitySummary,
@@ -381,16 +402,18 @@ export default class Menu extends Vue {
         hideOnDesktop: true,
       },
       {
-        name: "about",
+        name: "why-carnet",
+        desktopIcon: "img/carnet/account-why.svg",
         label: "Pourquoi carnet de pêche ?",
         iconName: "info",
-        clickHandler: () => this.goPath("/about"),
+        clickHandler: () => this.goPath("/pourquoi-carnet-de-peche"),
         onlyConnected: true,
         onlyUnlogged: false,
-        path: "/about",
+        path: "/pourquoi-carnet-de-peche",
       },
       {
         name: "credits",
+        desktopIcon: "img/carnet/account-who.svg",
         label: "Qui porte le projet ?",
         iconName: "heart",
         clickHandler: () => this.goPath("/credits"),
@@ -400,6 +423,7 @@ export default class Menu extends Vue {
       },
       {
         name: "documentationFaq",
+        desktopIcon: "img/carnet/account-about.svg",
         label: "Documentation",
         iconName: "files",
         clickHandler: this.goDocumentation,
@@ -408,6 +432,7 @@ export default class Menu extends Vue {
       },
       {
         name: "feedback",
+        desktopIcon: "img/carnet/account-contact.svg",
         label: "Des retours ?",
         iconName: "faq",
         clickHandler: this.openFeedback,
@@ -611,6 +636,26 @@ export default class Menu extends Vue {
 
         i {
           font-size: 20px;
+        }
+
+        // Pictos de l'app mobile (barre du bas et page « Compte »).
+        .desktop-icon {
+          display: block;
+          max-width: 28px;
+          max-height: 28px;
+        }
+
+        .desktop-icon.tinted {
+          width: 26px;
+          height: 26px;
+          max-width: none;
+          background-color: @accent-text;
+          -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+          -webkit-mask-position: center;
+          mask-position: center;
+          -webkit-mask-size: contain;
+          mask-size: contain;
         }
 
         &:hover,

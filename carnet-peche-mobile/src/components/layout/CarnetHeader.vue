@@ -99,7 +99,8 @@ export default class CarnetHeader extends Vue {
     flex-direction: row;
     align-items: center;
 
-    * {
+    // Enfants directs seulement : sur `*`, la marge décalait les initiales dans la pastille.
+    > * {
       margin-left: @margin-small;
       margin-right: 0px;
     }

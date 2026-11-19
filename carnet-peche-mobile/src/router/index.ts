@@ -53,6 +53,7 @@ import EditCatch from "@/views/trip/EditCatch.vue";
 import Documentation from "@/views/Documentation.vue";
 import NewsDetailsVue from "@/views/NewsDetails.vue";
 import Credits from "@/views/Credits.vue";
+import WhyCarnetView from "@/views/WhyCarnet.vue";
 
 import GaleryFull from "@/components/galery/GaleryFull.vue";
 
@@ -277,6 +278,11 @@ const routes: RouteRecordRaw[] = [
     name: "credits",
     meta: { public: true },
     component: Credits,
+  },
+  {
+    path: "/pourquoi-carnet-de-peche",
+    name: "why-carnet",
+    component: WhyCarnetView,
   },
   {
     path: "/profile/:visualizationMode",
