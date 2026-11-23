@@ -31,7 +31,7 @@ default_national_admins:
 # reverse proxy et le mapping domaine -> port host.
 app_domain: www.carnet-peche.fr
 api_domain: api-peche.carnet-peche.fr
-admin_domain: admin-peche.carnet-peche.fr
+admin_domain: admin.carnet-peche.fr
 dashboard_domain: dashboard-peche.carnet-peche.fr
 
 # --- Ports hôte --------------------------------------------------------------
